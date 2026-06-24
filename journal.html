@@ -25,193 +25,90 @@
       --shadow-sm:  0 2px 8px rgba(45,74,62,0.05);
       --shadow-md:  0 4px 16px rgba(45,74,62,0.09);
     }
-
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Inter', 'Sarabun', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.6; }
 
-    /* ── AUTH GATE ── */
-    #auth-gate {
-      display: flex; align-items: center; justify-content: center;
-      min-height: 100vh;
-    }
-    .auth-msg {
-      text-align: center;
-      background: var(--surface);
-      padding: 40px 48px;
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-md);
-    }
+    /* AUTH GATE */
+    #auth-gate { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+    .auth-msg { text-align: center; background: var(--surface); padding: 40px 48px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); }
     .auth-msg p { color: var(--text-sub); margin-bottom: 16px; font-family: 'Sarabun', sans-serif; }
-    .btn-go {
-      display: inline-block; padding: 11px 28px;
-      background: var(--primary); color: #fff;
-      border-radius: var(--radius-sm); font-weight: 600;
-      font-size: 14px; text-decoration: none; transition: background 0.2s;
-    }
-    .btn-go:hover { background: #1e332a; }
+    .btn-go { display: inline-block; padding: 11px 28px; background: var(--primary); color: #fff; border-radius: var(--radius-sm); font-weight: 600; font-size: 14px; text-decoration: none; }
 
-    /* ── APP ── */
+    /* APP */
     #app { display: none; }
     .container { max-width: 900px; margin: 0 auto; padding: 0 20px 60px; }
 
-    /* ── HEADER ── */
-    header {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 20px 0; margin-bottom: 28px;
-      border-bottom: 1px solid var(--border);
-    }
+    /* HEADER */
+    header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; margin-bottom: 28px; border-bottom: 1px solid var(--border); }
     .logo { font-size: 1.1rem; font-weight: 700; color: var(--primary); letter-spacing: 2px; }
     .logo span { color: var(--text-sub); }
-    .header-nav { display: flex; gap: 8px; }
-    .nav-btn {
-      background: var(--surface); border: 1px solid var(--border);
-      padding: 8px 16px; border-radius: var(--radius-sm);
-      font-weight: 500; font-size: 13px; cursor: pointer;
-      transition: all 0.2s; color: var(--text);
-      text-decoration: none; font-family: inherit;
-    }
-    .nav-btn:hover   { background: var(--primary); color: #fff; border-color: var(--primary); }
-    .nav-btn.active  { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .header-nav { display: flex; gap: 8px; flex-wrap: wrap; }
+    .nav-btn { background: var(--surface); border: 1px solid var(--border); padding: 8px 14px; border-radius: var(--radius-sm); font-weight: 500; font-size: 13px; cursor: pointer; transition: all 0.2s; color: var(--text); text-decoration: none; font-family: inherit; }
+    .nav-btn:hover  { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .nav-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
-    /* ── PAGE TITLE ── */
-    .page-header { margin-bottom: 28px; }
-    .page-header .label {
-      font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
-      text-transform: uppercase; color: var(--text-sub); margin-bottom: 4px;
-    }
+    /* PAGE HEADER */
+    .page-header { margin-bottom: 20px; }
+    .page-header .label { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-sub); margin-bottom: 4px; }
     .page-header h2 { font-size: 2rem; font-weight: 700; color: var(--primary); }
 
-    /* ── FILTER BAR ── */
-    .filter-bar {
-      display: flex; gap: 8px; margin-bottom: 24px;
-      flex-wrap: wrap; align-items: center;
-    }
-    .filter-label { font-size: 12px; font-weight: 600; color: var(--text-sub); margin-right: 4px; }
-    .filter-btn {
-      padding: 6px 16px; border: 1px solid var(--border);
-      border-radius: 999px; font-size: 12px; font-weight: 600;
-      cursor: pointer; background: var(--surface); color: var(--text-sub);
-      transition: all 0.18s; font-family: inherit;
-    }
+    /* STATS BAR */
+    .stats-bar { display: flex; gap: 24px; margin-bottom: 20px; padding: 14px 20px; background: var(--surface); border-radius: var(--radius-md); border: 1px solid var(--border); }
+    .stat-item { display: flex; flex-direction: column; gap: 2px; }
+    .stat-num { font-size: 1.4rem; font-weight: 700; color: var(--primary); }
+    .stat-lbl { font-size: 11px; font-weight: 600; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.05em; }
+
+    /* FILTER */
+    .filter-bar { display: flex; gap: 8px; margin-bottom: 20px; align-items: center; }
+    .filter-label { font-size: 12px; font-weight: 600; color: var(--text-sub); }
+    .filter-btn { padding: 6px 16px; border: 1px solid var(--border); border-radius: 999px; font-size: 12px; font-weight: 600; cursor: pointer; background: var(--surface); color: var(--text-sub); transition: all 0.18s; font-family: inherit; }
     .filter-btn:hover  { border-color: var(--primary); color: var(--primary); }
     .filter-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
-    /* ── CARD ── */
-    .card {
-      background: var(--surface);
-      border-radius: var(--radius-lg);
-      padding: 24px;
-      margin-bottom: 20px;
-      box-shadow: var(--shadow-sm);
-      border: 1px solid rgba(226,228,224,0.6);
-    }
+    /* CARD */
+    .card { background: var(--surface); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 16px; box-shadow: var(--shadow-sm); border: 1px solid rgba(226,228,224,0.6); }
 
-    /* ── SECTION TITLE ── */
-    .section-title {
-      font-size: 0.8rem; font-weight: 700; letter-spacing: 1.5px;
-      text-transform: uppercase; color: var(--text-sub);
-      margin-bottom: 20px;
-      display: flex; align-items: center; gap: 8px;
-    }
+    /* MONTH HEADER */
+    .month-header { font-size: 1rem; font-weight: 600; color: var(--primary); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--primary-lt); display: flex; align-items: center; gap: 8px; }
 
-    /* ── MONTH HEADER ── */
-    .month-header {
-      font-size: 1rem; font-weight: 600; color: var(--primary);
-      margin: 20px 0 12px 0;
-      padding-bottom: 10px;
-      border-bottom: 2px solid var(--primary-lt);
-      display: flex; align-items: center; gap: 8px;
-    }
-    .month-header:first-of-type { margin-top: 0; }
-
-    /* ── TABLE ── */
+    /* TABLE */
     .journal-table-container { width: 100%; overflow-x: auto; }
     .journal-table { width: 100%; border-collapse: collapse; text-align: left; }
-    .journal-table th, .journal-table td { padding: 14px 16px; border-bottom: 1px solid var(--border); }
-    .journal-table th {
-      font-size: 0.75rem; color: var(--text-sub);
-      font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px;
-      background: transparent;
-    }
-    .journal-table td.date-col {
-      width: 110px; font-weight: 600; color: var(--primary);
-      vertical-align: top; white-space: nowrap; font-size: 13px;
-    }
-    .journal-table td.moment-col {
-      font-family: 'Sarabun', sans-serif; color: var(--text);
-      line-height: 1.75; font-size: 14px;
-    }
+    .journal-table th, .journal-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); }
+    .journal-table th { font-size: 0.75rem; color: var(--text-sub); font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; }
+    .journal-table td.date-col { width: 100px; font-weight: 600; color: var(--primary); vertical-align: top; white-space: nowrap; font-size: 13px; }
+    .journal-table td.moment-col { font-family: 'Sarabun', sans-serif; color: var(--text); line-height: 1.75; font-size: 14px; }
     .journal-table tr:last-child td { border-bottom: none; }
     .journal-table tr:hover td { background: var(--bg); }
 
-    /* ── EMPTY STATE ── */
-    .empty-state {
-      text-align: center; padding: 60px 20px;
-      color: var(--text-sub); font-family: 'Sarabun', sans-serif;
-    }
-    .empty-state p { font-size: 15px; margin-top: 12px; }
-    .empty-icon { opacity: 0.3; }
+    /* EMPTY / ERROR */
+    .empty-state { text-align: center; padding: 48px 20px; color: var(--text-sub); font-family: 'Sarabun', sans-serif; }
+    .empty-state svg { opacity: 0.25; display: block; margin: 0 auto 12px; }
+    .empty-state p { font-size: 15px; }
+    .empty-state small { display: block; margin-top: 6px; font-size: 12px; }
+    .error-box { background: #fff5f5; border: 1px solid #fecaca; border-radius: var(--radius-md); padding: 16px 20px; color: var(--red); font-size: 13px; font-family: monospace; margin-bottom: 16px; }
 
-    /* ── STATS BAR ── */
-    .stats-bar {
-      display: flex; gap: 24px; margin-bottom: 20px;
-      padding: 14px 20px;
-      background: var(--surface);
-      border-radius: var(--radius-md);
-      border: 1px solid var(--border);
-    }
-    .stat-item { display: flex; flex-direction: column; gap: 2px; }
-    .stat-num  { font-size: 1.4rem; font-weight: 700; color: var(--primary); }
-    .stat-lbl  { font-size: 11px; font-weight: 600; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.05em; }
-
-    /* ── LOADING ── */
-    .loading-overlay {
-      display: none; position: fixed; inset: 0;
-      background: rgba(247,245,240,0.8); backdrop-filter: blur(2px);
-      z-index: 50; align-items: center; justify-content: center;
-    }
+    /* LOADING */
+    .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(247,245,240,0.8); backdrop-filter: blur(2px); z-index: 50; align-items: center; justify-content: center; }
     .loading-overlay.active { display: flex; }
-    .loading-box {
-      background: var(--surface); border-radius: var(--radius-lg);
-      padding: 32px 48px; box-shadow: var(--shadow-md);
-      display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center;
-    }
-    .spinner {
-      width: 34px; height: 34px;
-      border: 3px solid rgba(45,74,62,0.12);
-      border-top-color: var(--primary);
-      border-radius: 50%; animation: spin 0.75s linear infinite;
-    }
+    .loading-box { background: var(--surface); border-radius: var(--radius-lg); padding: 32px 48px; box-shadow: var(--shadow-md); display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; }
+    .spinner { width: 34px; height: 34px; border: 3px solid rgba(45,74,62,0.12); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.75s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .loading-title { font-size: 14px; font-weight: 700; color: var(--primary); }
 
-    /* ── DEBUG ── */
-    #dbg {
-      display: none; position: fixed; bottom: 44px; left: 10px;
-      background: #1A3A2A; color: #7EC8A4;
-      padding: 10px 14px; font-size: 11px; border-radius: var(--radius-sm);
-      z-index: 997; max-width: 340px; font-family: monospace;
-      line-height: 1.6; max-height: 220px; overflow-y: auto;
-    }
-    #dbg-toggle {
-      position: fixed; bottom: 10px; left: 10px;
-      background: rgba(45,74,62,0.7); color: #7EC8A4;
-      border: none; padding: 4px 9px; border-radius: 5px;
-      font-size: 10px; font-weight: 700; cursor: pointer;
-      z-index: 998; font-family: monospace; opacity: 0.35; transition: opacity 0.2s;
-    }
+    /* DEBUG */
+    #dbg { display: none; position: fixed; bottom: 44px; left: 10px; background: #1A3A2A; color: #7EC8A4; padding: 10px 14px; font-size: 11px; border-radius: var(--radius-sm); z-index: 997; max-width: 380px; font-family: monospace; line-height: 1.6; max-height: 260px; overflow-y: auto; }
+    #dbg-toggle { position: fixed; bottom: 10px; left: 10px; background: rgba(45,74,62,0.7); color: #7EC8A4; border: none; padding: 4px 9px; border-radius: 5px; font-size: 10px; font-weight: 700; cursor: pointer; z-index: 998; font-family: monospace; opacity: 0.35; transition: opacity 0.2s; }
     #dbg-toggle:hover { opacity: 1; }
 
-    @media (max-width: 640px) {
-      .stats-bar { gap: 16px; }
-      .filter-bar { gap: 6px; }
-      .journal-table td.date-col { width: 80px; }
+    @media (max-width: 600px) {
+      .stats-bar { gap: 14px; }
+      .header-nav .nav-btn:not(.active) { padding: 6px 10px; font-size: 12px; }
     }
   </style>
 </head>
 <body>
 
-<!-- ── AUTH GATE ── -->
 <div id="auth-gate">
   <div class="auth-msg">
     <p>กรุณาเข้าสู่ระบบก่อน</p>
@@ -219,11 +116,8 @@
   </div>
 </div>
 
-<!-- ── APP ── -->
 <div id="app">
   <div class="container">
-
-    <!-- Header -->
     <header>
       <div class="logo">DEV<span>OS</span></div>
       <div class="header-nav">
@@ -235,29 +129,17 @@
     </header>
 
     <main>
-      <!-- Page title -->
       <div class="page-header">
         <div class="label">Memory Archive</div>
         <h2>Memorable Moments</h2>
       </div>
 
-      <!-- Stats bar -->
       <div class="stats-bar">
-        <div class="stat-item">
-          <span class="stat-num" id="stat-total">—</span>
-          <span class="stat-lbl">บันทึกทั้งหมด</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-num" id="stat-months">—</span>
-          <span class="stat-lbl">เดือน</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-num" id="stat-streak">—</span>
-          <span class="stat-lbl">วันล่าสุด</span>
-        </div>
+        <div class="stat-item"><span class="stat-num" id="stat-total">—</span><span class="stat-lbl">บันทึกทั้งหมด</span></div>
+        <div class="stat-item"><span class="stat-num" id="stat-months">—</span><span class="stat-lbl">เดือน</span></div>
+        <div class="stat-item"><span class="stat-num" id="stat-latest">—</span><span class="stat-lbl">วันล่าสุด</span></div>
       </div>
 
-      <!-- Filter -->
       <div class="filter-bar">
         <span class="filter-label">แสดง</span>
         <button class="filter-btn active" data-months="all">ทั้งหมด</button>
@@ -265,15 +147,12 @@
         <button class="filter-btn" data-months="1">เดือนนี้</button>
       </div>
 
-      <!-- Journal content -->
-      <div id="journal-content">
-        <!-- rendered by JS -->
-      </div>
+      <div id="error-area"></div>
+      <div id="journal-content"></div>
     </main>
   </div>
 </div>
 
-<!-- Loading -->
 <div class="loading-overlay" id="loading">
   <div class="loading-box">
     <div class="spinner"></div>
@@ -284,188 +163,184 @@
 <div id="dbg"></div>
 <button id="dbg-toggle">LOG</button>
 
-<!-- ── SCRIPT ── -->
 <script>
-  const SUPABASE_URL  = 'https://lyncszmpwojopbvkmqmc.supabase.co';
-  const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5bmNzem1wd29qb3BidmttcW1jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyMTgwODIsImV4cCI6MjA5Nzc5NDA4Mn0.fzOPawbNz3kQTK5L4uVlDnWUxwgZ-V4suBFYD-tpcP4';
-  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+const SUPABASE_URL  = 'https://lyncszmpwojopbvkmqmc.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5bmNzem1wd29qb3BidmttcW1jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyMTgwODIsImV4cCI6MjA5Nzc5NDA4Mn0.fzOPawbNz3kQTK5L4uVlDnWUxwgZ-V4suBFYD-tpcP4';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-  let currentUser  = null;
-  let currentToken = null;
-  let allRows      = [];
-  let filterMonths = 'all';
+let allRows      = [];
+let filterMonths = 'all';
+let currentUser  = null;
+let token        = null;
 
-  // ── DEBUG ──
-  function dbg(msg) {
-    const el = document.getElementById('dbg');
-    if (el) { const d = document.createElement('div'); d.textContent = `${new Date().toLocaleTimeString()} ${msg}`; el.appendChild(d); el.scrollTop = el.scrollHeight; }
-    console.log('[DBG]', msg);
+// DEBUG
+function dbg(msg) {
+  const el = document.getElementById('dbg');
+  const line = document.createElement('div');
+  line.textContent = `${new Date().toLocaleTimeString()} ${msg}`;
+  el.appendChild(line);
+  el.scrollTop = el.scrollHeight;
+  console.log('[J]', msg);
+}
+document.getElementById('dbg-toggle').addEventListener('click', () => {
+  const p = document.getElementById('dbg');
+  p.style.display = p.style.display === 'block' ? 'none' : 'block';
+});
+
+function setLoading(on) { document.getElementById('loading').classList.toggle('active', on); }
+
+function showError(msg) {
+  document.getElementById('error-area').innerHTML =
+    `<div class="error-box">❌ ${msg}</div>`;
+}
+
+// DATE HELPERS
+function thaiDate(s) {
+  return new Date(s + 'T00:00:00').toLocaleDateString('th-TH', { day:'numeric', month:'short', year:'2-digit' });
+}
+function thaiMonthYear(s) {
+  return new Date(s + 'T00:00:00').toLocaleDateString('th-TH', { month:'long', year:'numeric' });
+}
+function monthKey(s) {
+  const d = new Date(s + 'T00:00:00');
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+}
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// FETCH — use Supabase client (simpler, handles token automatically)
+async function fetchMoments() {
+  dbg('query daily_logs for memorable_moments...');
+
+  const { data, error, status } = await sb
+    .from('daily_logs')
+    .select('log_date, memorable_moments')
+    .eq('user_id', currentUser.id)
+    .not('memorable_moments', 'is', null)
+    .order('log_date', { ascending: false });
+
+  dbg(`status=${status} rows=${data?.length ?? 'err'} err=${error?.message ?? 'none'}`);
+
+  if (error) throw new Error(`${error.message} (code: ${error.code})`);
+
+  // filter client-side for truly empty strings
+  return (data || []).filter(r => r.memorable_moments && r.memorable_moments.trim() !== '');
+}
+
+// RENDER
+function render(rows) {
+  const filtered = filterRows(rows);
+  const content  = document.getElementById('journal-content');
+
+  // stats bar
+  const allMonths = new Set(rows.map(r => monthKey(r.log_date)));
+  document.getElementById('stat-total').textContent   = rows.length;
+  document.getElementById('stat-months').textContent  = allMonths.size;
+  document.getElementById('stat-latest').textContent  = rows.length ? thaiDate(rows[0].log_date) : '—';
+
+  if (!filtered.length) {
+    content.innerHTML = `
+      <div class="card">
+        <div class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+          </svg>
+          <p>${rows.length > 0 ? 'ไม่มีข้อมูลในช่วงเวลาที่เลือก' : 'ยังไม่มี Memorable Moments'}</p>
+          <small>${rows.length === 0 ? 'บันทึกได้ที่ช่อง "Memorable Moments" ในหน้า Daily Log' : ''}</small>
+        </div>
+      </div>`;
+    return;
   }
-  document.getElementById('dbg-toggle').addEventListener('click', () => {
-    const p = document.getElementById('dbg');
-    p.style.display = p.style.display === 'block' ? 'none' : 'block';
+
+  // Group by month
+  const grouped = {};
+  filtered.forEach(r => {
+    const k = monthKey(r.log_date);
+    if (!grouped[k]) grouped[k] = [];
+    grouped[k].push(r);
   });
 
-  // ── UTILS ──
-  function setLoading(on) { document.getElementById('loading').classList.toggle('active', on); }
+  content.innerHTML = Object.entries(grouped).map(([, monthRows]) => `
+    <div class="card">
+      <div class="month-header">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        ${thaiMonthYear(monthRows[0].log_date)}
+      </div>
+      <div class="journal-table-container">
+        <table class="journal-table">
+          <thead><tr><th>วันที่</th><th>บันทึก</th></tr></thead>
+          <tbody>
+            ${monthRows.map(r => `
+              <tr>
+                <td class="date-col">${thaiDate(r.log_date)}</td>
+                <td class="moment-col">${escHtml(r.memorable_moments)}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`).join('');
+}
 
-  function thaiDate(dateStr) {
-    return new Date(dateStr + 'T00:00:00').toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' });
-  }
+// FILTER
+function filterRows(rows) {
+  if (filterMonths === 'all') return rows;
+  const cutoff = new Date();
+  cutoff.setMonth(cutoff.getMonth() - parseInt(filterMonths));
+  const cut = cutoff.toISOString().slice(0, 10);
+  return rows.filter(r => r.log_date >= cut);
+}
 
-  function thaiMonthYear(dateStr) {
-    return new Date(dateStr + 'T00:00:00').toLocaleDateString('th-TH', { month: 'long', year: 'numeric' });
-  }
-
-  function monthKey(dateStr) {
-    const d = new Date(dateStr + 'T00:00:00');
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-  }
-
-  // ── FETCH DATA ──
-  async function fetchMoments(user) {
-    dbg('fetching moments...');
-    const url = `${SUPABASE_URL}/rest/v1/daily_logs?select=log_date,memorable_moments&user_id=eq.${user.id}&memorable_moments=not.is.null&memorable_moments=neq.&order=log_date.desc`;
-    const res = await fetch(url, {
-      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${currentToken}`, 'Accept': 'application/json' }
-    });
-    if (!res.ok) { dbg('fetch error ' + res.status); return []; }
-    const data = await res.json();
-    dbg(`got ${data.length} rows`);
-    return data;
-  }
-
-  // ── FILTER ──
-  function filterRows(rows) {
-    if (filterMonths === 'all') return rows;
-    const cutoff = new Date();
-    cutoff.setMonth(cutoff.getMonth() - parseInt(filterMonths));
-    const cutStr = `${cutoff.getFullYear()}-${String(cutoff.getMonth()+1).padStart(2,'0')}-${String(cutoff.getDate()).padStart(2,'0')}`;
-    return rows.filter(r => r.log_date >= cutStr);
-  }
-
-  // ── RENDER ──
-  function render(rows) {
-    const filtered = filterRows(rows);
-    const content  = document.getElementById('journal-content');
-
-    // stats bar
-    const months = new Set(filtered.map(r => monthKey(r.log_date)));
-    document.getElementById('stat-total').textContent  = rows.length;
-    document.getElementById('stat-months').textContent = new Set(rows.map(r => monthKey(r.log_date))).size;
-    document.getElementById('stat-streak').textContent = rows.length ? thaiDate(rows[0].log_date) : '—';
-
-    if (!filtered.length) {
-      content.innerHTML = `
-        <div class="card">
-          <div class="empty-state">
-            <svg class="empty-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-            </svg>
-            <p>ยังไม่มีบันทึก Memorable Moments ในช่วงเวลานี้</p>
-            <p style="font-size:12px;margin-top:4px;color:var(--text-sub)">เริ่มบันทึกได้ที่หน้า Daily Log</p>
-          </div>
-        </div>`;
-      return;
-    }
-
-    // Group by month
-    const grouped = {};
-    filtered.forEach(r => {
-      const key = monthKey(r.log_date);
-      if (!grouped[key]) grouped[key] = [];
-      grouped[key].push(r);
-    });
-
-    let html = '';
-    for (const [key, monthRows] of Object.entries(grouped)) {
-      const monthLabel = thaiMonthYear(monthRows[0].log_date);
-      html += `
-        <div class="card">
-          <div class="month-header">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-              <line x1="16" y1="2" x2="16" y2="6"/>
-              <line x1="8" y1="2" x2="8" y2="6"/>
-              <line x1="3" y1="10" x2="21" y2="10"/>
-            </svg>
-            ${monthLabel}
-          </div>
-          <div class="journal-table-container">
-            <table class="journal-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Moment</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${monthRows.map(r => `
-                  <tr>
-                    <td class="date-col">${thaiDate(r.log_date)}</td>
-                    <td class="moment-col">${escapeHtml(r.memorable_moments)}</td>
-                  </tr>`).join('')}
-              </tbody>
-            </table>
-          </div>
-        </div>`;
-    }
-    content.innerHTML = html;
-  }
-
-  function escapeHtml(str) {
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
-  }
-
-  // ── FILTER BUTTONS ──
-  document.querySelectorAll('.filter-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      filterMonths = btn.dataset.months;
-      render(allRows);
-    });
+// FILTER BUTTONS
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filterMonths = btn.dataset.months;
+    render(allRows);
   });
+});
 
-  // ── LOGOUT ──
-  document.getElementById('btn-logout').addEventListener('click', async () => {
-    await sb.auth.signOut();
-    window.location.href = 'index.html';
-  });
+// LOGOUT
+document.getElementById('btn-logout').addEventListener('click', async () => {
+  await sb.auth.signOut();
+  window.location.href = 'index.html';
+});
 
-  // ── AUTH ──
-  let initialized = false;
-  sb.auth.onAuthStateChange(async (event, session) => {
-    dbg(`auth: ${event}`);
-    if (session?.user) {
-      currentUser  = session.user;
-      currentToken = session.access_token;
-      document.getElementById('auth-gate').style.display = 'none';
-      document.getElementById('app').style.display = 'block';
-      if (!initialized) {
-        initialized = true;
-        setLoading(true);
-        try {
-          allRows = await fetchMoments(session.user);
-          render(allRows);
-        } catch(e) {
-          dbg('err: ' + e.message);
-          document.getElementById('journal-content').innerHTML =
-            `<div class="card"><div class="empty-state"><p>โหลดข้อมูลไม่สำเร็จ — <a href="" style="color:var(--primary)">โหลดใหม่</a></p></div></div>`;
-        } finally {
-          setLoading(false);
-        }
+// AUTH
+let initialized = false;
+sb.auth.onAuthStateChange(async (event, session) => {
+  dbg(`auth event: ${event}`);
+  if (session?.user) {
+    currentUser = session.user;
+    token       = session.access_token;
+    document.getElementById('auth-gate').style.display = 'none';
+    document.getElementById('app').style.display       = 'block';
+    if (!initialized) {
+      initialized = true;
+      setLoading(true);
+      try {
+        allRows = await fetchMoments();
+        dbg(`rendered ${allRows.length} rows`);
+        render(allRows);
+        document.getElementById('error-area').innerHTML = '';
+      } catch(e) {
+        dbg('FETCH ERROR: ' + e.message);
+        showError(e.message);
+        initialized = false;
+      } finally {
+        setLoading(false);
       }
-    } else {
-      currentUser = null; initialized = false;
-      document.getElementById('auth-gate').style.display = 'flex';
-      document.getElementById('app').style.display = 'none';
     }
-  });
+  } else {
+    currentUser = null; initialized = false;
+    document.getElementById('auth-gate').style.display = 'flex';
+    document.getElementById('app').style.display       = 'none';
+  }
+});
 </script>
 </body>
 </html>
