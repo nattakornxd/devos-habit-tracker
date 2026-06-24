@@ -130,7 +130,8 @@
     .date-btn:hover { background: var(--primary-lt); color: var(--primary); }
     .date-btn:disabled { opacity: 0.3; cursor: not-allowed; }
     .header-actions { display: flex; align-items: center; gap: 8px; }
-    .header-actions button, .header-actions a {
+    .header-actions button, .header-actions a,
+    .header-actions .nav-link {
       background: var(--surface);
       border: 1px solid var(--border);
       padding: 8px 16px;
@@ -143,7 +144,8 @@
       text-decoration: none;
       font-family: inherit;
     }
-    .header-actions button:hover, .header-actions a:hover {
+    .header-actions button:hover, .header-actions a:hover,
+    .header-actions .nav-link:hover {
       background: var(--primary);
       color: #fff;
       border-color: var(--primary);
@@ -466,7 +468,8 @@
       </div>
       <div class="header-actions">
         <span class="save-indicator" id="save-indicator"></span>
-        <a href="stats.html" class="stats-link">Statistics</a>
+        <a href="journal.html" class="nav-link">Moments</a>
+        <a href="stats.html" class="nav-link stats-link">Statistics</a>
         <button id="btn-logout">ออกจากระบบ</button>
       </div>
     </header>
