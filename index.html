@@ -411,6 +411,114 @@
     }
     #dbg-toggle:hover { opacity: 1; }
 
+    /* ── CALENDAR PICKER ── */
+    #header-date {
+      cursor: pointer;
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      transition: background 0.15s;
+      user-select: none;
+    }
+    #header-date:hover { background: var(--primary-lt); color: var(--primary); }
+
+    .date-nav { position: relative; }
+
+    .cal-popup {
+      display: none;
+      position: absolute;
+      top: calc(100% + 10px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+      z-index: 200;
+      width: 280px;
+      padding: 16px;
+      animation: fadeInDown 0.18s ease;
+    }
+    .cal-popup.open { display: block; }
+    @keyframes fadeInDown { from { opacity:0; transform: translateX(-50%) translateY(-6px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
+
+    .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 4px; }
+    .cal-month-label { font-size: 14px; font-weight: 700; color: var(--primary); flex: 1; text-align: center; }
+    .cal-year-select {
+      font-size: 13px; font-weight: 600; color: var(--primary);
+      background: var(--primary-lt); border: none; border-radius: var(--radius-sm);
+      padding: 3px 6px; cursor: pointer; font-family: inherit;
+    }
+    .cal-nav-btn {
+      background: none; border: 1px solid var(--border); border-radius: var(--radius-sm);
+      width: 28px; height: 28px; cursor: pointer; color: var(--text-sub);
+      display: flex; align-items: center; justify-content: center; font-size: 15px;
+      flex-shrink: 0;
+    }
+    .cal-nav-btn:hover { background: var(--primary-lt); color: var(--primary); border-color: var(--primary); }
+
+    .cal-weekdays { display: grid; grid-template-columns: repeat(7,1fr); margin-bottom: 4px; }
+    .cal-weekday { text-align: center; font-size: 10px; font-weight: 700; color: var(--text-sub); padding: 4px 0; }
+
+    .cal-days { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; }
+    .cal-day {
+      text-align: center; padding: 7px 2px; font-size: 12px; cursor: pointer;
+      border-radius: 6px; transition: all 0.12s; color: var(--text); font-weight: 500;
+    }
+    .cal-day:hover:not(.cal-disabled):not(.cal-other) { background: var(--primary-lt); color: var(--primary); }
+    .cal-day.cal-selected { background: var(--primary); color: #fff; font-weight: 700; }
+    .cal-day.cal-today:not(.cal-selected) { color: var(--primary); font-weight: 700; border: 1px solid var(--primary); }
+    .cal-day.cal-disabled { opacity: 0.25; cursor: default; pointer-events: none; }
+    .cal-day.cal-other { opacity: 0.3; }
+
+    /* ── CLEAR BUTTON ── */
+    .btn-clear {
+      width: 100%;
+      padding: 12px 24px;
+      background: transparent;
+      color: var(--red);
+      border: 1px solid rgba(192,57,43,0.4);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn-clear:hover { background: var(--red); color: #fff; border-color: var(--red); }
+
+    /* ── CONFIRM DIALOG ── */
+    .confirm-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.35);
+      backdrop-filter: blur(2px);
+      z-index: 400;
+      align-items: center; justify-content: center;
+    }
+    .confirm-overlay.open { display: flex; }
+    .confirm-box {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      padding: 28px 32px;
+      max-width: 360px; width: 90%;
+      box-shadow: var(--shadow-md);
+      text-align: center;
+      animation: fadeInDown 0.18s ease;
+    }
+    .confirm-box h3 { font-size: 16px; font-weight: 700; color: var(--primary); margin-bottom: 8px; }
+    .confirm-box p { font-size: 13px; color: var(--text-sub); margin-bottom: 20px; font-family: 'Sarabun', sans-serif; line-height: 1.6; }
+    .confirm-actions { display: flex; gap: 10px; }
+    .confirm-actions button { flex: 1; padding: 11px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+    .btn-confirm-cancel { background: var(--bg); border: 1px solid var(--border); color: var(--text); }
+    .btn-confirm-cancel:hover { border-color: var(--primary); color: var(--primary); }
+    .btn-confirm-ok { background: var(--red); border: none; color: #fff; }
+    .btn-confirm-ok:hover { background: #a93226; }
+
     /* RESPONSIVE */
     @media (max-width: 640px) {
       .habits-grid { grid-template-columns: repeat(2, 1fr); }
@@ -463,8 +571,27 @@
       <div class="logo">DEV<span>OS</span></div>
       <div class="date-nav">
         <button class="date-btn" id="btn-prev">&#8249;</button>
-        <span id="header-date">—</span>
+        <span id="header-date" title="คลิกเพื่อเลือกวัน">—</span>
         <button class="date-btn" id="btn-next">&#8250;</button>
+
+        <!-- Calendar Popup -->
+        <div class="cal-popup" id="cal-popup">
+          <div class="cal-header">
+            <button class="cal-nav-btn" id="cal-prev-month">&#8249;</button>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1">
+              <span class="cal-month-label" id="cal-month-label">—</span>
+              <select class="cal-year-select" id="cal-year-select"></select>
+            </div>
+            <button class="cal-nav-btn" id="cal-next-month">&#8250;</button>
+          </div>
+          <div class="cal-weekdays">
+            <div class="cal-weekday">อา</div><div class="cal-weekday">จ</div>
+            <div class="cal-weekday">อ</div><div class="cal-weekday">พ</div>
+            <div class="cal-weekday">พฤ</div><div class="cal-weekday">ศ</div>
+            <div class="cal-weekday">ส</div>
+          </div>
+          <div class="cal-days" id="cal-days"></div>
+        </div>
       </div>
       <div class="header-actions">
         <span class="save-indicator" id="save-indicator"></span>
@@ -575,8 +702,24 @@
         </div>
 
         <button class="btn-save" id="btn-save">บันทึกวันนี้</button>
+        <button class="btn-clear" id="btn-clear">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          ล้างข้อมูลวันนี้
+        </button>
       </section>
     </main>
+  </div>
+</div>
+
+<!-- Confirm Dialog -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <h3>ล้างข้อมูลวันนี้?</h3>
+    <p id="confirm-date-text">ข้อมูลทั้งหมดของวันนี้จะถูกลบออกจากฐานข้อมูล<br>ไม่สามารถกู้คืนได้</p>
+    <div class="confirm-actions">
+      <button class="btn-confirm-cancel" id="confirm-cancel">ยกเลิก</button>
+      <button class="btn-confirm-ok" id="confirm-ok">ล้างข้อมูล</button>
+    </div>
   </div>
 </div>
 
@@ -897,15 +1040,14 @@
 
   // ── DATE NAV ──
   async function changeDate(delta) {
-    const { data: { session } } = await sb.auth.getSession();
-    if (!session?.user) return;
+    if (!currentUser) return;
     const d = new Date(currentDate + 'T00:00:00');
     d.setDate(d.getDate() + delta);
     if (d > new Date()) return;
     currentDate = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     updateDateUI();
     setLoading(true, 'กำลังโหลด...');
-    try { await loadDay(currentDate, session.user.id); } finally { setLoading(false); }
+    try { await loadDay(currentDate, currentUser.id); } finally { setLoading(false); }
   }
   document.getElementById('btn-prev').addEventListener('click', () => changeDate(-1));
   document.getElementById('btn-next').addEventListener('click', () => changeDate(+1));
@@ -914,6 +1056,159 @@
     document.getElementById('btn-next').disabled = isToday(currentDate);
     document.getElementById('btn-next').style.opacity = isToday(currentDate) ? '0.3' : '1';
   }
+
+  // ── CALENDAR PICKER ──
+  let calYear, calMonth;
+
+  function strToDate(s) { return new Date(s + 'T00:00:00'); }
+  function dateToStr(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+  const TH_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+
+  function openCalendar() {
+    const d = strToDate(currentDate);
+    calYear  = d.getFullYear();
+    calMonth = d.getMonth();
+    buildYearSelect();
+    renderCalendar();
+    document.getElementById('cal-popup').classList.add('open');
+  }
+  function closeCalendar() { document.getElementById('cal-popup').classList.remove('open'); }
+
+  function buildYearSelect() {
+    const sel = document.getElementById('cal-year-select');
+    const todayYear = new Date().getFullYear();
+    sel.innerHTML = '';
+    for (let y = todayYear; y >= todayYear - 5; y--) {
+      const opt = document.createElement('option');
+      opt.value = y;
+      opt.textContent = y + 543; // พ.ศ.
+      if (y === calYear) opt.selected = true;
+      sel.appendChild(opt);
+    }
+  }
+
+  function renderCalendar() {
+    document.getElementById('cal-month-label').textContent = TH_MONTHS[calMonth];
+    document.getElementById('cal-year-select').value = calYear;
+    const today    = dateToStr(new Date());
+    const selected = currentDate;
+    const firstDay = new Date(calYear, calMonth, 1).getDay(); // 0=Sun
+    const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+    const daysInPrev  = new Date(calYear, calMonth, 0).getDate();
+
+    const container = document.getElementById('cal-days');
+    container.innerHTML = '';
+
+    // prev month filler
+    for (let i = firstDay - 1; i >= 0; i--) {
+      const cell = document.createElement('div');
+      cell.className = 'cal-day cal-other';
+      cell.textContent = daysInPrev - i;
+      container.appendChild(cell);
+    }
+    // current month days
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const cell = document.createElement('div');
+      cell.textContent = d;
+      const classes = ['cal-day'];
+      if (dateStr === selected) classes.push('cal-selected');
+      else if (dateStr === today) classes.push('cal-today');
+      if (dateStr > today) classes.push('cal-disabled');
+      cell.className = classes.join(' ');
+      if (dateStr <= today) {
+        cell.addEventListener('click', async () => {
+          if (dateStr === currentDate) { closeCalendar(); return; }
+          closeCalendar();
+          currentDate = dateStr;
+          updateDateUI();
+          setLoading(true, 'กำลังโหลด...');
+          try { await loadDay(currentDate, currentUser.id); } finally { setLoading(false); }
+        });
+      }
+      container.appendChild(cell);
+    }
+    // next month filler
+    const total = firstDay + daysInMonth;
+    const remaining = 7 - (total % 7 === 0 ? 7 : total % 7);
+    for (let d = 1; d <= remaining; d++) {
+      const cell = document.createElement('div');
+      cell.className = 'cal-day cal-other';
+      cell.textContent = d;
+      container.appendChild(cell);
+    }
+  }
+
+  document.getElementById('header-date').addEventListener('click', (e) => {
+    e.stopPropagation();
+    const popup = document.getElementById('cal-popup');
+    if (popup.classList.contains('open')) { closeCalendar(); } else { openCalendar(); }
+  });
+  document.getElementById('cal-prev-month').addEventListener('click', (e) => {
+    e.stopPropagation();
+    calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; }
+    document.getElementById('cal-year-select').value = calYear;
+    renderCalendar();
+  });
+  document.getElementById('cal-next-month').addEventListener('click', (e) => {
+    e.stopPropagation();
+    const today = new Date();
+    if (calYear === today.getFullYear() && calMonth === today.getMonth()) return;
+    calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; }
+    renderCalendar();
+  });
+  document.getElementById('cal-year-select').addEventListener('change', (e) => {
+    e.stopPropagation();
+    calYear = parseInt(e.target.value);
+    renderCalendar();
+  });
+  document.getElementById('cal-popup').addEventListener('click', (e) => e.stopPropagation());
+  document.addEventListener('click', closeCalendar);
+
+  // ── CLEAR DATA ──
+  document.getElementById('btn-clear').addEventListener('click', () => {
+    document.getElementById('confirm-date-text').innerHTML =
+      `ข้อมูลของ <strong>${formatDateTH(currentDate)}</strong><br>จะถูกลบออกจากฐานข้อมูล — ไม่สามารถกู้คืนได้`;
+    document.getElementById('confirm-overlay').classList.add('open');
+  });
+  document.getElementById('confirm-cancel').addEventListener('click', () => {
+    document.getElementById('confirm-overlay').classList.remove('open');
+  });
+  document.getElementById('confirm-ok').addEventListener('click', async () => {
+    document.getElementById('confirm-overlay').classList.remove('open');
+    if (!currentUser) return;
+    const btn = document.getElementById('btn-clear');
+    btn.disabled = true;
+    showToast('กำลังล้างข้อมูล...', 'saving');
+    try {
+      // Delete daily_logs row
+      const { error: delErr } = await sbQuery(
+        sb.from('daily_logs').delete().eq('user_id', currentUser.id).eq('log_date', currentDate),
+        'clear daily_logs'
+      );
+      if (delErr) throw delErr;
+      // Reset habit completions to false
+      if (userHabits.length > 0) {
+        const hcRows = userHabits.map(h => ({ user_id: currentUser.id, habit_id: h.id, log_date: currentDate, completed: false }));
+        const { error: hcErr } = await sbQuery(
+          sb.from('habit_completions').upsert(hcRows, { onConflict: 'user_id,habit_id,log_date' }),
+          'clear habit_completions'
+        );
+        if (hcErr) throw hcErr;
+      }
+      // Reset UI
+      completions = {};
+      setFeelings(0);
+      ['m-sleep','m-read','m-weight','m-meditate','j-thesis','j-moments'].forEach(id => { document.getElementById(id).value = ''; });
+      renderHabits();
+      setSaveIndicator('');
+      showToast('ล้างข้อมูลสำเร็จ', 'saved');
+    } catch(e) {
+      showToast('ล้างข้อมูลไม่สำเร็จ: ' + e.message, 'error');
+    } finally {
+      btn.disabled = false;
+    }
+  });
 
   // ── LOAD DAY ──
   async function loadDay(dateStr, userId) {
