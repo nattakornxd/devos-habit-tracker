@@ -137,7 +137,7 @@
     .date-btn:hover { background: rgba(255,255,255,0.25); }
     .header-date-text { font-size: 14px; font-weight: 600; min-width: 160px; text-align: center; }
     .header-right { display: flex; align-items: center; gap: 12px; }
-    .save-indicator { font-size: 12px; color: rgba(255,255,255,0.6); }
+    .save-indicator { font-size: 12px; color: rgba(255,255,255,0.5); }
     .save-indicator.saved { color: #7EC8A4; }
     .btn-logout {
       background: rgba(255,255,255,0.12);
@@ -179,7 +179,11 @@
       background: var(--green-light);
       border-radius: 9px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 17px;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--green-dark);
+      letter-spacing: 0.04em;
+      flex-shrink: 0;
     }
     .card-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-sub); }
 
@@ -214,6 +218,19 @@
     }
     .habit-name { font-size: 14px; font-weight: 500; }
     .habit-item.checked .habit-name { color: var(--green-dark); font-weight: 600; }
+
+    /* SKELETON */
+    .skeleton {
+      height: 52px;
+      border-radius: 10px;
+      background: linear-gradient(90deg, #e8e3db 25%, #f0ebe3 50%, #e8e3db 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s ease-in-out infinite;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
 
     /* FEELINGS STARS */
     .feelings-row { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
@@ -251,6 +268,8 @@
       color: var(--text);
       text-align: center;
       transition: border-color 0.2s;
+      -webkit-appearance: none;
+      -moz-appearance: textfield;
     }
     .metric-input:focus { outline: none; border-color: var(--green-mid); background: #fff; }
     .metric-unit { font-size: 12px; color: var(--text-sub); font-weight: 600; flex-shrink: 0; }
@@ -305,41 +324,122 @@
     .btn-save:hover { background: var(--green-mid); transform: translateY(-1px); }
     .btn-save:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
-    /* TOAST */
+    /* ── TOAST ── */
     .toast {
       position: fixed;
       bottom: 28px;
       right: 28px;
-      background: var(--green-dark);
-      color: #fff;
-      padding: 13px 22px;
-      border-radius: 10px;
-      font-size: 14px;
+      padding: 11px 20px;
+      border-radius: 9px;
+      font-size: 13px;
       font-weight: 600;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      font-family: inherit;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.18);
       opacity: 0;
-      transform: translateY(10px);
-      transition: all 0.3s;
+      transform: translateY(8px);
+      transition: opacity 0.25s, transform 0.25s;
       z-index: 100;
       pointer-events: none;
+      letter-spacing: 0.01em;
     }
     .toast.show { opacity: 1; transform: translateY(0); }
-    .toast.error { background: var(--red); }
+    .toast.saving {
+      background: #3A3A3A;
+      color: rgba(255,255,255,0.85);
+    }
+    .toast.saved {
+      background: var(--green-mid);
+      color: #fff;
+    }
+    .toast.error {
+      background: var(--red);
+      color: #fff;
+    }
+    .toast.info {
+      background: var(--green-dark);
+      color: #fff;
+    }
 
-    /* LOADING */
+    /* ── LOADING OVERLAY ── */
     .loading-overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(237,232,223,0.7);
+      background: rgba(237,232,223,0.75);
+      backdrop-filter: blur(2px);
       z-index: 50;
       align-items: center;
       justify-content: center;
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--green-dark);
     }
     .loading-overlay.active { display: flex; }
+    .loading-box {
+      background: #fff;
+      border-radius: 16px;
+      padding: 32px 48px;
+      box-shadow: 0 4px 28px rgba(0,0,0,0.12);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      text-align: center;
+    }
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid rgba(26,58,42,0.15);
+      border-top-color: var(--green-dark);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--green-dark);
+    }
+    .loading-sub {
+      font-size: 12px;
+      color: var(--text-sub);
+      margin-top: -8px;
+    }
+
+    /* ── DEBUG PANEL ── */
+    #dbg {
+      display: none; /* hidden in production — toggle with #dbg-toggle */
+      position: fixed;
+      bottom: 44px;
+      left: 10px;
+      background: #1A3A2A;
+      color: #7EC8A4;
+      padding: 10px 14px;
+      font-size: 11px;
+      border-radius: 8px;
+      z-index: 997;
+      max-width: 340px;
+      font-family: monospace;
+      line-height: 1.6;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    #dbg-toggle {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      background: rgba(26,58,42,0.75);
+      color: #7EC8A4;
+      border: none;
+      padding: 4px 9px;
+      border-radius: 5px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      z-index: 998;
+      font-family: monospace;
+      opacity: 0.4;
+      transition: opacity 0.2s;
+    }
+    #dbg-toggle:hover { opacity: 1; }
 
     /* RESPONSIVE */
     @media (max-width: 600px) {
@@ -347,6 +447,7 @@
       .metrics-grid { grid-template-columns: repeat(2, 1fr); }
       .app-header { padding: 14px 16px; }
       .main { padding: 20px 16px 80px; }
+      .toast { bottom: 16px; right: 16px; left: 16px; text-align: center; }
     }
   </style>
 </head>
@@ -387,13 +488,13 @@
   <header class="app-header">
     <div class="header-logo">Dev<span>OS</span></div>
     <div class="header-date-nav">
-      <button class="date-btn" id="btn-prev">‹</button>
+      <button class="date-btn" id="btn-prev">&#8249;</button>
       <div class="header-date-text" id="header-date">—</div>
-      <button class="date-btn" id="btn-next">›</button>
+      <button class="date-btn" id="btn-next">&#8250;</button>
     </div>
     <div class="header-right">
       <span class="save-indicator" id="save-indicator"></span>
-      <a href="stats.html" style="padding:7px 14px;background:rgba(255,255,255,0.12);color:#fff;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">📊 Statistics</a>
+      <a href="stats.html" style="padding:7px 14px;background:rgba(255,255,255,0.12);color:#fff;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">Statistics</a>
       <button class="btn-logout" id="btn-logout">ออกจากระบบ</button>
     </div>
   </header>
@@ -402,87 +503,95 @@
   <main class="main">
     <div class="greeting">
       <div class="label">Daily Interaction</div>
-      <h2 id="greeting-text">Good morning ☕</h2>
+      <h2 id="greeting-text">Good morning</h2>
     </div>
 
-    <!-- ① QUICK HABITS -->
+    <!-- QUICK HABITS -->
     <div class="card">
       <div class="card-header">
-        <div class="card-icon">✅</div>
+        <div class="card-icon">HAB</div>
         <div class="card-title">Quick Habits</div>
       </div>
       <div class="habits-grid" id="habits-grid">
-        <!-- populated by JS -->
+        <!-- skeleton shown while loading -->
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
       </div>
     </div>
 
-    <!-- ② CORE METRICS -->
+    <!-- CORE METRICS -->
     <div class="card">
       <div class="card-header">
-        <div class="card-icon">📊</div>
+        <div class="card-icon">MET</div>
         <div class="card-title">Core Metrics</div>
       </div>
 
       <!-- Feelings -->
       <div class="feelings-row">
         <span class="feelings-label">FEELINGS</span>
-        <button class="star-btn" data-val="1">★</button>
-        <button class="star-btn" data-val="2">★</button>
-        <button class="star-btn" data-val="3">★</button>
-        <button class="star-btn" data-val="4">★</button>
-        <button class="star-btn" data-val="5">★</button>
+        <button class="star-btn" data-val="1">&#9733;</button>
+        <button class="star-btn" data-val="2">&#9733;</button>
+        <button class="star-btn" data-val="3">&#9733;</button>
+        <button class="star-btn" data-val="4">&#9733;</button>
+        <button class="star-btn" data-val="5">&#9733;</button>
         <span class="feelings-desc" id="feelings-desc">—</span>
       </div>
 
-      <!-- Numbers -->
+      <!-- Numbers — inputmode for mobile numeric keyboard -->
       <div class="metrics-grid">
         <div class="metric-box">
           <div class="metric-label">Sleep</div>
           <div class="metric-input-row">
-            <input class="metric-input" type="number" id="m-sleep" placeholder="0" min="0" max="24" step="0.5" />
+            <input class="metric-input" type="number" inputmode="decimal"
+                   id="m-sleep" placeholder="0" min="0" max="24" step="0.5" />
             <span class="metric-unit">hrs</span>
           </div>
         </div>
         <div class="metric-box">
           <div class="metric-label">Read</div>
           <div class="metric-input-row">
-            <input class="metric-input" type="number" id="m-read" placeholder="0" min="0" />
+            <input class="metric-input" type="number" inputmode="numeric"
+                   id="m-read" placeholder="0" min="0" />
             <span class="metric-unit">pgs</span>
           </div>
         </div>
         <div class="metric-box">
           <div class="metric-label">Weight</div>
           <div class="metric-input-row">
-            <input class="metric-input" type="number" id="m-weight" placeholder="0" min="0" step="0.1" />
+            <input class="metric-input" type="number" inputmode="decimal"
+                   id="m-weight" placeholder="0" min="0" step="0.1" />
             <span class="metric-unit">kg</span>
           </div>
         </div>
         <div class="metric-box">
           <div class="metric-label">Meditate</div>
           <div class="metric-input-row">
-            <input class="metric-input" type="number" id="m-meditate" placeholder="0" min="0" />
+            <input class="metric-input" type="number" inputmode="numeric"
+                   id="m-meditate" placeholder="0" min="0" />
             <span class="metric-unit">min</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ③ JOURNAL -->
+    <!-- JOURNAL -->
     <div class="card">
       <div class="card-header">
-        <div class="card-icon">📝</div>
+        <div class="card-icon">JNL</div>
         <div class="card-title">Deep Journal</div>
       </div>
 
       <div class="journal-section">
-        <div class="journal-label">📚 Thesis Log</div>
+        <div class="journal-label">Thesis Log</div>
         <div class="journal-sub">ทำอะไรไปบ้าง / ได้อะไรบ้าง / ต่อไปจะทำอะไรต่อ?</div>
         <textarea class="journal-textarea" id="j-thesis" rows="5" placeholder="วันนี้ทำอะไร → ได้อะไร → แผนวันพรุ่งนี้..."></textarea>
         <div class="char-hint" id="thesis-hint">0 / 5 บรรทัด</div>
       </div>
 
       <div class="journal-section">
-        <div class="journal-label">✨ Memorable Moments</div>
+        <div class="journal-label">Memorable Moments</div>
         <div class="journal-sub">เรื่องเล็กๆ น้อยๆ ในวันนี้ที่อยากจำ (Gratitude)</div>
         <textarea class="journal-textarea" id="j-moments" rows="3" placeholder="กาแฟอร่อยมาก, อากาศดี, เทรดชนะไป 1 ไม้..."></textarea>
         <div class="char-hint" id="moments-hint">0 / 3 บรรทัด</div>
@@ -491,62 +600,100 @@
 
     <!-- SAVE -->
     <div class="save-row">
-      <button class="btn-save" id="btn-save">💾 บันทึกวันนี้</button>
+      <button class="btn-save" id="btn-save">บันทึกวันนี้</button>
     </div>
   </main>
 </div>
 
-<!-- Toast -->
+<!-- Toast notification -->
 <div class="toast" id="toast"></div>
-<!-- Loading -->
-<div class="loading-overlay" id="loading">กำลังโหลด...</div>
-<!-- DEBUG PANEL -->
-<div id="dbg" style="position:fixed;bottom:10px;left:10px;background:#1A3A2A;color:#7EC8A4;padding:10px 14px;font-size:11px;border-radius:8px;z-index:999;max-width:320px;font-family:monospace;line-height:1.6;max-height:200px;overflow-y:auto;"></div>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loading">
+  <div class="loading-box">
+    <div class="spinner"></div>
+    <div class="loading-title" id="loading-title">กำลังโหลด...</div>
+    <div class="loading-sub" id="loading-sub"></div>
+  </div>
+</div>
+
+<!-- Debug panel (hidden by default) -->
+<div id="dbg"></div>
+<button id="dbg-toggle" title="Toggle debug log">LOG</button>
 
 <!-- ══════════════ SCRIPT ══════════════ -->
 <script>
   // ─────────────── CONFIG ───────────────
-  // ⚠️ เปลี่ยนเป็น URL และ anon key ของ Supabase project ตัวเอง
   const SUPABASE_URL  = 'https://lyncszmpwojopbvkmqmc.supabase.co';
   const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5bmNzem1wd29qb3BidmttcW1jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyMTgwODIsImV4cCI6MjA5Nzc5NDA4Mn0.fzOPawbNz3kQTK5L4uVlDnWUxwgZ-V4suBFYD-tpcP4';
 
   const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-  // ─────────────── DATA ───────────────
+  // ─────────────── STATE ───────────────
   const DEFAULT_HABITS = [
-    { name: 'No Caffeine',  icon: '☕' },
-    { name: 'Exercise',     icon: '🏋️' },
-    { name: 'Trade',        icon: '📈' },
-    { name: 'Drink Water',  icon: '💧' },
-    { name: 'Skills',       icon: '🧠' },
-    { name: 'English',      icon: '🇬🇧' },
-    { name: 'Healthy',      icon: '🥗' },
+    { name: 'No Caffeine', icon: '' },
+    { name: 'Exercise',    icon: '' },
+    { name: 'Trade',       icon: '' },
+    { name: 'Drink Water', icon: '' },
+    { name: 'Skills',      icon: '' },
+    { name: 'English',     icon: '' },
+    { name: 'Healthy',     icon: '' },
   ];
 
-  const FEELINGS_DESC = ['', 'Bad 😞', 'Meh 😐', 'Okay 🙂', 'Good 😊', 'Best 🔥'];
+  const FEELINGS_DESC = ['', 'Bad', 'Fair', 'Okay', 'Good', 'Excellent'];
 
   let currentDate    = todayStr();
+  let currentUser    = null;   // set on login
   let userHabits     = [];
-  let completions    = {};   // habit_id → boolean
+  let completions    = {};     // habit_id → boolean
   let feelings       = 0;
   let isRegister     = false;
-  let appInitialized = false; // guard ไม่ให้ initApp รันซ้ำ
+  let appInitialized = false;
 
   // ─────────────── DEBUG ───────────────
   function dbg(msg) {
     const el = document.getElementById('dbg');
-    if (el) el.innerHTML += `<div>${new Date().toLocaleTimeString()}: ${msg}</div>`;
+    if (el) {
+      const line = document.createElement('div');
+      line.textContent = `${new Date().toLocaleTimeString()} ${msg}`;
+      el.appendChild(line);
+      el.scrollTop = el.scrollHeight;
+    }
     console.log('[DBG]', msg);
   }
 
-  // ─────────────── SUPABASE WITH TIMEOUT ───────────────
+  document.getElementById('dbg-toggle').addEventListener('click', () => {
+    const panel = document.getElementById('dbg');
+    const isVisible = panel.style.display === 'block';
+    panel.style.display = isVisible ? 'none' : 'block';
+  });
+
+  // ─────────────── TOAST ───────────────
+  const _toast = document.getElementById('toast');
+  let _toastTimer = null;
+
+  function showToast(msg, type = 'info') {
+    // type: 'info' | 'saving' | 'saved' | 'error'
+    clearTimeout(_toastTimer);
+    _toast.textContent = msg;
+    _toast.className = `toast show ${type}`;
+    if (type !== 'saving') {
+      const delay = type === 'error' ? 4000 : 2500;
+      _toastTimer = setTimeout(() => { _toast.className = 'toast'; }, delay);
+    }
+  }
+
+  function showSaving() { showToast('Saving...', 'saving'); }
+  function showSaved()  { showToast('Saved', 'saved'); }
+
+  // ─────────────── SUPABASE QUERY WITH TIMEOUT ───────────────
   function sbQuery(promise, label = 'query', ms = 20000) {
-    dbg(`⏳ ${label}...`);
+    dbg(`... ${label}`);
     return Promise.race([
-      promise.then(r => { dbg(`✅ ${label} done`); return r; }),
+      promise.then(r => { dbg(`ok  ${label}`); return r; }),
       new Promise((_, reject) => setTimeout(() => {
-        dbg(`❌ ${label} TIMEOUT ${ms}ms`);
-        reject(new Error(`${label} timeout`));
+        dbg(`timeout ${label} (${ms}ms)`);
+        reject(new Error(`${label} timed out`));
       }, ms))
     ]);
   }
@@ -564,30 +711,27 @@
 
   function isToday(dateStr) { return dateStr === todayStr(); }
 
-  function showToast(msg, isError = false) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.className = 'toast show' + (isError ? ' error' : '');
-    setTimeout(() => t.className = 'toast', 3000);
-  }
-
-  function setLoading(on) {
+  function setLoading(on, title = 'กำลังโหลด...', sub = '') {
     document.getElementById('loading').classList.toggle('active', on);
+    if (on) {
+      document.getElementById('loading-title').textContent = title;
+      document.getElementById('loading-sub').textContent  = sub;
+    }
   }
 
   function greet() {
     const h = new Date().getHours();
-    if (h < 12) return 'Good morning ☕';
-    if (h < 17) return 'Good afternoon 🌿';
-    return 'Good evening 🌙';
+    if (h < 12) return 'Good morning';
+    if (h < 17) return 'Good afternoon';
+    return 'Good evening';
   }
 
   // ─────────────── AUTH ───────────────
   document.getElementById('auth-toggle-link').addEventListener('click', () => {
     isRegister = !isRegister;
-    document.getElementById('auth-title').textContent    = isRegister ? 'สร้างบัญชีใหม่' : 'Welcome back';
-    document.getElementById('auth-sub').textContent      = isRegister ? 'กรอกข้อมูลเพื่อเริ่มต้น' : 'เข้าสู่ระบบเพื่อบันทึกประจำวัน';
-    document.getElementById('auth-btn').textContent      = isRegister ? 'สมัครสมาชิก' : 'เข้าสู่ระบบ';
+    document.getElementById('auth-title').textContent       = isRegister ? 'สร้างบัญชีใหม่' : 'Welcome back';
+    document.getElementById('auth-sub').textContent         = isRegister ? 'กรอกข้อมูลเพื่อเริ่มต้น' : 'เข้าสู่ระบบเพื่อบันทึกประจำวัน';
+    document.getElementById('auth-btn').textContent         = isRegister ? 'สมัครสมาชิก' : 'เข้าสู่ระบบ';
     document.getElementById('auth-toggle-text').textContent = isRegister ? 'มีบัญชีแล้ว?' : 'ยังไม่มีบัญชี?';
     document.getElementById('auth-toggle-link').textContent = isRegister ? ' เข้าสู่ระบบ' : ' สมัครสมาชิก';
     document.getElementById('auth-name-field').style.display = isRegister ? '' : 'none';
@@ -612,7 +756,7 @@
           options: { data: { full_name: name } }
         });
         if (error) throw error;
-        showToast('สมัครสมาชิกสำเร็จ! กรุณาตรวจสอบ Email');
+        showToast('สมัครสมาชิกสำเร็จ — กรุณาตรวจสอบ Email', 'saved');
       } else {
         const { error } = await sb.auth.signInWithPassword({ email, password: pass });
         if (error) throw error;
@@ -625,26 +769,25 @@
   });
 
   document.getElementById('btn-logout').addEventListener('click', async () => {
-    dbg('logout clicked');
+    dbg('logout');
     try {
       await Promise.race([sb.auth.signOut(), new Promise(r => setTimeout(r, 3000))]);
     } catch(e) { dbg('signOut err: ' + e.message); }
-    // Force clear session and reload
     Object.keys(localStorage).filter(k => k.includes('supabase')).forEach(k => localStorage.removeItem(k));
     window.location.reload();
   });
 
-  // Enter key on login
   ['auth-email','auth-password','auth-name'].forEach(id => {
     document.getElementById(id).addEventListener('keydown', e => {
       if (e.key === 'Enter') document.getElementById('auth-btn').click();
     });
   });
 
-  // ─────────────── APP INIT ───────────────
+  // ─────────────── AUTH STATE ───────────────
   sb.auth.onAuthStateChange(async (event, session) => {
-    dbg(`auth event: ${event}`);
+    dbg(`auth: ${event}`);
     if (session?.user) {
+      currentUser = session.user;
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('app').style.display = 'block';
       if (!appInitialized) {
@@ -652,31 +795,39 @@
         await initApp(session.user);
       }
     } else {
+      currentUser    = null;
       appInitialized = false;
       document.getElementById('login-screen').style.display = 'flex';
       document.getElementById('app').style.display = 'none';
     }
   });
 
+  // ─────────────── INIT APP ───────────────
   async function initApp(user) {
     dbg(`initApp uid: ${user.id.slice(0,8)}...`);
-    setLoading(true);
-    document.getElementById('loading').textContent = '🔄 กำลังเชื่อมต่อ Supabase...\n(ครั้งแรกอาจใช้เวลา 10-20 วินาที)';
-    const safetyTimer = setTimeout(() => { dbg('⚠️ safety timer fired'); setLoading(false); }, 25000);
+    setLoading(true, 'กำลังเชื่อมต่อ...', 'ครั้งแรกอาจใช้เวลา 10–20 วินาที');
+    const safetyTimer = setTimeout(() => {
+      dbg('safety timer fired');
+      setLoading(false);
+      showToast('การเชื่อมต่อใช้เวลานานผิดปกติ — กด Reload หากข้อมูลไม่โหลด', 'error');
+    }, 30000);
     try {
       document.getElementById('greeting-text').textContent = greet();
       updateDateUI();
       await ensureHabits(user.id);
       await loadDay(currentDate, user.id);
-      dbg('✅ initApp complete');
+      dbg('initApp complete');
     } catch(e) {
-      dbg(`❌ initApp error: ${e.message}`);
-      // Reset guard so next auth event can retry
+      dbg(`initApp err: ${e.message}`);
       appInitialized = false;
-      showToast('⚠️ เชื่อมต่อล้มเหลว กรุณา Reload หน้าใหม่', true);
+      showToast('เชื่อมต่อไม่สำเร็จ — กรุณา Reload หน้าใหม่', 'error');
+      // Show retry button in habits grid
+      document.getElementById('habits-grid').innerHTML =
+        `<div style="grid-column:1/-1;text-align:center;padding:16px;color:var(--text-sub);font-size:13px;">
+          ไม่สามารถโหลดข้อมูลได้ — <a href="" style="color:var(--green-mid);font-weight:600;">โหลดใหม่</a>
+        </div>`;
     } finally {
       clearTimeout(safetyTimer);
-      document.getElementById('loading').textContent = 'กำลังโหลด...';
       setLoading(false);
     }
   }
@@ -688,11 +839,11 @@
       'habits SELECT'
     );
     if (error) {
-      dbg(`habits SELECT err: ${error.message}`);
-      showToast('⚠️ habits: ' + error.message, true);
+      dbg(`habits err: ${error.message}`);
+      showToast('ไม่สามารถโหลด Habits ได้', 'error');
       return;
     }
-    dbg(`habits rows: ${data?.length ?? 0}`);
+    dbg(`habits: ${data?.length ?? 0} rows`);
     if (data && data.length > 0) {
       userHabits = data;
     } else {
@@ -704,12 +855,11 @@
         'habits INSERT'
       );
       if (insErr) {
-        dbg(`habits INSERT err: ${insErr.message}`);
-        showToast('⚠️ habits insert: ' + insErr.message, true);
+        dbg(`habits insert err: ${insErr.message}`);
+        showToast('ไม่สามารถสร้าง Habits ได้', 'error');
         return;
       }
       userHabits = inserted || [];
-      dbg(`habits inserted: ${userHabits.length}`);
     }
     renderHabits();
   }
@@ -723,24 +873,52 @@
       item.className = 'habit-item' + (completions[h.id] ? ' checked' : '');
       item.dataset.id = h.id;
       item.innerHTML = `
-        <div class="habit-cb">${completions[h.id] ? '✓' : ''}</div>
-        <span class="habit-name">${h.icon || ''} ${h.name}</span>
+        <div class="habit-cb">${completions[h.id] ? '&#10003;' : ''}</div>
+        <span class="habit-name">${h.name}</span>
       `;
       item.addEventListener('click', () => toggleHabit(h.id, item));
       grid.appendChild(item);
     });
   }
 
+  // ─────────────── TOGGLE HABIT + AUTO-SAVE ───────────────
   function toggleHabit(habitId, el) {
     completions[habitId] = !completions[habitId];
     el.classList.toggle('checked', completions[habitId]);
-    el.querySelector('.habit-cb').textContent = completions[habitId] ? '✓' : '';
+    el.querySelector('.habit-cb').innerHTML = completions[habitId] ? '&#10003;' : '';
+    saveHabitCompletion(habitId);
+  }
+
+  async function saveHabitCompletion(habitId) {
+    if (!currentUser) return;
+    showSaving();
+    try {
+      const { error } = await sbQuery(
+        sb.from('habit_completions').upsert({
+          user_id:   currentUser.id,
+          habit_id:  habitId,
+          log_date:  currentDate,
+          completed: !!completions[habitId],
+        }, { onConflict: 'user_id,habit_id,log_date' }),
+        'habit save'
+      );
+      if (error) throw error;
+      showSaved();
+      setSaveIndicator('Saved', true);
+    } catch(e) {
+      dbg(`habit save err: ${e.message}`);
+      showToast('บันทึก habit ไม่สำเร็จ', 'error');
+      setSaveIndicator('');
+    }
   }
 
   // ─────────────── FEELINGS STARS ───────────────
   const starBtns = document.querySelectorAll('.star-btn');
   starBtns.forEach(btn => {
-    btn.addEventListener('click', () => setFeelings(parseInt(btn.dataset.val)));
+    btn.addEventListener('click', () => {
+      setFeelings(parseInt(btn.dataset.val));
+      scheduleMetricSave();
+    });
   });
 
   function setFeelings(val) {
@@ -750,8 +928,49 @@
       btn.style.color = v <= val ? 'var(--star-on)' : 'var(--star-off)';
     });
     document.getElementById('feelings-desc').textContent =
-      val ? `(${val}: ${FEELINGS_DESC[val]})` : '—';
+      val ? `(${val} — ${FEELINGS_DESC[val]})` : '—';
   }
+
+  // ─────────────── AUTO-SAVE METRICS (debounced) ───────────────
+  let _metricSaveTimer = null;
+
+  function scheduleMetricSave() {
+    showSaving();
+    clearTimeout(_metricSaveTimer);
+    _metricSaveTimer = setTimeout(() => saveMetrics(), 1500);
+  }
+
+  async function saveMetrics() {
+    if (!currentUser) return;
+    try {
+      const { error } = await sbQuery(
+        sb.from('daily_logs').upsert({
+          user_id:           currentUser.id,
+          log_date:          currentDate,
+          sleep_hours:       parseFloat(document.getElementById('m-sleep').value)    || null,
+          read_pages:        parseInt(document.getElementById('m-read').value)       || null,
+          weight_kg:         parseFloat(document.getElementById('m-weight').value)   || null,
+          meditate_minutes:  parseInt(document.getElementById('m-meditate').value)   || null,
+          feelings:          feelings || null,
+        }, { onConflict: 'user_id,log_date' }),
+        'metrics autosave'
+      );
+      if (error) throw error;
+      showSaved();
+      setSaveIndicator('Saved', true);
+    } catch(e) {
+      dbg(`metrics save err: ${e.message}`);
+      showToast('บันทึก metrics ไม่สำเร็จ', 'error');
+      setSaveIndicator('');
+    }
+  }
+
+  // Attach auto-save to metric inputs (fires on blur and on Enter)
+  ['m-sleep', 'm-read', 'm-weight', 'm-meditate'].forEach(id => {
+    const el = document.getElementById(id);
+    el.addEventListener('blur',   scheduleMetricSave);
+    el.addEventListener('keydown', e => { if (e.key === 'Enter') { el.blur(); } });
+  });
 
   // ─────────────── LINE COUNTER ───────────────
   function setupLineCount(textareaId, hintId, max) {
@@ -763,7 +982,7 @@
       hint.style.color = lines > max ? 'var(--red)' : 'var(--text-sub)';
     });
   }
-  setupLineCount('j-thesis', 'thesis-hint', 5);
+  setupLineCount('j-thesis',  'thesis-hint',  5);
   setupLineCount('j-moments', 'moments-hint', 3);
 
   // ─────────────── DATE NAV ───────────────
@@ -773,10 +992,10 @@
     if (!user) return;
     const d = new Date(currentDate + 'T00:00:00');
     d.setDate(d.getDate() + delta);
-    if (d > new Date()) return; // ไม่อนุญาตให้ไปอนาคต
+    if (d > new Date()) return;
     currentDate = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     updateDateUI();
-    setLoading(true);
+    setLoading(true, 'กำลังโหลดข้อมูล...');
     try { await loadDay(currentDate, user.id); } finally { setLoading(false); }
   }
 
@@ -785,7 +1004,7 @@
 
   function updateDateUI() {
     document.getElementById('header-date').textContent = formatDateTH(currentDate);
-    document.getElementById('btn-next').disabled = isToday(currentDate);
+    document.getElementById('btn-next').disabled     = isToday(currentDate);
     document.getElementById('btn-next').style.opacity = isToday(currentDate) ? '0.3' : '1';
   }
 
@@ -800,49 +1019,45 @@
     document.getElementById('j-thesis').value   = '';
     document.getElementById('j-moments').value  = '';
 
-    // Load daily_log
     const { data: log } = await sbQuery(
       sb.from('daily_logs').select('*').eq('user_id', userId).eq('log_date', dateStr).maybeSingle(),
-      'loadDay SELECT'
+      'loadDay'
     );
     dbg(`daily_log: ${log ? 'found' : 'empty'}`);
 
     if (log) {
-      document.getElementById('m-sleep').value    = log.sleep_hours    ?? '';
-      document.getElementById('m-read').value     = log.read_pages     ?? '';
-      document.getElementById('m-weight').value   = log.weight_kg      ?? '';
-      document.getElementById('m-meditate').value = log.meditate_minutes ?? '';
-      document.getElementById('j-thesis').value   = log.thesis_notes   ?? '';
-      document.getElementById('j-moments').value  = log.memorable_moments ?? '';
+      document.getElementById('m-sleep').value    = log.sleep_hours        ?? '';
+      document.getElementById('m-read').value     = log.read_pages         ?? '';
+      document.getElementById('m-weight').value   = log.weight_kg          ?? '';
+      document.getElementById('m-meditate').value = log.meditate_minutes   ?? '';
+      document.getElementById('j-thesis').value   = log.thesis_notes       ?? '';
+      document.getElementById('j-moments').value  = log.memorable_moments  ?? '';
       setFeelings(log.feelings || 0);
     }
 
-    // Load habit_completions
     const { data: hc } = await sbQuery(
       sb.from('habit_completions').select('habit_id, completed').eq('user_id', userId).eq('log_date', dateStr),
-      'habit_completions SELECT'
+      'habit_completions'
     );
-
     (hc || []).forEach(row => { completions[row.habit_id] = row.completed; });
     renderHabits();
-
     setSaveIndicator('');
   }
 
-  // ─────────────── SAVE ───────────────
+  // ─────────────── FULL SAVE (journal + all fields) ───────────────
   document.getElementById('btn-save').addEventListener('click', async () => {
     const { data: { session } } = await sb.auth.getSession();
     const user = session?.user;
     if (!user) return;
 
     const btn = document.getElementById('btn-save');
-    btn.disabled = true;
-    btn.textContent = '⏳ กำลังบันทึก...';
-    setSaveIndicator('กำลังบันทึก...');
+    btn.disabled    = true;
+    btn.textContent = 'กำลังบันทึก...';
+    showSaving();
+    setSaveIndicator('Saving...');
 
     try {
-      dbg('save: upserting daily_log...');
-      // Upsert daily_log
+      dbg('full save: daily_log upsert...');
       const { error: logErr } = await sbQuery(sb.from('daily_logs').upsert({
         user_id:            user.id,
         log_date:           currentDate,
@@ -854,11 +1069,8 @@
         thesis_notes:       document.getElementById('j-thesis').value.trim()   || null,
         memorable_moments:  document.getElementById('j-moments').value.trim()  || null,
       }, { onConflict: 'user_id,log_date' }), 'daily_log upsert');
-
       if (logErr) throw logErr;
-      dbg('daily_log saved ✅');
 
-      // Upsert habit_completions
       if (userHabits.length > 0) {
         const hcRows = userHabits.map(h => ({
           user_id:   user.id,
@@ -868,27 +1080,28 @@
         }));
         const { error: hcErr } = await sbQuery(
           sb.from('habit_completions').upsert(hcRows, { onConflict: 'user_id,habit_id,log_date' }),
-          'habit_completions upsert'
+          'habits upsert'
         );
         if (hcErr) throw hcErr;
-        dbg('habits saved ✅');
       }
 
-      showToast('✅ บันทึกสำเร็จ!');
-      setSaveIndicator('บันทึกแล้ว ✓', true);
+      showSaved();
+      setSaveIndicator('Saved', true);
+      dbg('full save complete');
     } catch (e) {
-      showToast('❌ ' + e.message, true);
+      dbg(`full save err: ${e.message}`);
+      showToast('บันทึกไม่สำเร็จ: ' + e.message, 'error');
       setSaveIndicator('');
     } finally {
-      btn.disabled = false;
-      btn.textContent = '💾 บันทึกวันนี้';
+      btn.disabled    = false;
+      btn.textContent = 'บันทึกวันนี้';
     }
   });
 
   function setSaveIndicator(text, ok = false) {
     const el = document.getElementById('save-indicator');
     el.textContent = text;
-    el.className = 'save-indicator' + (ok ? ' saved' : '');
+    el.className   = 'save-indicator' + (ok ? ' saved' : '');
   }
 </script>
 </body>

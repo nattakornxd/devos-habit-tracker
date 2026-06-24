@@ -178,11 +178,50 @@
     /* ── LOADING ── */
     .loading-overlay {
       display: none; position: fixed; inset: 0;
-      background: rgba(237,232,223,0.7);
+      background: rgba(237,232,223,0.75);
+      backdrop-filter: blur(2px);
       z-index: 50; align-items: center; justify-content: center;
-      font-size: 15px; font-weight: 600; color: var(--green-dark);
     }
     .loading-overlay.active { display: flex; }
+    .loading-box {
+      background: #fff;
+      border-radius: 16px;
+      padding: 32px 48px;
+      box-shadow: 0 4px 28px rgba(0,0,0,0.12);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      text-align: center;
+    }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid rgba(26,58,42,0.15);
+      border-top-color: var(--green-dark);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-title { font-size: 15px; font-weight: 700; color: var(--green-dark); }
+    .loading-sub   { font-size: 12px; color: var(--text-sub); margin-top: -8px; }
+    #dbg {
+      display: none;
+      position: fixed; bottom: 44px; left: 10px;
+      background: #1A3A2A; color: #7EC8A4;
+      padding: 10px 14px; font-size: 11px;
+      border-radius: 8px; z-index: 997;
+      max-width: 340px; font-family: monospace;
+      line-height: 1.6; max-height: 220px; overflow-y: auto;
+    }
+    #dbg-toggle {
+      position: fixed; bottom: 10px; left: 10px;
+      background: rgba(26,58,42,0.75); color: #7EC8A4;
+      border: none; padding: 4px 9px; border-radius: 5px;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
+      cursor: pointer; z-index: 998; font-family: monospace;
+      opacity: 0.4; transition: opacity 0.2s;
+    }
+    #dbg-toggle:hover { opacity: 1; }
 
     @media (max-width: 640px) {
       .summary-grid { grid-template-columns: repeat(2, 1fr); }
@@ -207,9 +246,9 @@
   <header class="app-header">
     <div class="header-logo">Dev<span>OS</span></div>
     <div class="header-nav">
-      <a class="nav-btn ghost" href="index.html">📋 Daily Log</a>
-      <a class="nav-btn active" href="stats.html">📊 Statistics</a>
-      <button class="nav-btn ghost" id="btn-refresh">🔄 โหลดใหม่</button>
+      <a class="nav-btn ghost" href="index.html">Daily Log</a>
+      <a class="nav-btn active" href="stats.html">Statistics</a>
+      <button class="nav-btn ghost" id="btn-refresh">Refresh</button>
       <button class="nav-btn ghost" id="btn-logout">ออกจากระบบ</button>
     </div>
   </header>
@@ -302,7 +341,7 @@
       <!-- Habits -->
       <div class="chart-card full">
         <div class="chart-header">
-          <div class="chart-icon">✅</div>
+          <div class="chart-icon">HAB</div>
           <div class="chart-title">Habit Completion Rate</div>
         </div>
         <div id="habit-stats-wrap" class="habit-stats">
@@ -314,8 +353,15 @@
   </main>
 </div>
 
-<div class="loading-overlay" id="loading">🔄 กำลังเชื่อมต่อ...<br><small style="font-weight:400;font-size:12px">อาจใช้เวลา 10-20 วินาทีครั้งแรก</small></div>
-<div id="dbg" style="position:fixed;bottom:10px;left:10px;background:#1A3A2A;color:#7EC8A4;padding:10px 14px;font-size:11px;border-radius:8px;z-index:999;max-width:320px;font-family:monospace;line-height:1.6;max-height:200px;overflow-y:auto;"></div>
+<div class="loading-overlay" id="loading">
+  <div class="loading-box">
+    <div class="spinner"></div>
+    <div class="loading-title">กำลังเชื่อมต่อ...</div>
+    <div class="loading-sub">ครั้งแรกอาจใช้เวลา 10–20 วินาที</div>
+  </div>
+</div>
+<div id="dbg"></div>
+<button id="dbg-toggle" title="Toggle debug log">LOG</button>
 
 <script>
   const SUPABASE_URL  = 'https://lyncszmpwojopbvkmqmc.supabase.co';
@@ -328,16 +374,26 @@
   // ── DEBUG ──
   function dbg(msg) {
     const el = document.getElementById('dbg');
-    if (el) el.innerHTML += `<div>${new Date().toLocaleTimeString()}: ${msg}</div>`;
+    if (el) {
+      const line = document.createElement('div');
+      line.textContent = `${new Date().toLocaleTimeString()} ${msg}`;
+      el.appendChild(line);
+      el.scrollTop = el.scrollHeight;
+    }
     console.log('[DBG]', msg);
   }
 
+  document.getElementById('dbg-toggle').addEventListener('click', () => {
+    const panel = document.getElementById('dbg');
+    panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+  });
+
   function sbQ(promise, label, ms = 20000) {
-    dbg(`⏳ ${label}...`);
+    dbg(`... ${label}`);
     return Promise.race([
-      promise.then(r => { dbg(`✅ ${label} done`); return r; }),
+      promise.then(r => { dbg(`ok  ${label}`); return r; }),
       new Promise((_, reject) => setTimeout(() => {
-        dbg(`❌ ${label} TIMEOUT`);
+        dbg(`timeout ${label} (${ms}ms)`);
         reject(new Error(`${label} timeout`));
       }, ms))
     ]);
@@ -437,9 +493,9 @@
         'Accept': 'application/json',
       }
     });
-    if (!res.ok) { dbg(`❌ ${table} HTTP ${res.status}`); return []; }
+    if (!res.ok) { dbg(`err ${table} HTTP ${res.status}`); return []; }
     const data = await res.json();
-    dbg(`✅ ${table}: ${data.length} rows`);
+    dbg(`ok  ${table}: ${data.length} rows`);
     return data;
   }
 
@@ -447,7 +503,7 @@
     if (!user) user = currentUser;
     if (!user) { dbg('no user, skip'); return; }
     setLoading(true);
-    const safetyTimer = setTimeout(() => { dbg('⚠️ safety timer 45s fired'); setLoading(false); }, 45000);
+    const safetyTimer = setTimeout(() => { dbg('safety timer 45s fired'); setLoading(false); }, 45000);
     const { from, to } = dateRange(days);
     dbg(`range: ${from} → ${to}`);
 
@@ -593,7 +649,7 @@
 
   document.getElementById('btn-refresh').addEventListener('click', async () => {
     statsInitialized = false;
-    dbg('🔄 Manual refresh...');
+    dbg('Manual refresh...');
     if (currentUser) {
       statsInitialized = true;
       try { await loadStats(currentDays, currentUser); }
