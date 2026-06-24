@@ -209,23 +209,33 @@ function escHtml(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-// FETCH — use Supabase client (simpler, handles token automatically)
+// FETCH — raw fetch() เหมือน stats.html (หลีกเลี่ยง token-refresh hang)
 async function fetchMoments() {
-  dbg('query daily_logs for memorable_moments...');
+  dbg('fetching memorable_moments via raw fetch...');
+  const url = `${SUPABASE_URL}/rest/v1/daily_logs` +
+    `?select=log_date,memorable_moments` +
+    `&user_id=eq.${currentUser.id}` +
+    `&memorable_moments=not.is.null` +
+    `&order=log_date.desc`;
 
-  const { data, error, status } = await sb
-    .from('daily_logs')
-    .select('log_date, memorable_moments')
-    .eq('user_id', currentUser.id)
-    .not('memorable_moments', 'is', null)
-    .order('log_date', { ascending: false });
+  const res = await fetch(url, {
+    headers: {
+      'apikey':        SUPABASE_ANON,
+      'Authorization': `Bearer ${token}`,
+      'Accept':        'application/json',
+    }
+  });
 
-  dbg(`status=${status} rows=${data?.length ?? 'err'} err=${error?.message ?? 'none'}`);
+  dbg(`HTTP ${res.status}`);
+  if (!res.ok) {
+    const txt = await res.text();
+    throw new Error(`HTTP ${res.status}: ${txt.slice(0, 200)}`);
+  }
 
-  if (error) throw new Error(`${error.message} (code: ${error.code})`);
-
-  // filter client-side for truly empty strings
-  return (data || []).filter(r => r.memorable_moments && r.memorable_moments.trim() !== '');
+  const data = await res.json();
+  dbg(`got ${data.length} rows`);
+  // filter empty strings client-side
+  return data.filter(r => r.memorable_moments && r.memorable_moments.trim() !== '');
 }
 
 // RENDER
@@ -322,6 +332,11 @@ sb.auth.onAuthStateChange(async (event, session) => {
     if (!initialized) {
       initialized = true;
       setLoading(true);
+      const safetyTimer = setTimeout(() => {
+        setLoading(false);
+        showError('โหลดนานเกินไป — กรุณา Refresh หน้า');
+        initialized = false;
+      }, 20000);
       try {
         allRows = await fetchMoments();
         dbg(`rendered ${allRows.length} rows`);
@@ -332,6 +347,7 @@ sb.auth.onAuthStateChange(async (event, session) => {
         showError(e.message);
         initialized = false;
       } finally {
+        clearTimeout(safetyTimer);
         setLoading(false);
       }
     }
