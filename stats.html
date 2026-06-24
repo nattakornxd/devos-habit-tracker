@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DevOS — Statistics</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg:         #EDE8DF;
+      --bg-card:    #FFFFFF;
+      --green-dark: #1A3A2A;
+      --green-mid:  #2D6A4F;
+      --green-light:#D6EAE0;
+      --cream:      #F5F0E8;
+      --text:       #1A1A1A;
+      --text-sub:   #6B6B6B;
+      --border:     #E2DDD6;
+      --radius:     12px;
+      --shadow:     0 2px 12px rgba(0,0,0,0.07);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ── AUTH GATE ── */
+    #auth-gate {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh;
+    }
+    .auth-msg {
+      text-align: center;
+      background: var(--bg-card);
+      padding: 40px 48px;
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+    }
+    .auth-msg p { color: var(--text-sub); margin-bottom: 16px; }
+    .btn-go {
+      display: inline-block;
+      padding: 11px 28px;
+      background: var(--green-dark);
+      color: #fff;
+      border-radius: 9px;
+      font-weight: 600;
+      font-size: 14px;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    .btn-go:hover { background: var(--green-mid); }
+
+    /* ── HEADER ── */
+    .app-header {
+      background: var(--green-dark);
+      color: #fff;
+      padding: 16px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 10;
+    }
+    .header-logo { font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+    .header-logo span { color: #7EC8A4; }
+    .header-nav { display: flex; gap: 8px; }
+    .nav-btn {
+      padding: 7px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex; align-items: center; gap: 6px;
+      transition: background 0.2s;
+    }
+    .nav-btn.ghost { background: rgba(255,255,255,0.12); color: #fff; }
+    .nav-btn.ghost:hover { background: rgba(255,255,255,0.25); }
+    .nav-btn.active { background: #fff; color: var(--green-dark); }
+
+    /* ── MAIN ── */
+    #app { display: none; }
+    .main { max-width: 960px; margin: 0 auto; padding: 32px 24px 80px; }
+
+    /* ── PAGE TITLE ── */
+    .page-header { margin-bottom: 24px; }
+    .page-header .label { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-sub); margin-bottom: 4px; }
+    .page-header h2 { font-size: 26px; font-weight: 800; color: var(--green-dark); }
+
+    /* ── RANGE SELECTOR ── */
+    .range-bar {
+      display: flex; gap: 8px; margin-bottom: 28px;
+      background: var(--bg-card);
+      padding: 6px;
+      border-radius: 10px;
+      width: fit-content;
+      box-shadow: var(--shadow);
+    }
+    .range-btn {
+      padding: 7px 20px;
+      border: none;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      background: transparent;
+      color: var(--text-sub);
+      transition: all 0.18s;
+    }
+    .range-btn.active { background: var(--green-dark); color: #fff; }
+
+    /* ── SUMMARY CARDS ── */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .summary-card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      box-shadow: var(--shadow);
+    }
+    .summary-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-sub); margin-bottom: 6px; }
+    .summary-value { font-size: 26px; font-weight: 800; color: var(--green-dark); }
+    .summary-unit { font-size: 13px; font-weight: 500; color: var(--text-sub); margin-left: 3px; }
+    .summary-sub { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
+
+    /* ── CHART CARDS ── */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .chart-card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+      box-shadow: var(--shadow);
+    }
+    .chart-card.full { grid-column: 1 / -1; }
+    .chart-header {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 16px;
+    }
+    .chart-icon {
+      width: 32px; height: 32px;
+      background: var(--green-light);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px;
+    }
+    .chart-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-sub); }
+    .chart-wrap { position: relative; height: 200px; }
+
+    /* ── HABIT BAR ── */
+    .habit-stats { display: flex; flex-direction: column; gap: 10px; }
+    .habit-row { display: flex; align-items: center; gap: 12px; }
+    .habit-name-col { font-size: 13px; font-weight: 500; min-width: 130px; }
+    .habit-bar-wrap { flex: 1; background: var(--cream); border-radius: 999px; height: 10px; overflow: hidden; }
+    .habit-bar-fill { height: 100%; background: var(--green-mid); border-radius: 999px; transition: width 0.5s ease; }
+    .habit-pct { font-size: 12px; font-weight: 700; color: var(--green-dark); min-width: 36px; text-align: right; }
+
+    /* ── FEELINGS ── */
+    .feelings-chart { display: flex; align-items: flex-end; gap: 6px; height: 120px; }
+    .feelings-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
+    .feelings-bar { width: 100%; border-radius: 6px 6px 0 0; background: var(--green-mid); transition: height 0.5s ease; min-height: 4px; }
+    .feelings-date { font-size: 9px; color: var(--text-sub); }
+    .feelings-val { font-size: 10px; font-weight: 700; color: var(--green-dark); }
+
+    /* ── EMPTY STATE ── */
+    .empty-state { text-align: center; padding: 40px; color: var(--text-sub); font-size: 14px; }
+
+    /* ── LOADING ── */
+    .loading-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(237,232,223,0.7);
+      z-index: 50; align-items: center; justify-content: center;
+      font-size: 15px; font-weight: 600; color: var(--green-dark);
+    }
+    .loading-overlay.active { display: flex; }
+
+    @media (max-width: 640px) {
+      .summary-grid { grid-template-columns: repeat(2, 1fr); }
+      .charts-grid { grid-template-columns: 1fr; }
+      .chart-card.full { grid-column: 1; }
+      .app-header { padding: 14px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Auth gate -->
+<div id="auth-gate">
+  <div class="auth-msg">
+    <p>กรุณาเข้าสู่ระบบก่อน</p>
+    <a class="btn-go" href="index.html">ไปหน้า Login</a>
+  </div>
+</div>
+
+<!-- App -->
+<div id="app">
+  <header class="app-header">
+    <div class="header-logo">Dev<span>OS</span></div>
+    <div class="header-nav">
+      <a class="nav-btn ghost" href="index.html">📋 Daily Log</a>
+      <a class="nav-btn active" href="stats.html">📊 Statistics</a>
+      <button class="nav-btn ghost" id="btn-refresh">🔄 โหลดใหม่</button>
+      <button class="nav-btn ghost" id="btn-logout">ออกจากระบบ</button>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="page-header">
+      <div class="label">Performance Overview</div>
+      <h2>สถิติของคุณ 📈</h2>
+    </div>
+
+    <!-- Range Selector -->
+    <div class="range-bar">
+      <button class="range-btn" data-days="7">7 วัน</button>
+      <button class="range-btn active" data-days="30">30 วัน</button>
+      <button class="range-btn" data-days="90">90 วัน</button>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="summary-label">😴 Sleep เฉลี่ย</div>
+        <div><span class="summary-value" id="avg-sleep">—</span><span class="summary-unit">hrs</span></div>
+        <div class="summary-sub" id="sub-sleep"></div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">📚 Read เฉลี่ย</div>
+        <div><span class="summary-value" id="avg-read">—</span><span class="summary-unit">pgs</span></div>
+        <div class="summary-sub" id="sub-read"></div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">🏋️ Weight ล่าสุด</div>
+        <div><span class="summary-value" id="avg-weight">—</span><span class="summary-unit">kg</span></div>
+        <div class="summary-sub" id="sub-weight"></div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">🧘 Meditate เฉลี่ย</div>
+        <div><span class="summary-value" id="avg-meditate">—</span><span class="summary-unit">min</span></div>
+        <div class="summary-sub" id="sub-meditate"></div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-grid">
+
+      <!-- Sleep -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-icon">😴</div>
+          <div class="chart-title">Sleep (ชั่วโมง)</div>
+        </div>
+        <div class="chart-wrap"><canvas id="chart-sleep"></canvas></div>
+      </div>
+
+      <!-- Weight -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-icon">⚖️</div>
+          <div class="chart-title">Weight (kg)</div>
+        </div>
+        <div class="chart-wrap"><canvas id="chart-weight"></canvas></div>
+      </div>
+
+      <!-- Read -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-icon">📚</div>
+          <div class="chart-title">Read (หน้า/วัน)</div>
+        </div>
+        <div class="chart-wrap"><canvas id="chart-read"></canvas></div>
+      </div>
+
+      <!-- Meditate -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-icon">🧘</div>
+          <div class="chart-title">Meditate (นาที)</div>
+        </div>
+        <div class="chart-wrap"><canvas id="chart-meditate"></canvas></div>
+      </div>
+
+      <!-- Feelings -->
+      <div class="chart-card full">
+        <div class="chart-header">
+          <div class="chart-icon">⭐</div>
+          <div class="chart-title">Feelings (1–5 คะแนน)</div>
+        </div>
+        <div class="chart-wrap"><canvas id="chart-feelings"></canvas></div>
+      </div>
+
+      <!-- Habits -->
+      <div class="chart-card full">
+        <div class="chart-header">
+          <div class="chart-icon">✅</div>
+          <div class="chart-title">Habit Completion Rate</div>
+        </div>
+        <div id="habit-stats-wrap" class="habit-stats">
+          <div class="empty-state">กำลังโหลด...</div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<div class="loading-overlay" id="loading">🔄 กำลังเชื่อมต่อ...<br><small style="font-weight:400;font-size:12px">อาจใช้เวลา 10-20 วินาทีครั้งแรก</small></div>
+<div id="dbg" style="position:fixed;bottom:10px;left:10px;background:#1A3A2A;color:#7EC8A4;padding:10px 14px;font-size:11px;border-radius:8px;z-index:999;max-width:320px;font-family:monospace;line-height:1.6;max-height:200px;overflow-y:auto;"></div>
+
+<script>
+  const SUPABASE_URL  = 'https://lyncszmpwojopbvkmqmc.supabase.co';
+  const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5bmNzem1wd29qb3BidmttcW1jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyMTgwODIsImV4cCI6MjA5Nzc5NDA4Mn0.fzOPawbNz3kQTK5L4uVlDnWUxwgZ-V4suBFYD-tpcP4';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+  let currentDays = 30;
+  let charts = {};
+
+  // ── DEBUG ──
+  function dbg(msg) {
+    const el = document.getElementById('dbg');
+    if (el) el.innerHTML += `<div>${new Date().toLocaleTimeString()}: ${msg}</div>`;
+    console.log('[DBG]', msg);
+  }
+
+  function sbQ(promise, label, ms = 20000) {
+    dbg(`⏳ ${label}...`);
+    return Promise.race([
+      promise.then(r => { dbg(`✅ ${label} done`); return r; }),
+      new Promise((_, reject) => setTimeout(() => {
+        dbg(`❌ ${label} TIMEOUT`);
+        reject(new Error(`${label} timeout`));
+      }, ms))
+    ]);
+  }
+
+  // ── UTILS ──
+  function setLoading(on) { document.getElementById('loading').classList.toggle('active', on); }
+
+  function localStr(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  function dateRange(days) {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(start.getDate() - (days - 1));
+    return { from: localStr(start), to: localStr(end) };
+  }
+
+  function fmtDate(dateStr, days) {
+    const d = new Date(dateStr + 'T00:00:00');
+    if (days <= 7) return d.toLocaleDateString('th-TH', { weekday: 'short', day: 'numeric' });
+    if (days <= 30) return d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
+    return d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
+  }
+
+  function avg(arr) {
+    const vals = arr.filter(v => v != null && v !== '');
+    if (!vals.length) return null;
+    return (vals.reduce((a, b) => a + Number(b), 0) / vals.length).toFixed(1);
+  }
+
+  // ── CHART CONFIG ──
+  const CHART_DEFAULTS = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#9CA3AF', maxRotation: 45, maxTicksLimit: 8, includeBounds: true } },
+      y: { grid: { color: '#F3F4F6' }, ticks: { font: { size: 10 }, color: '#9CA3AF' }, beginAtZero: false },
+    },
+  };
+
+  function makeLineChart(id, labels, data, color = '#2D6A4F', fill = true) {
+    if (charts[id]) charts[id].destroy();
+    const ctx = document.getElementById(id).getContext('2d');
+    charts[id] = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          data,
+          borderColor: color,
+          backgroundColor: fill ? color + '18' : 'transparent',
+          borderWidth: 2.5,
+          pointRadius: labels.length > 20 ? 2 : 4,
+          pointBackgroundColor: color,
+          tension: 0.35,
+          fill,
+          spanGaps: true,
+        }],
+      },
+      options: { ...CHART_DEFAULTS },
+    });
+  }
+
+  function makeBarChart(id, labels, data, color = '#2D6A4F') {
+    if (charts[id]) charts[id].destroy();
+    const ctx = document.getElementById(id).getContext('2d');
+    charts[id] = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          data,
+          backgroundColor: color + 'CC',
+          borderRadius: 5,
+          borderSkipped: false,
+        }],
+      },
+      options: { ...CHART_DEFAULTS, scales: { ...CHART_DEFAULTS.scales, y: { ...CHART_DEFAULTS.scales.y, beginAtZero: true } } },
+    });
+  }
+
+  // ── LOAD DATA ──
+  let currentUser = null;
+  let currentToken = null; // access token จาก session
+
+  // ใช้ fetch() ตรงแทน Supabase client เพื่อหลีกเลี่ยง token-refresh hang
+  async function pgFetch(table, params) {
+    const url = `${SUPABASE_URL}/rest/v1/${table}?${params}`;
+    dbg(`⏳ GET ${table}...`);
+    const res = await fetch(url, {
+      headers: {
+        'apikey': SUPABASE_ANON,
+        'Authorization': `Bearer ${currentToken}`,
+        'Accept': 'application/json',
+      }
+    });
+    if (!res.ok) { dbg(`❌ ${table} HTTP ${res.status}`); return []; }
+    const data = await res.json();
+    dbg(`✅ ${table}: ${data.length} rows`);
+    return data;
+  }
+
+  async function loadStats(days, user) {
+    if (!user) user = currentUser;
+    if (!user) { dbg('no user, skip'); return; }
+    setLoading(true);
+    const safetyTimer = setTimeout(() => { dbg('⚠️ safety timer 45s fired'); setLoading(false); }, 45000);
+    const { from, to } = dateRange(days);
+    dbg(`range: ${from} → ${to}`);
+
+    try {
+      // Daily logs — ใช้ fetch() ตรง ไม่ผ่าน Supabase client (หลีกเลี่ยง token-refresh hang)
+      const logs = await pgFetch('daily_logs',
+        `select=log_date,sleep_hours,read_pages,weight_kg,meditate_minutes,feelings` +
+        `&user_id=eq.${user.id}&log_date=gte.${from}&log_date=lte.${to}&order=log_date`
+      );
+
+      const rows = Array.isArray(logs) ? logs : [];
+
+      // All dates in range — ใช้ local date (ไม่ใช้ toISOString ซึ่งเป็น UTC)
+      function localDateStr(d) {
+        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      }
+      const allDates = [];
+      const cur = new Date(from + 'T00:00:00');
+      const endD = new Date(to + 'T00:00:00');
+      while (cur <= endD) {
+        allDates.push(localDateStr(cur));
+        cur.setDate(cur.getDate() + 1);
+      }
+      dbg(`allDates: ${allDates[0]} → ${allDates[allDates.length-1]} (${allDates.length} days)`);
+
+      const byDate = {};
+      rows.forEach(r => { byDate[r.log_date] = r; });
+
+      const labels   = allDates.map(d => fmtDate(d, days));
+      const sleepArr = allDates.map(d => byDate[d]?.sleep_hours ?? null);
+      const readArr  = allDates.map(d => byDate[d]?.read_pages  ?? null);
+      const weightArr= allDates.map(d => byDate[d]?.weight_kg   ?? null);
+      const meditArr = allDates.map(d => byDate[d]?.meditate_minutes ?? null);
+      const feelArr  = allDates.map(d => byDate[d]?.feelings    ?? null);
+
+      // Summary
+      const logsWithSleep   = rows.filter(r => r.sleep_hours   != null);
+      const logsWithRead    = rows.filter(r => r.read_pages    != null);
+      const logsWithMed     = rows.filter(r => r.meditate_minutes != null);
+      const logsWithWeight  = rows.filter(r => r.weight_kg     != null);
+
+      document.getElementById('avg-sleep').textContent    = avg(sleepArr)    ?? '—';
+      document.getElementById('avg-read').textContent     = avg(readArr)     ?? '—';
+      document.getElementById('avg-meditate').textContent = avg(meditArr)    ?? '—';
+      document.getElementById('avg-weight').textContent   = logsWithWeight.length
+        ? logsWithWeight[logsWithWeight.length - 1].weight_kg
+        : '—';
+
+      document.getElementById('sub-sleep').textContent    = logsWithSleep.length   ? `บันทึกแล้ว ${logsWithSleep.length} วัน` : 'ยังไม่มีข้อมูล';
+      document.getElementById('sub-read').textContent     = logsWithRead.length    ? `รวม ${logsWithRead.reduce((a,r)=>a+(r.read_pages||0),0)} หน้า` : 'ยังไม่มีข้อมูล';
+      document.getElementById('sub-meditate').textContent = logsWithMed.length     ? `รวม ${logsWithMed.reduce((a,r)=>a+(r.meditate_minutes||0),0)} นาที` : 'ยังไม่มีข้อมูล';
+      document.getElementById('sub-weight').textContent   = logsWithWeight.length  ? `บันทึกแล้ว ${logsWithWeight.length} วัน` : 'ยังไม่มีข้อมูล';
+
+      // Charts
+      makeLineChart('chart-sleep',    labels, sleepArr,  '#2D6A4F');
+      makeLineChart('chart-weight',   labels, weightArr, '#1A3A2A');
+      makeBarChart ('chart-read',     labels, readArr,   '#2D6A4F');
+      makeBarChart ('chart-meditate', labels, meditArr,  '#3D8B6F');
+
+      // Feelings chart
+      makeBarChart('chart-feelings', labels, feelArr, '#F59E0B');
+      if (charts['chart-feelings']) {
+        charts['chart-feelings'].options.scales.y.max = 5;
+        charts['chart-feelings'].options.scales.y.min = 0;
+        charts['chart-feelings'].update();
+      }
+
+      // Habits
+      await loadHabitStats(user.id, from, to, allDates.length);
+
+    } catch(e) {
+      console.error('loadStats error:', e);
+    } finally {
+      clearTimeout(safetyTimer);
+      setLoading(false);
+    }
+  }
+
+  async function loadHabitStats(userId, from, to, totalDays) {
+    const wrap = document.getElementById('habit-stats-wrap');
+
+    const habits = await pgFetch('habits',
+      `select=id,name,icon&user_id=eq.${userId}&is_active=eq.true&order=sort_order`
+    );
+
+    if (!habits || !habits.length) {
+      wrap.innerHTML = '<div class="empty-state">ยังไม่มี Habit</div>';
+      return;
+    }
+
+    const completions = await pgFetch('habit_completions',
+      `select=habit_id,completed&user_id=eq.${userId}&completed=eq.true&log_date=gte.${from}&log_date=lte.${to}`
+    );
+
+    const countMap = {};
+    (completions || []).forEach(c => {
+      countMap[c.habit_id] = (countMap[c.habit_id] || 0) + 1;
+    });
+
+    wrap.innerHTML = '';
+    habits.forEach(h => {
+      const count = countMap[h.id] || 0;
+      const pct   = Math.round((count / totalDays) * 100);
+      const row   = document.createElement('div');
+      row.className = 'habit-row';
+      row.innerHTML = `
+        <div class="habit-name-col">${h.icon || ''} ${h.name}</div>
+        <div class="habit-bar-wrap">
+          <div class="habit-bar-fill" style="width: ${pct}%"></div>
+        </div>
+        <div class="habit-pct">${pct}%</div>
+      `;
+      wrap.appendChild(row);
+    });
+  }
+
+  // ── AUTH ──
+  let statsInitialized = false;
+  sb.auth.onAuthStateChange(async (event, session) => {
+    dbg(`auth: ${event}`);
+    if (session?.user) {
+      currentUser = session.user;
+      currentToken = session.access_token;
+      document.getElementById('auth-gate').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      if (!statsInitialized) {
+        statsInitialized = true;
+        try { await loadStats(currentDays, session.user); }
+        catch(e) { dbg('loadStats err: ' + e.message); statsInitialized = false; }
+      }
+    } else {
+      currentUser = null;
+      statsInitialized = false;
+      document.getElementById('auth-gate').style.display = 'flex';
+      document.getElementById('app').style.display = 'none';
+    }
+  });
+
+  document.getElementById('btn-logout').addEventListener('click', async () => {
+    await sb.auth.signOut();
+    window.location.href = 'index.html';
+  });
+
+  document.getElementById('btn-refresh').addEventListener('click', async () => {
+    statsInitialized = false;
+    dbg('🔄 Manual refresh...');
+    if (currentUser) {
+      statsInitialized = true;
+      try { await loadStats(currentDays, currentUser); }
+      catch(e) { dbg('refresh err: ' + e.message); statsInitialized = false; }
+    } else {
+      dbg('no user cached, checking session...');
+      const { data: { session } } = await sb.auth.getSession();
+      if (session?.user) {
+        currentUser = session.user;
+        statsInitialized = true;
+        try { await loadStats(currentDays, currentUser); }
+        catch(e) { dbg('refresh err: ' + e.message); statsInitialized = false; }
+      }
+    }
+  });
+
+  // ── RANGE BUTTONS ──
+  document.querySelectorAll('.range-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentDays = parseInt(btn.dataset.days);
+      await loadStats(currentDays, currentUser);
+    });
+  });
+</script>
+</body>
+</html>

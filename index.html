@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DevOS — Habit Tracker</title>
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── TOKENS ── */
+    :root {
+      --bg:          #EDE8DF;
+      --bg-card:     #FFFFFF;
+      --green-dark:  #1A3A2A;
+      --green-mid:   #2D6A4F;
+      --green-light: #D6EAE0;
+      --cream:       #F5F0E8;
+      --text:        #1A1A1A;
+      --text-sub:    #6B6B6B;
+      --border:      #E2DDD6;
+      --star-on:     #F5A623;
+      --star-off:    #D9D4CC;
+      --red:         #C0392B;
+      --radius:      12px;
+      --shadow:      0 2px 12px rgba(0,0,0,0.07);
+    }
+
+    /* ── RESET ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── LOGIN ── */
+    #login-screen {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: var(--bg);
+    }
+    .login-card {
+      background: var(--bg-card);
+      border-radius: 20px;
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: var(--shadow);
+    }
+    .login-logo {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: var(--green-dark);
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+    .login-logo span { color: var(--green-mid); }
+    .login-card h1 { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+    .login-card p { font-size: 14px; color: var(--text-sub); margin-bottom: 32px; }
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: 12px; font-weight: 600; color: var(--text-sub); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .field input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: inherit;
+      background: var(--cream);
+      color: var(--text);
+      transition: border-color 0.2s;
+    }
+    .field input:focus { outline: none; border-color: var(--green-mid); }
+    .btn-primary {
+      width: 100%;
+      padding: 13px;
+      background: var(--green-dark);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.2s;
+    }
+    .btn-primary:hover { background: var(--green-mid); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+    .login-toggle { text-align: center; margin-top: 18px; font-size: 13px; color: var(--text-sub); }
+    .login-toggle a { color: var(--green-mid); cursor: pointer; font-weight: 600; text-decoration: none; }
+    .error-msg { font-size: 13px; color: var(--red); margin-top: 10px; min-height: 18px; }
+
+    /* ── APP LAYOUT ── */
+    #app { display: none; }
+
+    /* HEADER */
+    .app-header {
+      background: var(--green-dark);
+      color: #fff;
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .header-logo {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    .header-logo span { color: #7EC8A4; }
+    .header-date-nav { display: flex; align-items: center; gap: 14px; }
+    .date-btn {
+      background: rgba(255,255,255,0.12);
+      border: none;
+      color: #fff;
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s;
+    }
+    .date-btn:hover { background: rgba(255,255,255,0.25); }
+    .header-date-text { font-size: 14px; font-weight: 600; min-width: 160px; text-align: center; }
+    .header-right { display: flex; align-items: center; gap: 12px; }
+    .save-indicator { font-size: 12px; color: rgba(255,255,255,0.6); }
+    .save-indicator.saved { color: #7EC8A4; }
+    .btn-logout {
+      background: rgba(255,255,255,0.12);
+      border: none;
+      color: #fff;
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-logout:hover { background: rgba(255,255,255,0.25); }
+
+    /* MAIN */
+    .main { max-width: 900px; margin: 0 auto; padding: 32px 24px 80px; }
+
+    /* GREETING */
+    .greeting { margin-bottom: 28px; }
+    .greeting .label { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-sub); margin-bottom: 4px; }
+    .greeting h2 { font-size: 26px; font-weight: 800; color: var(--green-dark); }
+
+    /* CARD */
+    .card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .card-icon {
+      width: 36px; height: 36px;
+      background: var(--green-light);
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px;
+    }
+    .card-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-sub); }
+
+    /* HABIT CHECKBOXES */
+    .habits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .habit-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border);
+      cursor: pointer;
+      transition: all 0.18s;
+      user-select: none;
+    }
+    .habit-item:hover { border-color: var(--green-mid); background: var(--cream); }
+    .habit-item.checked { border-color: var(--green-mid); background: var(--green-light); }
+    .habit-cb {
+      width: 22px; height: 22px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      transition: all 0.18s;
+    }
+    .habit-item.checked .habit-cb {
+      background: var(--green-mid);
+      border-color: var(--green-mid);
+      color: #fff;
+    }
+    .habit-name { font-size: 14px; font-weight: 500; }
+    .habit-item.checked .habit-name { color: var(--green-dark); font-weight: 600; }
+
+    /* FEELINGS STARS */
+    .feelings-row { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
+    .feelings-label { font-size: 12px; color: var(--text-sub); font-weight: 600; margin-right: 4px; }
+    .star-btn {
+      font-size: 24px;
+      cursor: pointer;
+      line-height: 1;
+      transition: transform 0.15s;
+      background: none;
+      border: none;
+      padding: 2px;
+    }
+    .star-btn:hover { transform: scale(1.2); }
+    .feelings-desc { font-size: 13px; color: var(--text-sub); margin-left: 4px; font-weight: 500; }
+
+    /* METRICS GRID */
+    .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .metric-box {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .metric-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-sub); }
+    .metric-input-row { display: flex; align-items: center; gap: 6px; }
+    .metric-input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      font-size: 20px;
+      font-weight: 700;
+      font-family: inherit;
+      background: var(--cream);
+      color: var(--text);
+      text-align: center;
+      transition: border-color 0.2s;
+    }
+    .metric-input:focus { outline: none; border-color: var(--green-mid); background: #fff; }
+    .metric-unit { font-size: 12px; color: var(--text-sub); font-weight: 600; flex-shrink: 0; }
+
+    /* JOURNAL TEXTAREAS */
+    .journal-section { margin-bottom: 18px; }
+    .journal-section:last-child { margin-bottom: 0; }
+    .journal-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-sub);
+      margin-bottom: 6px;
+    }
+    .journal-sub {
+      font-size: 12px;
+      color: var(--text-sub);
+      margin-bottom: 8px;
+      font-style: italic;
+    }
+    .journal-textarea {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: inherit;
+      background: var(--cream);
+      color: var(--text);
+      resize: none;
+      line-height: 1.7;
+      transition: border-color 0.2s;
+    }
+    .journal-textarea:focus { outline: none; border-color: var(--green-mid); background: #fff; }
+    .char-hint { font-size: 11px; color: var(--text-sub); text-align: right; margin-top: 4px; }
+
+    /* SAVE BTN */
+    .save-row { display: flex; justify-content: flex-end; margin-top: 8px; }
+    .btn-save {
+      padding: 13px 36px;
+      background: var(--green-dark);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .btn-save:hover { background: var(--green-mid); transform: translateY(-1px); }
+    .btn-save:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      background: var(--green-dark);
+      color: #fff;
+      padding: 13px 22px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s;
+      z-index: 100;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.error { background: var(--red); }
+
+    /* LOADING */
+    .loading-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(237,232,223,0.7);
+      z-index: 50;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--green-dark);
+    }
+    .loading-overlay.active { display: flex; }
+
+    /* RESPONSIVE */
+    @media (max-width: 600px) {
+      .habits-grid { grid-template-columns: 1fr; }
+      .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+      .app-header { padding: 14px 16px; }
+      .main { padding: 20px 16px 80px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════ LOGIN ══════════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">Dev<span>OS</span></div>
+    <h1 id="auth-title">Welcome back</h1>
+    <p id="auth-sub">เข้าสู่ระบบเพื่อบันทึกประจำวัน</p>
+
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="auth-email" placeholder="you@email.com" />
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="auth-password" placeholder="••••••••" />
+    </div>
+    <div id="auth-name-field" class="field" style="display:none;">
+      <label>Display Name</label>
+      <input type="text" id="auth-name" placeholder="Your name" />
+    </div>
+
+    <button class="btn-primary" id="auth-btn">เข้าสู่ระบบ</button>
+    <div class="error-msg" id="auth-error"></div>
+    <div class="login-toggle">
+      <span id="auth-toggle-text">ยังไม่มีบัญชี?</span>
+      <a id="auth-toggle-link"> สมัครสมาชิก</a>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ APP ══════════════ -->
+<div id="app">
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-logo">Dev<span>OS</span></div>
+    <div class="header-date-nav">
+      <button class="date-btn" id="btn-prev">‹</button>
+      <div class="header-date-text" id="header-date">—</div>
+      <button class="date-btn" id="btn-next">›</button>
+    </div>
+    <div class="header-right">
+      <span class="save-indicator" id="save-indicator"></span>
+      <a href="stats.html" style="padding:7px 14px;background:rgba(255,255,255,0.12);color:#fff;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">📊 Statistics</a>
+      <button class="btn-logout" id="btn-logout">ออกจากระบบ</button>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="greeting">
+      <div class="label">Daily Interaction</div>
+      <h2 id="greeting-text">Good morning ☕</h2>
+    </div>
+
+    <!-- ① QUICK HABITS -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">✅</div>
+        <div class="card-title">Quick Habits</div>
+      </div>
+      <div class="habits-grid" id="habits-grid">
+        <!-- populated by JS -->
+      </div>
+    </div>
+
+    <!-- ② CORE METRICS -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">📊</div>
+        <div class="card-title">Core Metrics</div>
+      </div>
+
+      <!-- Feelings -->
+      <div class="feelings-row">
+        <span class="feelings-label">FEELINGS</span>
+        <button class="star-btn" data-val="1">★</button>
+        <button class="star-btn" data-val="2">★</button>
+        <button class="star-btn" data-val="3">★</button>
+        <button class="star-btn" data-val="4">★</button>
+        <button class="star-btn" data-val="5">★</button>
+        <span class="feelings-desc" id="feelings-desc">—</span>
+      </div>
+
+      <!-- Numbers -->
+      <div class="metrics-grid">
+        <div class="metric-box">
+          <div class="metric-label">Sleep</div>
+          <div class="metric-input-row">
+            <input class="metric-input" type="number" id="m-sleep" placeholder="0" min="0" max="24" step="0.5" />
+            <span class="metric-unit">hrs</span>
+          </div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Read</div>
+          <div class="metric-input-row">
+            <input class="metric-input" type="number" id="m-read" placeholder="0" min="0" />
+            <span class="metric-unit">pgs</span>
+          </div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Weight</div>
+          <div class="metric-input-row">
+            <input class="metric-input" type="number" id="m-weight" placeholder="0" min="0" step="0.1" />
+            <span class="metric-unit">kg</span>
+          </div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Meditate</div>
+          <div class="metric-input-row">
+            <input class="metric-input" type="number" id="m-meditate" placeholder="0" min="0" />
+            <span class="metric-unit">min</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ③ JOURNAL -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">📝</div>
+        <div class="card-title">Deep Journal</div>
+      </div>
+
+      <div class="journal-section">
+        <div class="journal-label">📚 Thesis Log</div>
+        <div class="journal-sub">ทำอะไรไปบ้าง / ได้อะไรบ้าง / ต่อไปจะทำอะไรต่อ?</div>
+        <textarea class="journal-textarea" id="j-thesis" rows="5" placeholder="วันนี้ทำอะไร → ได้อะไร → แผนวันพรุ่งนี้..."></textarea>
+        <div class="char-hint" id="thesis-hint">0 / 5 บรรทัด</div>
+      </div>
+
+      <div class="journal-section">
+        <div class="journal-label">✨ Memorable Moments</div>
+        <div class="journal-sub">เรื่องเล็กๆ น้อยๆ ในวันนี้ที่อยากจำ (Gratitude)</div>
+        <textarea class="journal-textarea" id="j-moments" rows="3" placeholder="กาแฟอร่อยมาก, อากาศดี, เทรดชนะไป 1 ไม้..."></textarea>
+        <div class="char-hint" id="moments-hint">0 / 3 บรรทัด</div>
+      </div>
+    </div>
+
+    <!-- SAVE -->
+    <div class="save-row">
+      <button class="btn-save" id="btn-save">💾 บันทึกวันนี้</button>
+    </div>
+  </main>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+<!-- Loading -->
+<div class="loading-overlay" id="loading">กำลังโหลด...</div>
+<!-- DEBUG PANEL -->
+<div id="dbg" style="position:fixed;bottom:10px;left:10px;background:#1A3A2A;color:#7EC8A4;padding:10px 14px;font-size:11px;border-radius:8px;z-index:999;max-width:320px;font-family:monospace;line-height:1.6;max-height:200px;overflow-y:auto;"></div>
+
+<!-- ══════════════ SCRIPT ══════════════ -->
+<script>
+  // ─────────────── CONFIG ───────────────
+  // ⚠️ เปลี่ยนเป็น URL และ anon key ของ Supabase project ตัวเอง
+  const SUPABASE_URL  = 'https://lyncszmpwojopbvkmqmc.supabase.co';
+  const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5bmNzem1wd29qb3BidmttcW1jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyMTgwODIsImV4cCI6MjA5Nzc5NDA4Mn0.fzOPawbNz3kQTK5L4uVlDnWUxwgZ-V4suBFYD-tpcP4';
+
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+  // ─────────────── DATA ───────────────
+  const DEFAULT_HABITS = [
+    { name: 'No Caffeine',  icon: '☕' },
+    { name: 'Exercise',     icon: '🏋️' },
+    { name: 'Trade',        icon: '📈' },
+    { name: 'Drink Water',  icon: '💧' },
+    { name: 'Skills',       icon: '🧠' },
+    { name: 'English',      icon: '🇬🇧' },
+    { name: 'Healthy',      icon: '🥗' },
+  ];
+
+  const FEELINGS_DESC = ['', 'Bad 😞', 'Meh 😐', 'Okay 🙂', 'Good 😊', 'Best 🔥'];
+
+  let currentDate    = todayStr();
+  let userHabits     = [];
+  let completions    = {};   // habit_id → boolean
+  let feelings       = 0;
+  let isRegister     = false;
+  let appInitialized = false; // guard ไม่ให้ initApp รันซ้ำ
+
+  // ─────────────── DEBUG ───────────────
+  function dbg(msg) {
+    const el = document.getElementById('dbg');
+    if (el) el.innerHTML += `<div>${new Date().toLocaleTimeString()}: ${msg}</div>`;
+    console.log('[DBG]', msg);
+  }
+
+  // ─────────────── SUPABASE WITH TIMEOUT ───────────────
+  function sbQuery(promise, label = 'query', ms = 20000) {
+    dbg(`⏳ ${label}...`);
+    return Promise.race([
+      promise.then(r => { dbg(`✅ ${label} done`); return r; }),
+      new Promise((_, reject) => setTimeout(() => {
+        dbg(`❌ ${label} TIMEOUT ${ms}ms`);
+        reject(new Error(`${label} timeout`));
+      }, ms))
+    ]);
+  }
+
+  // ─────────────── UTILS ───────────────
+  function todayStr() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  function formatDateTH(dateStr) {
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('th-TH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  }
+
+  function isToday(dateStr) { return dateStr === todayStr(); }
+
+  function showToast(msg, isError = false) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show' + (isError ? ' error' : '');
+    setTimeout(() => t.className = 'toast', 3000);
+  }
+
+  function setLoading(on) {
+    document.getElementById('loading').classList.toggle('active', on);
+  }
+
+  function greet() {
+    const h = new Date().getHours();
+    if (h < 12) return 'Good morning ☕';
+    if (h < 17) return 'Good afternoon 🌿';
+    return 'Good evening 🌙';
+  }
+
+  // ─────────────── AUTH ───────────────
+  document.getElementById('auth-toggle-link').addEventListener('click', () => {
+    isRegister = !isRegister;
+    document.getElementById('auth-title').textContent    = isRegister ? 'สร้างบัญชีใหม่' : 'Welcome back';
+    document.getElementById('auth-sub').textContent      = isRegister ? 'กรอกข้อมูลเพื่อเริ่มต้น' : 'เข้าสู่ระบบเพื่อบันทึกประจำวัน';
+    document.getElementById('auth-btn').textContent      = isRegister ? 'สมัครสมาชิก' : 'เข้าสู่ระบบ';
+    document.getElementById('auth-toggle-text').textContent = isRegister ? 'มีบัญชีแล้ว?' : 'ยังไม่มีบัญชี?';
+    document.getElementById('auth-toggle-link').textContent = isRegister ? ' เข้าสู่ระบบ' : ' สมัครสมาชิก';
+    document.getElementById('auth-name-field').style.display = isRegister ? '' : 'none';
+    document.getElementById('auth-error').textContent = '';
+  });
+
+  document.getElementById('auth-btn').addEventListener('click', async () => {
+    const email = document.getElementById('auth-email').value.trim();
+    const pass  = document.getElementById('auth-password').value;
+    const name  = document.getElementById('auth-name').value.trim();
+    const btn   = document.getElementById('auth-btn');
+    const errEl = document.getElementById('auth-error');
+
+    if (!email || !pass) { errEl.textContent = 'กรุณากรอก Email และ Password'; return; }
+    btn.disabled = true;
+    errEl.textContent = '';
+
+    try {
+      if (isRegister) {
+        const { error } = await sb.auth.signUp({
+          email, password: pass,
+          options: { data: { full_name: name } }
+        });
+        if (error) throw error;
+        showToast('สมัครสมาชิกสำเร็จ! กรุณาตรวจสอบ Email');
+      } else {
+        const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+        if (error) throw error;
+      }
+    } catch (e) {
+      errEl.textContent = e.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  document.getElementById('btn-logout').addEventListener('click', async () => {
+    dbg('logout clicked');
+    try {
+      await Promise.race([sb.auth.signOut(), new Promise(r => setTimeout(r, 3000))]);
+    } catch(e) { dbg('signOut err: ' + e.message); }
+    // Force clear session and reload
+    Object.keys(localStorage).filter(k => k.includes('supabase')).forEach(k => localStorage.removeItem(k));
+    window.location.reload();
+  });
+
+  // Enter key on login
+  ['auth-email','auth-password','auth-name'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('auth-btn').click();
+    });
+  });
+
+  // ─────────────── APP INIT ───────────────
+  sb.auth.onAuthStateChange(async (event, session) => {
+    dbg(`auth event: ${event}`);
+    if (session?.user) {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      if (!appInitialized) {
+        appInitialized = true;
+        await initApp(session.user);
+      }
+    } else {
+      appInitialized = false;
+      document.getElementById('login-screen').style.display = 'flex';
+      document.getElementById('app').style.display = 'none';
+    }
+  });
+
+  async function initApp(user) {
+    dbg(`initApp uid: ${user.id.slice(0,8)}...`);
+    setLoading(true);
+    document.getElementById('loading').textContent = '🔄 กำลังเชื่อมต่อ Supabase...\n(ครั้งแรกอาจใช้เวลา 10-20 วินาที)';
+    const safetyTimer = setTimeout(() => { dbg('⚠️ safety timer fired'); setLoading(false); }, 25000);
+    try {
+      document.getElementById('greeting-text').textContent = greet();
+      updateDateUI();
+      await ensureHabits(user.id);
+      await loadDay(currentDate, user.id);
+      dbg('✅ initApp complete');
+    } catch(e) {
+      dbg(`❌ initApp error: ${e.message}`);
+      // Reset guard so next auth event can retry
+      appInitialized = false;
+      showToast('⚠️ เชื่อมต่อล้มเหลว กรุณา Reload หน้าใหม่', true);
+    } finally {
+      clearTimeout(safetyTimer);
+      document.getElementById('loading').textContent = 'กำลังโหลด...';
+      setLoading(false);
+    }
+  }
+
+  // ─────────────── ENSURE DEFAULT HABITS ───────────────
+  async function ensureHabits(userId) {
+    const { data, error } = await sbQuery(
+      sb.from('habits').select('*').eq('user_id', userId).order('sort_order'),
+      'habits SELECT'
+    );
+    if (error) {
+      dbg(`habits SELECT err: ${error.message}`);
+      showToast('⚠️ habits: ' + error.message, true);
+      return;
+    }
+    dbg(`habits rows: ${data?.length ?? 0}`);
+    if (data && data.length > 0) {
+      userHabits = data;
+    } else {
+      const toInsert = DEFAULT_HABITS.map((h, i) => ({
+        user_id: userId, name: h.name, icon: h.icon, sort_order: i + 1, is_active: true
+      }));
+      const { data: inserted, error: insErr } = await sbQuery(
+        sb.from('habits').insert(toInsert).select(),
+        'habits INSERT'
+      );
+      if (insErr) {
+        dbg(`habits INSERT err: ${insErr.message}`);
+        showToast('⚠️ habits insert: ' + insErr.message, true);
+        return;
+      }
+      userHabits = inserted || [];
+      dbg(`habits inserted: ${userHabits.length}`);
+    }
+    renderHabits();
+  }
+
+  // ─────────────── RENDER HABITS ───────────────
+  function renderHabits() {
+    const grid = document.getElementById('habits-grid');
+    grid.innerHTML = '';
+    userHabits.filter(h => h.is_active).forEach(h => {
+      const item = document.createElement('div');
+      item.className = 'habit-item' + (completions[h.id] ? ' checked' : '');
+      item.dataset.id = h.id;
+      item.innerHTML = `
+        <div class="habit-cb">${completions[h.id] ? '✓' : ''}</div>
+        <span class="habit-name">${h.icon || ''} ${h.name}</span>
+      `;
+      item.addEventListener('click', () => toggleHabit(h.id, item));
+      grid.appendChild(item);
+    });
+  }
+
+  function toggleHabit(habitId, el) {
+    completions[habitId] = !completions[habitId];
+    el.classList.toggle('checked', completions[habitId]);
+    el.querySelector('.habit-cb').textContent = completions[habitId] ? '✓' : '';
+  }
+
+  // ─────────────── FEELINGS STARS ───────────────
+  const starBtns = document.querySelectorAll('.star-btn');
+  starBtns.forEach(btn => {
+    btn.addEventListener('click', () => setFeelings(parseInt(btn.dataset.val)));
+  });
+
+  function setFeelings(val) {
+    feelings = val;
+    starBtns.forEach(btn => {
+      const v = parseInt(btn.dataset.val);
+      btn.style.color = v <= val ? 'var(--star-on)' : 'var(--star-off)';
+    });
+    document.getElementById('feelings-desc').textContent =
+      val ? `(${val}: ${FEELINGS_DESC[val]})` : '—';
+  }
+
+  // ─────────────── LINE COUNTER ───────────────
+  function setupLineCount(textareaId, hintId, max) {
+    const ta = document.getElementById(textareaId);
+    const hint = document.getElementById(hintId);
+    ta.addEventListener('input', () => {
+      const lines = ta.value.split('\n').length;
+      hint.textContent = `${lines} / ${max} บรรทัด`;
+      hint.style.color = lines > max ? 'var(--red)' : 'var(--text-sub)';
+    });
+  }
+  setupLineCount('j-thesis', 'thesis-hint', 5);
+  setupLineCount('j-moments', 'moments-hint', 3);
+
+  // ─────────────── DATE NAV ───────────────
+  async function changeDate(delta) {
+    const { data: { session } } = await sb.auth.getSession();
+    const user = session?.user;
+    if (!user) return;
+    const d = new Date(currentDate + 'T00:00:00');
+    d.setDate(d.getDate() + delta);
+    if (d > new Date()) return; // ไม่อนุญาตให้ไปอนาคต
+    currentDate = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    updateDateUI();
+    setLoading(true);
+    try { await loadDay(currentDate, user.id); } finally { setLoading(false); }
+  }
+
+  document.getElementById('btn-prev').addEventListener('click', () => changeDate(-1));
+  document.getElementById('btn-next').addEventListener('click', () => changeDate(+1));
+
+  function updateDateUI() {
+    document.getElementById('header-date').textContent = formatDateTH(currentDate);
+    document.getElementById('btn-next').disabled = isToday(currentDate);
+    document.getElementById('btn-next').style.opacity = isToday(currentDate) ? '0.3' : '1';
+  }
+
+  // ─────────────── LOAD DAY ───────────────
+  async function loadDay(dateStr, userId) {
+    completions = {};
+    setFeelings(0);
+    document.getElementById('m-sleep').value    = '';
+    document.getElementById('m-read').value     = '';
+    document.getElementById('m-weight').value   = '';
+    document.getElementById('m-meditate').value = '';
+    document.getElementById('j-thesis').value   = '';
+    document.getElementById('j-moments').value  = '';
+
+    // Load daily_log
+    const { data: log } = await sbQuery(
+      sb.from('daily_logs').select('*').eq('user_id', userId).eq('log_date', dateStr).maybeSingle(),
+      'loadDay SELECT'
+    );
+    dbg(`daily_log: ${log ? 'found' : 'empty'}`);
+
+    if (log) {
+      document.getElementById('m-sleep').value    = log.sleep_hours    ?? '';
+      document.getElementById('m-read').value     = log.read_pages     ?? '';
+      document.getElementById('m-weight').value   = log.weight_kg      ?? '';
+      document.getElementById('m-meditate').value = log.meditate_minutes ?? '';
+      document.getElementById('j-thesis').value   = log.thesis_notes   ?? '';
+      document.getElementById('j-moments').value  = log.memorable_moments ?? '';
+      setFeelings(log.feelings || 0);
+    }
+
+    // Load habit_completions
+    const { data: hc } = await sbQuery(
+      sb.from('habit_completions').select('habit_id, completed').eq('user_id', userId).eq('log_date', dateStr),
+      'habit_completions SELECT'
+    );
+
+    (hc || []).forEach(row => { completions[row.habit_id] = row.completed; });
+    renderHabits();
+
+    setSaveIndicator('');
+  }
+
+  // ─────────────── SAVE ───────────────
+  document.getElementById('btn-save').addEventListener('click', async () => {
+    const { data: { session } } = await sb.auth.getSession();
+    const user = session?.user;
+    if (!user) return;
+
+    const btn = document.getElementById('btn-save');
+    btn.disabled = true;
+    btn.textContent = '⏳ กำลังบันทึก...';
+    setSaveIndicator('กำลังบันทึก...');
+
+    try {
+      dbg('save: upserting daily_log...');
+      // Upsert daily_log
+      const { error: logErr } = await sbQuery(sb.from('daily_logs').upsert({
+        user_id:            user.id,
+        log_date:           currentDate,
+        sleep_hours:        parseFloat(document.getElementById('m-sleep').value)    || null,
+        read_pages:         parseInt(document.getElementById('m-read').value)       || null,
+        weight_kg:          parseFloat(document.getElementById('m-weight').value)   || null,
+        meditate_minutes:   parseInt(document.getElementById('m-meditate').value)   || null,
+        feelings:           feelings || null,
+        thesis_notes:       document.getElementById('j-thesis').value.trim()   || null,
+        memorable_moments:  document.getElementById('j-moments').value.trim()  || null,
+      }, { onConflict: 'user_id,log_date' }), 'daily_log upsert');
+
+      if (logErr) throw logErr;
+      dbg('daily_log saved ✅');
+
+      // Upsert habit_completions
+      if (userHabits.length > 0) {
+        const hcRows = userHabits.map(h => ({
+          user_id:   user.id,
+          habit_id:  h.id,
+          log_date:  currentDate,
+          completed: !!completions[h.id],
+        }));
+        const { error: hcErr } = await sbQuery(
+          sb.from('habit_completions').upsert(hcRows, { onConflict: 'user_id,habit_id,log_date' }),
+          'habit_completions upsert'
+        );
+        if (hcErr) throw hcErr;
+        dbg('habits saved ✅');
+      }
+
+      showToast('✅ บันทึกสำเร็จ!');
+      setSaveIndicator('บันทึกแล้ว ✓', true);
+    } catch (e) {
+      showToast('❌ ' + e.message, true);
+      setSaveIndicator('');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '💾 บันทึกวันนี้';
+    }
+  });
+
+  function setSaveIndicator(text, ok = false) {
+    const el = document.getElementById('save-indicator');
+    el.textContent = text;
+    el.className = 'save-indicator' + (ok ? ' saved' : '');
+  }
+</script>
+</body>
+</html>
