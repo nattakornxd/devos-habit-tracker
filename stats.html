@@ -132,7 +132,7 @@
       box-shadow: var(--shadow-sm);
       border: 1px solid rgba(226,228,224,0.6);
     }
-    .summary-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-sub); margin-bottom: 8px; }
+    /* .summary-label defined above in SVG ICONS block */
     .summary-value { font-size: 26px; font-weight: 700; color: var(--primary); }
     .summary-unit { font-size: 13px; font-weight: 500; color: var(--text-sub); margin-left: 3px; }
     .summary-sub { font-size: 11px; color: var(--text-sub); margin-top: 4px; font-family: 'Sarabun', sans-serif; }
@@ -175,6 +175,32 @@
     .habit-bar-wrap { flex: 1; background: var(--bg); border-radius: 999px; height: 10px; overflow: hidden; }
     .habit-bar-fill { height: 100%; background: var(--primary); border-radius: 999px; transition: width 0.5s ease; }
     .habit-pct { font-size: 12px; font-weight: 700; color: var(--text-sub); min-width: 40px; text-align: right; }
+
+    /* ── SVG ICONS ── */
+    .icon {
+      display: inline-block;
+      width: 13px; height: 13px;
+      vertical-align: middle;
+      flex-shrink: 0;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+      margin-right: 4px;
+      position: relative; top: -1px;
+    }
+    .icon-lg {
+      display: block;
+      width: 16px; height: 16px;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+      color: var(--primary);
+    }
+    .summary-label { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-sub); margin-bottom: 8px; }
 
     /* ── EMPTY STATE ── */
     .empty-state { text-align: center; padding: 40px; color: var(--text-sub); font-size: 14px; font-family: 'Sarabun', sans-serif; }
@@ -274,22 +300,34 @@
     <!-- Summary Cards -->
     <div class="summary-grid">
       <div class="summary-card">
-        <div class="summary-label">😴 Sleep เฉลี่ย</div>
+        <div class="summary-label">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          Sleep เฉลี่ย
+        </div>
         <div><span class="summary-value" id="avg-sleep">—</span><span class="summary-unit">hrs</span></div>
         <div class="summary-sub" id="sub-sleep"></div>
       </div>
       <div class="summary-card">
-        <div class="summary-label">📚 Read เฉลี่ย</div>
+        <div class="summary-label">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          Read เฉลี่ย
+        </div>
         <div><span class="summary-value" id="avg-read">—</span><span class="summary-unit">pgs</span></div>
         <div class="summary-sub" id="sub-read"></div>
       </div>
       <div class="summary-card">
-        <div class="summary-label">🏋️ Weight ล่าสุด</div>
+        <div class="summary-label">
+          <svg class="icon" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Weight ล่าสุด
+        </div>
         <div><span class="summary-value" id="avg-weight">—</span><span class="summary-unit">kg</span></div>
         <div class="summary-sub" id="sub-weight"></div>
       </div>
       <div class="summary-card">
-        <div class="summary-label">🧘 Meditate เฉลี่ย</div>
+        <div class="summary-label">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          Meditate เฉลี่ย
+        </div>
         <div><span class="summary-value" id="avg-meditate">—</span><span class="summary-unit">min</span></div>
         <div class="summary-sub" id="sub-meditate"></div>
       </div>
@@ -301,7 +339,9 @@
       <!-- Sleep -->
       <div class="chart-card">
         <div class="chart-header">
-          <div class="chart-icon">😴</div>
+          <div class="chart-icon">
+            <svg class="icon-lg" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </div>
           <div class="chart-title">Sleep (ชั่วโมง)</div>
         </div>
         <div class="chart-wrap"><canvas id="chart-sleep"></canvas></div>
@@ -310,7 +350,9 @@
       <!-- Weight -->
       <div class="chart-card">
         <div class="chart-header">
-          <div class="chart-icon">⚖️</div>
+          <div class="chart-icon">
+            <svg class="icon-lg" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
           <div class="chart-title">Weight (kg)</div>
         </div>
         <div class="chart-wrap"><canvas id="chart-weight"></canvas></div>
@@ -319,7 +361,9 @@
       <!-- Read -->
       <div class="chart-card">
         <div class="chart-header">
-          <div class="chart-icon">📚</div>
+          <div class="chart-icon">
+            <svg class="icon-lg" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          </div>
           <div class="chart-title">Read (หน้า/วัน)</div>
         </div>
         <div class="chart-wrap"><canvas id="chart-read"></canvas></div>
@@ -328,7 +372,9 @@
       <!-- Meditate -->
       <div class="chart-card">
         <div class="chart-header">
-          <div class="chart-icon">🧘</div>
+          <div class="chart-icon">
+            <svg class="icon-lg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          </div>
           <div class="chart-title">Meditate (นาที)</div>
         </div>
         <div class="chart-wrap"><canvas id="chart-meditate"></canvas></div>
@@ -337,7 +383,9 @@
       <!-- Feelings -->
       <div class="chart-card full">
         <div class="chart-header">
-          <div class="chart-icon">⭐</div>
+          <div class="chart-icon">
+            <svg class="icon-lg" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
           <div class="chart-title">Feelings (1–5 คะแนน)</div>
         </div>
         <div class="chart-wrap"><canvas id="chart-feelings"></canvas></div>
@@ -346,7 +394,9 @@
       <!-- Habits -->
       <div class="chart-card full">
         <div class="chart-header">
-          <div class="chart-icon">HAB</div>
+          <div class="chart-icon">
+            <svg class="icon-lg" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          </div>
           <div class="chart-title">Habit Completion Rate</div>
         </div>
         <div id="habit-stats-wrap" class="habit-stats">
@@ -588,6 +638,38 @@
     }
   }
 
+  // ── SVG ICON HELPERS (stats) ──
+  const _SI = {
+    ban:      `<circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>`,
+    dumbbell: `<path d="M6 5v14M18 5v14"/><path d="M2 9h4M20 9h2M2 15h4M20 15h2"/><rect x="6" y="8" width="12" height="8" rx="2"/>`,
+    trendUp:  `<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>`,
+    droplet:  `<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>`,
+    code:     `<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>`,
+    globe:    `<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>`,
+    heart:    `<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>`,
+    zap:      `<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>`,
+  };
+  const _SMAP = [
+    ['caffeine', _SI.ban], ['coffee', _SI.ban],
+    ['exercise', _SI.dumbbell], ['gym', _SI.dumbbell],
+    ['trade', _SI.trendUp],
+    ['water', _SI.droplet], ['drink', _SI.droplet],
+    ['skills', _SI.code], ['skill', _SI.code],
+    ['english', _SI.globe], ['language', _SI.globe],
+    ['healthy', _SI.heart], ['health', _SI.heart],
+  ];
+  function statsMakeIcon(d) {
+    return `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;flex-shrink:0;margin-right:6px;position:relative;top:-1px">${d}</svg>`;
+  }
+  function statsGetHabitIcon(name) {
+    const lower = name.toLowerCase();
+    for (const [k, d] of _SMAP) { if (lower.includes(k)) return statsMakeIcon(d); }
+    return statsMakeIcon(_SI.zap);
+  }
+  function statsStripEmoji(str) {
+    return str.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, '').trim();
+  }
+
   async function loadHabitStats(userId, from, to, totalDays) {
     const wrap = document.getElementById('habit-stats-wrap');
 
@@ -611,12 +693,14 @@
 
     wrap.innerHTML = '';
     habits.forEach(h => {
-      const count = countMap[h.id] || 0;
-      const pct   = Math.round((count / totalDays) * 100);
-      const row   = document.createElement('div');
+      const count       = countMap[h.id] || 0;
+      const pct         = Math.round((count / totalDays) * 100);
+      const displayName = statsStripEmoji(h.name);
+      const iconSvg     = statsGetHabitIcon(h.name);
+      const row         = document.createElement('div');
       row.className = 'habit-row';
       row.innerHTML = `
-        <div class="habit-name-col">${h.icon || ''} ${h.name}</div>
+        <div class="habit-name-col">${iconSvg}${displayName}</div>
         <div class="habit-bar-wrap">
           <div class="habit-bar-fill" style="width: ${pct}%"></div>
         </div>

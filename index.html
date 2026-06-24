@@ -241,23 +241,48 @@
     /* METRICS */
     .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin-top: 4px; }
     .metric-group { display: flex; flex-direction: column; gap: 8px; }
-    .metric-label { font-size: 0.8rem; font-weight: 700; color: var(--text-sub); letter-spacing: 0.05em; }
+    /* ── SVG ICON ── */
+    .icon {
+      display: inline-block;
+      width: 13px; height: 13px;
+      vertical-align: middle;
+      flex-shrink: 0;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+      margin-right: 4px;
+      position: relative; top: -1px;
+    }
+
+    .metric-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-sub);
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
     .input-wrapper {
       display: flex;
       align-items: center;
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
-      padding: 0 12px;
+      padding: 0 10px;
       transition: border-color 0.2s;
+      overflow: hidden;          /* clip overflow */
     }
     .input-wrapper:focus-within { border-color: var(--primary); }
     .metric-input {
       flex: 1;
+      min-width: 0;              /* KEY: allows flex shrink below content size */
       border: none;
       background: transparent;
-      padding: 12px 0;
-      font-size: 1.2rem;
+      padding: 11px 4px;
+      font-size: 1.15rem;
       font-weight: 700;
       color: var(--primary);
       text-align: center;
@@ -266,7 +291,13 @@
       -webkit-appearance: none;
       -moz-appearance: textfield;
     }
-    .metric-unit { font-size: 12px; color: var(--text-sub); font-weight: 500; }
+    .metric-unit {
+      font-size: 11px;
+      color: var(--text-sub);
+      font-weight: 600;
+      white-space: nowrap;       /* never wrap */
+      flex-shrink: 0;            /* never shrink */
+    }
 
     /* JOURNAL */
     .journal-group { margin-bottom: 20px; }
@@ -474,7 +505,10 @@
 
         <div class="metrics-grid">
           <div class="metric-group">
-            <label class="metric-label">💤 Sleep</label>
+            <label class="metric-label">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+              Sleep
+            </label>
             <div class="input-wrapper">
               <input class="metric-input" type="number" inputmode="decimal"
                      id="m-sleep" placeholder="0" min="0" max="24" step="0.5" />
@@ -482,7 +516,10 @@
             </div>
           </div>
           <div class="metric-group">
-            <label class="metric-label">📚 Read</label>
+            <label class="metric-label">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+              Read
+            </label>
             <div class="input-wrapper">
               <input class="metric-input" type="number" inputmode="numeric"
                      id="m-read" placeholder="0" min="0" />
@@ -490,7 +527,10 @@
             </div>
           </div>
           <div class="metric-group">
-            <label class="metric-label">⚖️ Weight</label>
+            <label class="metric-label">
+              <svg class="icon" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              Weight
+            </label>
             <div class="input-wrapper">
               <input class="metric-input" type="number" inputmode="decimal"
                      id="m-weight" placeholder="0" min="0" step="0.1" />
@@ -498,7 +538,10 @@
             </div>
           </div>
           <div class="metric-group">
-            <label class="metric-label">🧘 Meditate</label>
+            <label class="metric-label">
+              <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+              Meditate
+            </label>
             <div class="input-wrapper">
               <input class="metric-input" type="number" inputmode="numeric"
                      id="m-meditate" placeholder="0" min="0" />
@@ -558,11 +601,43 @@
 
   // ── STATE ──
   const DEFAULT_HABITS = [
-    { name: '🚫 No Caffeine' }, { name: '🏋️ Exercise' },
-    { name: '📈 Trade' },       { name: '💧 Drink Water' },
-    { name: '🧠 Skills' },      { name: '🇬🇧 English' },
-    { name: '🥗 Healthy' },
+    { name: 'No Caffeine' }, { name: 'Exercise' },
+    { name: 'Trade' },       { name: 'Drink Water' },
+    { name: 'Skills' },      { name: 'English' },
+    { name: 'Healthy' },
   ];
+
+  // ── SVG ICON HELPERS ──
+  const _I = {
+    ban:      `<circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>`,
+    dumbbell: `<path d="M6 5v14M18 5v14"/><path d="M2 9h4M20 9h2M2 15h4M20 15h2"/><rect x="6" y="8" width="12" height="8" rx="2"/>`,
+    trendUp:  `<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>`,
+    droplet:  `<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>`,
+    code:     `<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>`,
+    globe:    `<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>`,
+    heart:    `<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>`,
+    zap:      `<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>`,
+  };
+  const _HABIT_MAP = [
+    ['caffeine', _I.ban], ['coffee', _I.ban],
+    ['exercise', _I.dumbbell], ['gym', _I.dumbbell],
+    ['trade', _I.trendUp],
+    ['water', _I.droplet], ['drink', _I.droplet],
+    ['skills', _I.code], ['skill', _I.code],
+    ['english', _I.globe], ['language', _I.globe],
+    ['healthy', _I.heart], ['health', _I.heart],
+  ];
+  function makeIcon(d, size = 13) {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;flex-shrink:0;margin-right:5px;position:relative;top:-1px">${d}</svg>`;
+  }
+  function getHabitIcon(name) {
+    const lower = name.toLowerCase();
+    for (const [k, d] of _HABIT_MAP) { if (lower.includes(k)) return makeIcon(d); }
+    return makeIcon(_I.zap);
+  }
+  function stripEmoji(str) {
+    return str.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, '').trim();
+  }
   const FEELINGS_DESC = ['', 'Bad', 'Fair', 'Okay', 'Good', 'Excellent'];
 
   let currentDate    = todayStr();
@@ -731,12 +806,14 @@
     const grid = document.getElementById('habits-grid');
     grid.innerHTML = '';
     userHabits.filter(h => h.is_active).forEach(h => {
+      const displayName = stripEmoji(h.name);
+      const iconSvg     = getHabitIcon(h.name);
       const item = document.createElement('div');
       item.className = 'habit-item' + (completions[h.id] ? ' checked' : '');
       item.dataset.id = h.id;
       item.innerHTML = `
         <div class="habit-check">${completions[h.id] ? '&#10003;' : ''}</div>
-        <span>${h.name}</span>
+        ${iconSvg}<span>${displayName}</span>
       `;
       item.addEventListener('click', () => toggleHabit(h.id, item));
       grid.appendChild(item);
