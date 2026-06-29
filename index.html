@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DevOS — Habit Tracker</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── TOKENS (Gemini palette) ── */
+    :root {
+      --bg:          #F7F5F0;
+      --surface:     #FFFFFF;
+      --primary:     #2D4A3E;
+      --primary-lt:  #E8EFEA;
+      --text:        #2C332F;
+      --text-sub:    #7A827E;
+      --border:      #E2E4E0;
+      --star-on:     #F59E0B;
+      --star-off:    #E2E4E0;
+      --red:         #C0392B;
+      --radius-sm:   8px;
+      --radius-md:   16px;
+      --radius-lg:   24px;
+      --shadow-sm:   0 2px 8px rgba(45,74,62,0.05);
+      --shadow-md:   0 4px 16px rgba(45,74,62,0.09);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', 'Sarabun', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* ── LOGIN ── */
+    #login-screen {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .login-card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: var(--shadow-md);
+    }
+    .login-logo {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: var(--primary);
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+    .login-logo span { color: var(--text-sub); }
+    .login-card h1 { font-size: 26px; font-weight: 700; margin-bottom: 6px; color: var(--primary); }
+    .login-card p  { font-size: 14px; color: var(--text-sub); margin-bottom: 28px; font-family: 'Sarabun', sans-serif; }
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: 11px; font-weight: 700; color: var(--text-sub); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.08em; }
+    .field input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-family: inherit;
+      background: var(--bg);
+      color: var(--text);
+      transition: border-color 0.2s;
+    }
+    .field input:focus { outline: none; border-color: var(--primary); }
+    .btn-primary {
+      width: 100%;
+      padding: 13px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.2s;
+      font-family: inherit;
+    }
+    .btn-primary:hover { background: #1e332a; }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+    .login-toggle { text-align: center; margin-top: 18px; font-size: 13px; color: var(--text-sub); font-family: 'Sarabun', sans-serif; }
+    .login-toggle a { color: var(--primary); cursor: pointer; font-weight: 600; text-decoration: none; }
+    .error-msg { font-size: 13px; color: var(--red); margin-top: 10px; min-height: 18px; font-family: 'Sarabun', sans-serif; }
+
+    /* ── APP ── */
+    #app { display: none; }
+
+    .container { max-width: 900px; margin: 0 auto; padding: 0 20px 60px; }
+
+    /* HEADER */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 0;
+      margin-bottom: 28px;
+      border-bottom: 1px solid var(--border);
+    }
+    .logo { font-size: 1.1rem; font-weight: 700; color: var(--primary); letter-spacing: 2px; }
+    .logo span { color: var(--text-sub); }
+    .date-nav { display: flex; align-items: center; gap: 14px; font-weight: 600; font-size: 0.9rem; }
+    .date-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 32px; height: 32px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-sub);
+      font-size: 15px;
+      transition: all 0.2s;
+    }
+    .date-btn:hover { background: var(--primary-lt); color: var(--primary); }
+    .date-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .header-actions { display: flex; align-items: center; gap: 8px; }
+    .header-actions button, .header-actions a,
+    .header-actions .nav-link {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      font-weight: 500;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--text);
+      text-decoration: none;
+      font-family: inherit;
+    }
+    .header-actions button:hover, .header-actions a:hover,
+    .header-actions .nav-link:hover {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    .save-indicator {
+      font-size: 12px;
+      color: var(--text-sub);
+      font-weight: 500;
+    }
+    .save-indicator.saved { color: var(--primary); }
+
+    /* MAIN */
+    .greeting { margin-bottom: 28px; }
+    .greeting .section-title { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-sub); margin-bottom: 4px; }
+    .greeting h2 { font-size: 2rem; font-weight: 700; color: var(--primary); }
+
+    .section-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-sub);
+      letter-spacing: 1.5px;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* CARD */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid rgba(226,228,224,0.6);
+    }
+
+    /* HABITS */
+    .habits-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+    .habit-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all 0.18s;
+      font-weight: 500;
+      font-size: 14px;
+      user-select: none;
+      color: var(--text);
+    }
+    .habit-item:hover { border-color: var(--primary); }
+    .habit-item.checked {
+      background: var(--primary-lt);
+      border-color: var(--primary-lt);
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .habit-check {
+      width: 18px; height: 18px;
+      border: 2px solid var(--border);
+      border-radius: 5px;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px;
+      transition: all 0.18s;
+    }
+    .habit-item.checked .habit-check {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    /* SKELETON */
+    .skeleton {
+      height: 48px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(90deg, #ece8e0 25%, #f4f1eb 50%, #ece8e0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s ease-in-out infinite;
+    }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    /* FEELINGS */
+    .feelings-row { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
+    .feelings-label { font-size: 12px; font-weight: 700; color: var(--text-sub); letter-spacing: 0.05em; }
+    .star-btn { font-size: 22px; cursor: pointer; background: none; border: none; padding: 2px; transition: transform 0.15s; line-height: 1; }
+    .star-btn:hover { transform: scale(1.2); }
+    .feelings-desc { font-size: 13px; color: var(--text-sub); margin-left: 4px; font-family: 'Sarabun', sans-serif; }
+
+    /* METRICS */
+    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin-top: 4px; }
+    .metric-group { display: flex; flex-direction: column; gap: 8px; }
+    /* ── SVG ICON ── */
+    .icon {
+      display: inline-block;
+      width: 13px; height: 13px;
+      vertical-align: middle;
+      flex-shrink: 0;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+      margin-right: 4px;
+      position: relative; top: -1px;
+    }
+
+    .metric-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-sub);
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .input-wrapper {
+      display: flex;
+      align-items: center;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0 10px;
+      transition: border-color 0.2s;
+      overflow: hidden;          /* clip overflow */
+    }
+    .input-wrapper:focus-within { border-color: var(--primary); }
+    .metric-input {
+      flex: 1;
+      min-width: 0;              /* KEY: allows flex shrink below content size */
+      border: none;
+      background: transparent;
+      padding: 11px 4px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-align: center;
+      outline: none;
+      font-family: inherit;
+      -webkit-appearance: none;
+      -moz-appearance: textfield;
+    }
+    .metric-unit {
+      font-size: 11px;
+      color: var(--text-sub);
+      font-weight: 600;
+      white-space: nowrap;       /* never wrap */
+      flex-shrink: 0;            /* never shrink */
+    }
+
+    /* JOURNAL */
+    .journal-group { margin-bottom: 20px; }
+    .journal-group:last-of-type { margin-bottom: 24px; }
+    .journal-label { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-sub); margin-bottom: 4px; }
+    .journal-desc { display: block; font-size: 12px; color: var(--text-sub); margin-bottom: 8px; font-family: 'Sarabun', sans-serif; font-style: italic; }
+    .journal-textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      font-size: 14px;
+      font-family: 'Sarabun', sans-serif;
+      color: var(--text);
+      resize: vertical;
+      min-height: 100px;
+      outline: none;
+      transition: border-color 0.2s;
+      line-height: 1.7;
+    }
+    .journal-textarea:focus { border-color: var(--primary); }
+    .char-hint { font-size: 11px; color: var(--text-sub); text-align: right; margin-top: 4px; }
+
+    /* SAVE BTN */
+    .btn-save {
+      width: 100%;
+      padding: 14px 24px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.2s;
+      margin-top: 4px;
+    }
+    .btn-save:hover { background: #1e332a; }
+    .btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 28px; right: 28px;
+      padding: 11px 20px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      box-shadow: var(--shadow-md);
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.25s, transform 0.25s;
+      z-index: 100;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.saving { background: #3A3A3A; color: rgba(255,255,255,0.85); }
+    .toast.saved  { background: var(--primary); color: #fff; }
+    .toast.error  { background: var(--red); color: #fff; }
+    .toast.info   { background: var(--primary); color: #fff; }
+
+    /* LOADING */
+    .loading-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(247,245,240,0.8);
+      backdrop-filter: blur(2px);
+      z-index: 50; align-items: center; justify-content: center;
+    }
+    .loading-overlay.active { display: flex; }
+    .loading-box {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      padding: 32px 48px;
+      box-shadow: var(--shadow-md);
+      display: flex; flex-direction: column;
+      align-items: center; gap: 16px; text-align: center;
+    }
+    .spinner {
+      width: 34px; height: 34px;
+      border: 3px solid rgba(45,74,62,0.12);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-title { font-size: 14px; font-weight: 700; color: var(--primary); }
+    .loading-sub   { font-size: 12px; color: var(--text-sub); margin-top: -8px; font-family: 'Sarabun', sans-serif; }
+
+    /* DEBUG */
+    #dbg {
+      display: none;
+      position: fixed; bottom: 44px; left: 10px;
+      background: #1A3A2A; color: #7EC8A4;
+      padding: 10px 14px; font-size: 11px;
+      border-radius: var(--radius-sm); z-index: 997;
+      max-width: 340px; font-family: monospace;
+      line-height: 1.6; max-height: 220px; overflow-y: auto;
+    }
+    #dbg-toggle {
+      position: fixed; bottom: 10px; left: 10px;
+      background: rgba(45,74,62,0.7); color: #7EC8A4;
+      border: none; padding: 4px 9px; border-radius: 5px;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
+      cursor: pointer; z-index: 998; font-family: monospace;
+      opacity: 0.35; transition: opacity 0.2s;
+    }
+    #dbg-toggle:hover { opacity: 1; }
+
+    /* ── CALENDAR PICKER ── */
+    #header-date {
+      cursor: pointer;
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      transition: background 0.15s;
+      user-select: none;
+    }
+    #header-date:hover { background: var(--primary-lt); color: var(--primary); }
+
+    .date-nav { position: relative; }
+
+    .cal-popup {
+      display: none;
+      position: absolute;
+      top: calc(100% + 10px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+      z-index: 200;
+      width: 280px;
+      padding: 16px;
+      animation: fadeInDown 0.18s ease;
+    }
+    .cal-popup.open { display: block; }
+    @keyframes fadeInDown { from { opacity:0; transform: translateX(-50%) translateY(-6px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
+
+    .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 4px; }
+    .cal-month-label { font-size: 14px; font-weight: 700; color: var(--primary); flex: 1; text-align: center; }
+    .cal-year-select {
+      font-size: 13px; font-weight: 600; color: var(--primary);
+      background: var(--primary-lt); border: none; border-radius: var(--radius-sm);
+      padding: 3px 6px; cursor: pointer; font-family: inherit;
+    }
+    .cal-nav-btn {
+      background: none; border: 1px solid var(--border); border-radius: var(--radius-sm);
+      width: 28px; height: 28px; cursor: pointer; color: var(--text-sub);
+      display: flex; align-items: center; justify-content: center; font-size: 15px;
+      flex-shrink: 0;
+    }
+    .cal-nav-btn:hover { background: var(--primary-lt); color: var(--primary); border-color: var(--primary); }
+
+    .cal-weekdays { display: grid; grid-template-columns: repeat(7,1fr); margin-bottom: 4px; }
+    .cal-weekday { text-align: center; font-size: 10px; font-weight: 700; color: var(--text-sub); padding: 4px 0; }
+
+    .cal-days { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; }
+    .cal-day {
+      text-align: center; padding: 7px 2px; font-size: 12px; cursor: pointer;
+      border-radius: 6px; transition: all 0.12s; color: var(--text); font-weight: 500;
+    }
+    .cal-day:hover:not(.cal-disabled):not(.cal-other) { background: var(--primary-lt); color: var(--primary); }
+    .cal-day.cal-selected { background: var(--primary); color: #fff; font-weight: 700; }
+    .cal-day.cal-today:not(.cal-selected) { color: var(--primary); font-weight: 700; border: 1px solid var(--primary); }
+    .cal-day.cal-disabled { opacity: 0.25; cursor: default; pointer-events: none; }
+    .cal-day.cal-other { opacity: 0.3; }
+
+    /* ── CLEAR BUTTON ── */
+    .btn-clear {
+      width: 100%;
+      padding: 12px 24px;
+      background: transparent;
+      color: var(--red);
+      border: 1px solid rgba(192,57,43,0.4);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn-clear:hover { background: var(--red); color: #fff; border-color: var(--red); }
+
+    /* ── CONFIRM DIALOG ── */
+    .confirm-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.35);
+      backdrop-filter: blur(2px);
+      z-index: 400;
+      align-items: center; justify-content: center;
+    }
+    .confirm-overlay.open { display: flex; }
+    .confirm-box {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      padding: 28px 32px;
+      max-width: 360px; width: 90%;
+      box-shadow: var(--shadow-md);
+      text-align: center;
+      animation: fadeInDown 0.18s ease;
+    }
+    .confirm-box h3 { font-size: 16px; font-weight: 700; color: var(--primary); margin-bottom: 8px; }
+    .confirm-box p { font-size: 13px; color: var(--text-sub); margin-bottom: 20px; font-family: 'Sarabun', sans-serif; line-height: 1.6; }
+    .confirm-actions { display: flex; gap: 10px; }
+    .confirm-actions button { flex: 1; padding: 11px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+    .btn-confirm-cancel { background: var(--bg); border: 1px solid var(--border); color: var(--text); }
+    .btn-confirm-cancel:hover { border-color: var(--primary); color: var(--primary); }
+    .btn-confirm-ok { background: var(--red); border: none; color: #fff; }
+    .btn-confirm-ok:hover { background: #a93226; }
+
+    /* ── MOBILE BOTTOM NAV ── */
+    .mobile-nav {
+      display: none;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      z-index: 300;
+      box-shadow: 0 -2px 10px rgba(45,74,62,0.07);
+    }
+    .mobile-nav-inner { display: flex; }
+    .mobile-nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      padding: 10px 4px;
+      text-decoration: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      color: var(--text-sub);
+      font-size: 9.5px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      transition: color 0.15s;
+      -webkit-tap-highlight-color: transparent;
+      line-height: 1;
+    }
+    .mobile-nav-item svg {
+      width: 22px; height: 22px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      margin-bottom: 2px;
+    }
+    .mobile-nav-item.active { color: var(--primary); }
+    .mobile-nav-item:active { opacity: 0.65; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 640px) {
+      .mobile-nav { display: block; }
+
+      /* bottom padding ให้ content ไม่โดน nav ทับ */
+      .container { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+
+      /* Header: แถว 1 = Logo + Logout, แถว 2 = Date nav */
+      header {
+        flex-wrap: wrap;
+        padding: 14px 0 0;
+        margin-bottom: 0;
+        border-bottom: none;
+      }
+      .logo { flex: 1; }
+      .header-actions { flex: 0 0 auto; }
+      /* ซ่อน nav links ใน header — อยู่ใน bottom nav แล้ว */
+      .header-actions a.nav-link { display: none; }
+      /* ซ่อน logout — อยู่ใน bottom nav แล้ว */
+      #btn-logout { display: none; }
+      /* save indicator เล็กลง */
+      .save-indicator { font-size: 11px; }
+
+      /* Date nav: แถวที่ 2 เต็มความกว้าง */
+      .date-nav {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+        padding: 10px 0 14px;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 20px;
+      }
+      .date-nav span { font-size: 0.85rem; }
+
+      /* Habits + Metrics grid */
+      .habits-grid { grid-template-columns: repeat(2, 1fr); }
+      .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+
+      /* ป้องกัน iOS auto-zoom เมื่อ focus input (ต้องการ font-size >= 16px) */
+      .metric-input { font-size: 16px !important; }
+      .journal-textarea { font-size: 15px; }
+      .field input { font-size: 16px; }
+
+      /* Toast: ขึ้นอยู่เหนือ bottom nav */
+      .toast {
+        bottom: calc(72px + env(safe-area-inset-bottom, 0px) + 8px);
+        right: 16px; left: 16px;
+        text-align: center;
+      }
+
+      /* Calendar popup: แสดงตรงกลางหน้าจอแบบ modal */
+      .cal-popup {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) !important;
+        width: calc(100vw - 48px);
+        max-width: 300px;
+        z-index: 500;
+      }
+      @keyframes fadeInDown {
+        from { opacity: 0; transform: translate(-50%, -53%); }
+        to   { opacity: 1; transform: translate(-50%, -50%); }
+      }
+
+      /* login card */
+      .login-card { padding: 36px 24px; margin: 20px; max-width: none; }
+      .greeting h2 { font-size: 1.6rem; }
+    }
+
+    @media (max-width: 390px) {
+      .habit-item { font-size: 13px; padding: 12px 10px; }
+      .card { padding: 18px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════ LOGIN ══════════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">DEV<span>OS</span></div>
+    <h1 id="auth-title">Welcome back</h1>
+    <p id="auth-sub">เข้าสู่ระบบเพื่อบันทึกประจำวัน</p>
+
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="auth-email" placeholder="you@email.com" />
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="auth-password" placeholder="••••••••" />
+    </div>
+    <div id="auth-name-field" class="field" style="display:none;">
+      <label>Display Name</label>
+      <input type="text" id="auth-name" placeholder="Your name" />
+    </div>
+
+    <button class="btn-primary" id="auth-btn">เข้าสู่ระบบ</button>
+    <div class="error-msg" id="auth-error"></div>
+    <div class="login-toggle">
+      <span id="auth-toggle-text">ยังไม่มีบัญชี?</span>
+      <a id="auth-toggle-link"> สมัครสมาชิก</a>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ APP ══════════════ -->
+<div id="app">
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="logo">DEV<span>OS</span></div>
+      <div class="date-nav">
+        <button class="date-btn" id="btn-prev">&#8249;</button>
+        <span id="header-date" title="คลิกเพื่อเลือกวัน">—</span>
+        <button class="date-btn" id="btn-next">&#8250;</button>
+
+        <!-- Calendar Popup -->
+        <div class="cal-popup" id="cal-popup">
+          <div class="cal-header">
+            <button class="cal-nav-btn" id="cal-prev-month">&#8249;</button>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1">
+              <span class="cal-month-label" id="cal-month-label">—</span>
+              <select class="cal-year-select" id="cal-year-select"></select>
+            </div>
+            <button class="cal-nav-btn" id="cal-next-month">&#8250;</button>
+          </div>
+          <div class="cal-weekdays">
+            <div class="cal-weekday">อา</div><div class="cal-weekday">จ</div>
+            <div class="cal-weekday">อ</div><div class="cal-weekday">พ</div>
+            <div class="cal-weekday">พฤ</div><div class="cal-weekday">ศ</div>
+            <div class="cal-weekday">ส</div>
+          </div>
+          <div class="cal-days" id="cal-days"></div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <span class="save-indicator" id="save-indicator"></span>
+        <a href="journal.html" class="nav-link">Moments</a>
+        <a href="stats.html" class="nav-link stats-link">Statistics</a>
+        <button id="btn-logout">ออกจากระบบ</button>
+      </div>
+    </header>
+
+    <main>
+      <!-- Greeting -->
+      <section class="greeting">
+        <div class="section-title">Daily Interaction</div>
+        <h2 id="greeting-text">Good morning</h2>
+      </section>
+
+      <!-- Quick Habits -->
+      <section class="card">
+        <div class="section-title">Quick Habits</div>
+        <div class="habits-grid" id="habits-grid">
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>
+        </div>
+      </section>
+
+      <!-- Core Metrics -->
+      <section class="card">
+        <div class="section-title">Core Metrics</div>
+
+        <div class="feelings-row">
+          <span class="feelings-label">FEELINGS</span>
+          <button class="star-btn" data-val="1">&#9733;</button>
+          <button class="star-btn" data-val="2">&#9733;</button>
+          <button class="star-btn" data-val="3">&#9733;</button>
+          <button class="star-btn" data-val="4">&#9733;</button>
+          <button class="star-btn" data-val="5">&#9733;</button>
+          <span class="feelings-desc" id="feelings-desc">—</span>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric-group">
+            <label class="metric-label">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+              Sleep
+            </label>
+            <div class="input-wrapper">
+              <input class="metric-input" type="number" inputmode="decimal"
+                     id="m-sleep" placeholder="0" min="0" max="24" step="0.5" />
+              <span class="metric-unit">hrs</span>
+            </div>
+          </div>
+          <div class="metric-group">
+            <label class="metric-label">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+              Read
+            </label>
+            <div class="input-wrapper">
+              <input class="metric-input" type="number" inputmode="numeric"
+                     id="m-read" placeholder="0" min="0" />
+              <span class="metric-unit">pgs</span>
+            </div>
+          </div>
+          <div class="metric-group">
+            <label class="metric-label">
+              <svg class="icon" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              Weight
+            </label>
+            <div class="input-wrapper">
+              <input class="metric-input" type="number" inputmode="decimal"
+                     id="m-weight" placeholder="0" min="0" step="0.1" />
+              <span class="metric-unit">kg</span>
+            </div>
+          </div>
+          <div class="metric-group">
+            <label class="metric-label">
+              <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+              Meditate
+            </label>
+            <div class="input-wrapper">
+              <input class="metric-input" type="number" inputmode="numeric"
+                     id="m-meditate" placeholder="0" min="0" />
+              <span class="metric-unit">min</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Deep Journal -->
+      <section class="card">
+        <div class="section-title">Deep Journal</div>
+
+        <div class="journal-group">
+          <label class="journal-label">Thesis Log</label>
+          <span class="journal-desc">ทำอะไรไปบ้าง / ได้อะไรบ้าง / ต่อไปจะทำอะไรต่อ?</span>
+          <textarea class="journal-textarea" id="j-thesis" rows="5"
+                    placeholder="วันนี้ทำอะไร → ได้อะไร → แผนวันพรุ่งนี้..."></textarea>
+          <div class="char-hint" id="thesis-hint">0 / 5 บรรทัด</div>
+        </div>
+
+        <div class="journal-group">
+          <label class="journal-label">Memorable Moments</label>
+          <span class="journal-desc">เรื่องเล็กๆ น้อยๆ ในวันนี้ที่อยากจำ (Gratitude)</span>
+          <textarea class="journal-textarea" id="j-moments" rows="3"
+                    placeholder="กาแฟอร่อยมาก, อากาศดี, เทรดชนะไป 1 ไม้..."></textarea>
+          <div class="char-hint" id="moments-hint">0 / 3 บรรทัด</div>
+        </div>
+
+        <button class="btn-save" id="btn-save">บันทึกวันนี้</button>
+        <button class="btn-clear" id="btn-clear">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          ล้างข้อมูลวันนี้
+        </button>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- Confirm Dialog -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <h3>ล้างข้อมูลวันนี้?</h3>
+    <p id="confirm-date-text">ข้อมูลทั้งหมดของวันนี้จะถูกลบออกจากฐานข้อมูล<br>ไม่สามารถกู้คืนได้</p>
+    <div class="confirm-actions">
+      <button class="btn-confirm-cancel" id="confirm-cancel">ยกเลิก</button>
+      <button class="btn-confirm-ok" id="confirm-ok">ล้างข้อมูล</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Loading -->
+<div class="loading-overlay" id="loading">
+  <div class="loading-box">
+    <div class="spinner"></div>
+    <div class="loading-title" id="loading-title">กำลังเชื่อมต่อ...</div>
+    <div class="loading-sub"   id="loading-sub">ครั้งแรกอาจใช้เวลา 10–20 วินาที</div>
+  </div>
+</div>
+
+<!-- Debug panel (hidden) -->
+<div id="dbg"></div>
+<button id="dbg-toggle" title="Toggle debug log">LOG</button>
+
+<!-- ══════════════ SCRIPT ══════════════ -->
+<!-- ══ MOBILE BOTTOM NAV ══ -->
+<nav class="mobile-nav">
+  <div class="mobile-nav-inner">
+    <a class="mobile-nav-item active" href="index.html">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Daily
+    </a>
+    <a class="mobile-nav-item" href="journal.html">
+      <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      Moments
+    </a>
+    <a class="mobile-nav-item" href="stats.html">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Stats
+    </a>
+    <button class="mobile-nav-item" onclick="document.getElementById('btn-logout').click()">
+      <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      ออกจากระบบ
+    </button>
+  </div>
+</nav>
+
+<script>
+  const SUPABASE_URL  = 'https://lyncszmpwojopbvkmqmc.supabase.co';
+  const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5bmNzem1wd29qb3BidmttcW1jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyMTgwODIsImV4cCI6MjA5Nzc5NDA4Mn0.fzOPawbNz3kQTK5L4uVlDnWUxwgZ-V4suBFYD-tpcP4';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+  // ── STATE ──
+  const DEFAULT_HABITS = [
+    { name: 'No Caffeine' }, { name: 'Exercise' },
+    { name: 'Trade' },       { name: 'Drink Water' },
+    { name: 'Skills' },      { name: 'English' },
+    { name: 'Healthy' },
+  ];
+
+  // ── SVG ICON HELPERS ──
+  const _I = {
+    ban:      `<circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>`,
+    dumbbell: `<path d="M6 5v14M18 5v14"/><path d="M2 9h4M20 9h2M2 15h4M20 15h2"/><rect x="6" y="8" width="12" height="8" rx="2"/>`,
+    trendUp:  `<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>`,
+    droplet:  `<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>`,
+    code:     `<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>`,
+    globe:    `<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>`,
+    heart:    `<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>`,
+    zap:      `<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>`,
+  };
+  const _HABIT_MAP = [
+    ['caffeine', _I.ban], ['coffee', _I.ban],
+    ['exercise', _I.dumbbell], ['gym', _I.dumbbell],
+    ['trade', _I.trendUp],
+    ['water', _I.droplet], ['drink', _I.droplet],
+    ['skills', _I.code], ['skill', _I.code],
+    ['english', _I.globe], ['language', _I.globe],
+    ['healthy', _I.heart], ['health', _I.heart],
+  ];
+  function makeIcon(d, size = 13) {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;flex-shrink:0;margin-right:5px;position:relative;top:-1px">${d}</svg>`;
+  }
+  function getHabitIcon(name) {
+    const lower = name.toLowerCase();
+    for (const [k, d] of _HABIT_MAP) { if (lower.includes(k)) return makeIcon(d); }
+    return makeIcon(_I.zap);
+  }
+  function stripEmoji(str) {
+    return str.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, '').trim();
+  }
+  const FEELINGS_DESC = ['', 'Bad', 'Fair', 'Okay', 'Good', 'Excellent'];
+
+  let currentDate    = todayStr();
+  let currentUser    = null;
+  let userHabits     = [];
+  let completions    = {};
+  let feelings       = 0;
+  let isRegister     = false;
+  let appInitialized = false;
+
+  // ── DEBUG ──
+  function dbg(msg) {
+    const el = document.getElementById('dbg');
+    if (el) { const d = document.createElement('div'); d.textContent = `${new Date().toLocaleTimeString()} ${msg}`; el.appendChild(d); el.scrollTop = el.scrollHeight; }
+    console.log('[DBG]', msg);
+  }
+  document.getElementById('dbg-toggle').addEventListener('click', () => {
+    const p = document.getElementById('dbg');
+    p.style.display = p.style.display === 'block' ? 'none' : 'block';
+  });
+
+  // ── TOAST ──
+  const _toast = document.getElementById('toast');
+  let _toastTimer = null;
+  function showToast(msg, type = 'info') {
+    clearTimeout(_toastTimer);
+    _toast.textContent = msg;
+    _toast.className = `toast show ${type}`;
+    if (type !== 'saving') {
+      _toastTimer = setTimeout(() => { _toast.className = 'toast'; }, type === 'error' ? 4000 : 2500);
+    }
+  }
+  function showSaving() { showToast('Saving...', 'saving'); }
+  function showSaved()  { showToast('Saved', 'saved'); }
+
+  // ── SUPABASE QUERY ──
+  function sbQuery(promise, label = 'query', ms = 20000) {
+    dbg(`... ${label}`);
+    return Promise.race([
+      promise.then(r => { dbg(`ok  ${label}`); return r; }),
+      new Promise((_, reject) => setTimeout(() => { dbg(`timeout ${label}`); reject(new Error(`${label} timed out`)); }, ms))
+    ]);
+  }
+
+  // ── UTILS ──
+  function todayStr() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+  function formatDateTH(s) {
+    return new Date(s + 'T00:00:00').toLocaleDateString('th-TH', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  }
+  function isToday(s) { return s === todayStr(); }
+  function setLoading(on, title = 'กำลังโหลด...', sub = '') {
+    document.getElementById('loading').classList.toggle('active', on);
+    if (on) { document.getElementById('loading-title').textContent = title; document.getElementById('loading-sub').textContent = sub; }
+  }
+  function greet() {
+    const h = new Date().getHours();
+    if (h < 12) return 'Good morning ☀️';
+    if (h < 17) return 'Good afternoon';
+    return 'Good evening';
+  }
+
+  // ── AUTH ──
+  document.getElementById('auth-toggle-link').addEventListener('click', () => {
+    isRegister = !isRegister;
+    document.getElementById('auth-title').textContent       = isRegister ? 'สร้างบัญชีใหม่' : 'Welcome back';
+    document.getElementById('auth-sub').textContent         = isRegister ? 'กรอกข้อมูลเพื่อเริ่มต้น' : 'เข้าสู่ระบบเพื่อบันทึกประจำวัน';
+    document.getElementById('auth-btn').textContent         = isRegister ? 'สมัครสมาชิก' : 'เข้าสู่ระบบ';
+    document.getElementById('auth-toggle-text').textContent = isRegister ? 'มีบัญชีแล้ว?' : 'ยังไม่มีบัญชี?';
+    document.getElementById('auth-toggle-link').textContent = isRegister ? ' เข้าสู่ระบบ' : ' สมัครสมาชิก';
+    document.getElementById('auth-name-field').style.display = isRegister ? '' : 'none';
+    document.getElementById('auth-error').textContent = '';
+  });
+
+  document.getElementById('auth-btn').addEventListener('click', async () => {
+    const email = document.getElementById('auth-email').value.trim();
+    const pass  = document.getElementById('auth-password').value;
+    const name  = document.getElementById('auth-name').value.trim();
+    const btn   = document.getElementById('auth-btn');
+    const errEl = document.getElementById('auth-error');
+    if (!email || !pass) { errEl.textContent = 'กรุณากรอก Email และ Password'; return; }
+    btn.disabled = true; errEl.textContent = '';
+    try {
+      if (isRegister) {
+        const { error } = await sb.auth.signUp({ email, password: pass, options: { data: { full_name: name } } });
+        if (error) throw error;
+        showToast('สมัครสมาชิกสำเร็จ — กรุณาตรวจสอบ Email', 'saved');
+      } else {
+        const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+        if (error) throw error;
+      }
+    } catch(e) { errEl.textContent = e.message; }
+    finally { btn.disabled = false; }
+  });
+
+  document.getElementById('btn-logout').addEventListener('click', async () => {
+    try { await Promise.race([sb.auth.signOut(), new Promise(r => setTimeout(r, 3000))]); } catch(e) {}
+    Object.keys(localStorage).filter(k => k.includes('supabase')).forEach(k => localStorage.removeItem(k));
+    window.location.reload();
+  });
+
+  ['auth-email','auth-password','auth-name'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('auth-btn').click(); });
+  });
+
+  // ── AUTH STATE ──
+  sb.auth.onAuthStateChange(async (event, session) => {
+    dbg(`auth: ${event}`);
+    if (session?.user) {
+      currentUser = session.user;
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      if (!appInitialized) { appInitialized = true; await initApp(session.user); }
+    } else {
+      currentUser = null; appInitialized = false;
+      document.getElementById('login-screen').style.display = 'flex';
+      document.getElementById('app').style.display = 'none';
+    }
+  });
+
+  // ── INIT APP ──
+  async function initApp(user) {
+    dbg(`initApp uid: ${user.id.slice(0,8)}...`);
+    setLoading(true, 'กำลังเชื่อมต่อ...', 'ครั้งแรกอาจใช้เวลา 10–20 วินาที');
+    const safetyTimer = setTimeout(() => {
+      setLoading(false);
+      showToast('การเชื่อมต่อใช้เวลานานผิดปกติ — กด Reload หากข้อมูลไม่โหลด', 'error');
+    }, 30000);
+    try {
+      document.getElementById('greeting-text').textContent = greet();
+      updateDateUI();
+      await ensureHabits(user.id);
+      await loadDay(currentDate, user.id);
+    } catch(e) {
+      dbg(`initApp err: ${e.message}`);
+      appInitialized = false;
+      showToast('เชื่อมต่อไม่สำเร็จ — กรุณา Reload', 'error');
+      document.getElementById('habits-grid').innerHTML =
+        `<div style="grid-column:1/-1;text-align:center;padding:16px;color:var(--text-sub);font-size:13px;font-family:'Sarabun',sans-serif;">
+          ไม่สามารถโหลดข้อมูลได้ — <a href="" style="color:var(--primary);font-weight:600;">โหลดใหม่</a>
+        </div>`;
+    } finally { clearTimeout(safetyTimer); setLoading(false); }
+  }
+
+  // ── ENSURE HABITS ──
+  async function ensureHabits(userId) {
+    const { data, error } = await sbQuery(
+      sb.from('habits').select('*').eq('user_id', userId).order('sort_order'), 'habits SELECT');
+    if (error) { showToast('ไม่สามารถโหลด Habits ได้', 'error'); return; }
+    if (data && data.length > 0) {
+      userHabits = data;
+    } else {
+      const toInsert = DEFAULT_HABITS.map((h, i) => ({ user_id: userId, name: h.name, icon: '', sort_order: i+1, is_active: true }));
+      const { data: inserted, error: insErr } = await sbQuery(
+        sb.from('habits').insert(toInsert).select(), 'habits INSERT');
+      if (insErr) { showToast('ไม่สามารถสร้าง Habits ได้', 'error'); return; }
+      userHabits = inserted || [];
+    }
+    renderHabits();
+  }
+
+  // ── RENDER HABITS ──
+  function renderHabits() {
+    const grid = document.getElementById('habits-grid');
+    grid.innerHTML = '';
+    userHabits.filter(h => h.is_active).forEach(h => {
+      const displayName = stripEmoji(h.name);
+      const iconSvg     = getHabitIcon(h.name);
+      const item = document.createElement('div');
+      item.className = 'habit-item' + (completions[h.id] ? ' checked' : '');
+      item.dataset.id = h.id;
+      item.innerHTML = `
+        <div class="habit-check">${completions[h.id] ? '&#10003;' : ''}</div>
+        ${iconSvg}<span>${displayName}</span>
+      `;
+      item.addEventListener('click', () => toggleHabit(h.id, item));
+      grid.appendChild(item);
+    });
+  }
+
+  // ── TOGGLE HABIT + AUTO-SAVE ──
+  function toggleHabit(habitId, el) {
+    completions[habitId] = !completions[habitId];
+    el.classList.toggle('checked', completions[habitId]);
+    el.querySelector('.habit-check').innerHTML = completions[habitId] ? '&#10003;' : '';
+    saveHabitCompletion(habitId);
+  }
+
+  async function saveHabitCompletion(habitId) {
+    if (!currentUser) return;
+    showSaving();
+    try {
+      const { error } = await sbQuery(
+        sb.from('habit_completions').upsert({
+          user_id: currentUser.id, habit_id: habitId,
+          log_date: currentDate, completed: !!completions[habitId],
+        }, { onConflict: 'user_id,habit_id,log_date' }), 'habit save');
+      if (error) throw error;
+      showSaved(); setSaveIndicator('Saved', true);
+    } catch(e) { showToast('บันทึก habit ไม่สำเร็จ', 'error'); setSaveIndicator(''); }
+  }
+
+  // ── FEELINGS ──
+  const starBtns = document.querySelectorAll('.star-btn');
+  starBtns.forEach(btn => {
+    btn.addEventListener('click', () => { setFeelings(parseInt(btn.dataset.val)); scheduleMetricSave(); });
+  });
+  function setFeelings(val) {
+    feelings = val;
+    starBtns.forEach(btn => { btn.style.color = parseInt(btn.dataset.val) <= val ? 'var(--star-on)' : 'var(--star-off)'; });
+    document.getElementById('feelings-desc').textContent = val ? `(${val} — ${FEELINGS_DESC[val]})` : '—';
+  }
+
+  // ── AUTO-SAVE METRICS ──
+  let _metricTimer = null;
+  function scheduleMetricSave() {
+    showSaving(); clearTimeout(_metricTimer);
+    _metricTimer = setTimeout(() => saveMetrics(), 1500);
+  }
+  async function saveMetrics() {
+    if (!currentUser) return;
+    try {
+      const { error } = await sbQuery(sb.from('daily_logs').upsert({
+        user_id: currentUser.id, log_date: currentDate,
+        sleep_hours: parseFloat(document.getElementById('m-sleep').value) || null,
+        read_pages:  parseInt(document.getElementById('m-read').value)    || null,
+        weight_kg:   parseFloat(document.getElementById('m-weight').value) || null,
+        meditate_minutes: parseInt(document.getElementById('m-meditate').value) || null,
+        feelings: feelings || null,
+      }, { onConflict: 'user_id,log_date' }), 'metrics autosave');
+      if (error) throw error;
+      showSaved(); setSaveIndicator('Saved', true);
+    } catch(e) { showToast('บันทึก metrics ไม่สำเร็จ', 'error'); }
+  }
+  ['m-sleep','m-read','m-weight','m-meditate'].forEach(id => {
+    const el = document.getElementById(id);
+    el.addEventListener('blur', scheduleMetricSave);
+    el.addEventListener('keydown', e => { if (e.key === 'Enter') el.blur(); });
+  });
+
+  // ── LINE COUNTER ──
+  function setupLineCount(taId, hintId, max) {
+    const ta = document.getElementById(taId), hint = document.getElementById(hintId);
+    ta.addEventListener('input', () => {
+      const n = ta.value.split('\n').length;
+      hint.textContent = `${n} / ${max} บรรทัด`;
+      hint.style.color = n > max ? 'var(--red)' : 'var(--text-sub)';
+    });
+  }
+  setupLineCount('j-thesis','thesis-hint',5);
+  setupLineCount('j-moments','moments-hint',3);
+
+  // ── DATE NAV ──
+  async function changeDate(delta) {
+    if (!currentUser) return;
+    const d = new Date(currentDate + 'T00:00:00');
+    d.setDate(d.getDate() + delta);
+    if (d > new Date()) return;
+    currentDate = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    updateDateUI();
+    setLoading(true, 'กำลังโหลด...');
+    try { await loadDay(currentDate, currentUser.id); } finally { setLoading(false); }
+  }
+  document.getElementById('btn-prev').addEventListener('click', () => changeDate(-1));
+  document.getElementById('btn-next').addEventListener('click', () => changeDate(+1));
+  function updateDateUI() {
+    document.getElementById('header-date').textContent = formatDateTH(currentDate);
+    document.getElementById('btn-next').disabled = isToday(currentDate);
+    document.getElementById('btn-next').style.opacity = isToday(currentDate) ? '0.3' : '1';
+  }
+
+  // ── CALENDAR PICKER ──
+  let calYear, calMonth;
+
+  function strToDate(s) { return new Date(s + 'T00:00:00'); }
+  function dateToStr(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+  const TH_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+
+  function openCalendar() {
+    const d = strToDate(currentDate);
+    calYear  = d.getFullYear();
+    calMonth = d.getMonth();
+    buildYearSelect();
+    renderCalendar();
+    document.getElementById('cal-popup').classList.add('open');
+  }
+  function closeCalendar() { document.getElementById('cal-popup').classList.remove('open'); }
+
+  function buildYearSelect() {
+    const sel = document.getElementById('cal-year-select');
+    const todayYear = new Date().getFullYear();
+    sel.innerHTML = '';
+    for (let y = todayYear; y >= todayYear - 5; y--) {
+      const opt = document.createElement('option');
+      opt.value = y;
+      opt.textContent = y + 543; // พ.ศ.
+      if (y === calYear) opt.selected = true;
+      sel.appendChild(opt);
+    }
+  }
+
+  function renderCalendar() {
+    document.getElementById('cal-month-label').textContent = TH_MONTHS[calMonth];
+    document.getElementById('cal-year-select').value = calYear;
+    const today    = dateToStr(new Date());
+    const selected = currentDate;
+    const firstDay = new Date(calYear, calMonth, 1).getDay(); // 0=Sun
+    const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+    const daysInPrev  = new Date(calYear, calMonth, 0).getDate();
+
+    const container = document.getElementById('cal-days');
+    container.innerHTML = '';
+
+    // prev month filler
+    for (let i = firstDay - 1; i >= 0; i--) {
+      const cell = document.createElement('div');
+      cell.className = 'cal-day cal-other';
+      cell.textContent = daysInPrev - i;
+      container.appendChild(cell);
+    }
+    // current month days
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const cell = document.createElement('div');
+      cell.textContent = d;
+      const classes = ['cal-day'];
+      if (dateStr === selected) classes.push('cal-selected');
+      else if (dateStr === today) classes.push('cal-today');
+      if (dateStr > today) classes.push('cal-disabled');
+      cell.className = classes.join(' ');
+      if (dateStr <= today) {
+        cell.addEventListener('click', async () => {
+          if (dateStr === currentDate) { closeCalendar(); return; }
+          closeCalendar();
+          currentDate = dateStr;
+          updateDateUI();
+          setLoading(true, 'กำลังโหลด...');
+          try { await loadDay(currentDate, currentUser.id); } finally { setLoading(false); }
+        });
+      }
+      container.appendChild(cell);
+    }
+    // next month filler
+    const total = firstDay + daysInMonth;
+    const remaining = 7 - (total % 7 === 0 ? 7 : total % 7);
+    for (let d = 1; d <= remaining; d++) {
+      const cell = document.createElement('div');
+      cell.className = 'cal-day cal-other';
+      cell.textContent = d;
+      container.appendChild(cell);
+    }
+  }
+
+  document.getElementById('header-date').addEventListener('click', (e) => {
+    e.stopPropagation();
+    const popup = document.getElementById('cal-popup');
+    if (popup.classList.contains('open')) { closeCalendar(); } else { openCalendar(); }
+  });
+  document.getElementById('cal-prev-month').addEventListener('click', (e) => {
+    e.stopPropagation();
+    calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; }
+    document.getElementById('cal-year-select').value = calYear;
+    renderCalendar();
+  });
+  document.getElementById('cal-next-month').addEventListener('click', (e) => {
+    e.stopPropagation();
+    const today = new Date();
+    if (calYear === today.getFullYear() && calMonth === today.getMonth()) return;
+    calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; }
+    renderCalendar();
+  });
+  document.getElementById('cal-year-select').addEventListener('change', (e) => {
+    e.stopPropagation();
+    calYear = parseInt(e.target.value);
+    renderCalendar();
+  });
+  document.getElementById('cal-popup').addEventListener('click', (e) => e.stopPropagation());
+  document.addEventListener('click', closeCalendar);
+
+  // ── CLEAR DATA ──
+  document.getElementById('btn-clear').addEventListener('click', () => {
+    document.getElementById('confirm-date-text').innerHTML =
+      `ข้อมูลของ <strong>${formatDateTH(currentDate)}</strong><br>จะถูกลบออกจากฐานข้อมูล — ไม่สามารถกู้คืนได้`;
+    document.getElementById('confirm-overlay').classList.add('open');
+  });
+  document.getElementById('confirm-cancel').addEventListener('click', () => {
+    document.getElementById('confirm-overlay').classList.remove('open');
+  });
+  document.getElementById('confirm-ok').addEventListener('click', async () => {
+    document.getElementById('confirm-overlay').classList.remove('open');
+    if (!currentUser) return;
+    const btn = document.getElementById('btn-clear');
+    btn.disabled = true;
+    showToast('กำลังล้างข้อมูล...', 'saving');
+    try {
+      // Delete daily_logs row
+      const { error: delErr } = await sbQuery(
+        sb.from('daily_logs').delete().eq('user_id', currentUser.id).eq('log_date', currentDate),
+        'clear daily_logs'
+      );
+      if (delErr) throw delErr;
+      // Reset habit completions to false
+      if (userHabits.length > 0) {
+        const hcRows = userHabits.map(h => ({ user_id: currentUser.id, habit_id: h.id, log_date: currentDate, completed: false }));
+        const { error: hcErr } = await sbQuery(
+          sb.from('habit_completions').upsert(hcRows, { onConflict: 'user_id,habit_id,log_date' }),
+          'clear habit_completions'
+        );
+        if (hcErr) throw hcErr;
+      }
+      // Reset UI
+      completions = {};
+      setFeelings(0);
+      ['m-sleep','m-read','m-weight','m-meditate','j-thesis','j-moments'].forEach(id => { document.getElementById(id).value = ''; });
+      renderHabits();
+      setSaveIndicator('');
+      showToast('ล้างข้อมูลสำเร็จ', 'saved');
+    } catch(e) {
+      showToast('ล้างข้อมูลไม่สำเร็จ: ' + e.message, 'error');
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  // ── LOAD DAY ──
+  async function loadDay(dateStr, userId) {
+    completions = {}; setFeelings(0);
+    ['m-sleep','m-read','m-weight','m-meditate','j-thesis','j-moments'].forEach(id => { document.getElementById(id).value = ''; });
+    const { data: log } = await sbQuery(
+      sb.from('daily_logs').select('*').eq('user_id', userId).eq('log_date', dateStr).maybeSingle(), 'loadDay');
+    if (log) {
+      document.getElementById('m-sleep').value    = log.sleep_hours        ?? '';
+      document.getElementById('m-read').value     = log.read_pages         ?? '';
+      document.getElementById('m-weight').value   = log.weight_kg          ?? '';
+      document.getElementById('m-meditate').value = log.meditate_minutes   ?? '';
+      document.getElementById('j-thesis').value   = log.thesis_notes       ?? '';
+      document.getElementById('j-moments').value  = log.memorable_moments  ?? '';
+      setFeelings(log.feelings || 0);
+    }
+    const { data: hc } = await sbQuery(
+      sb.from('habit_completions').select('habit_id,completed').eq('user_id', userId).eq('log_date', dateStr), 'habit_completions');
+    (hc || []).forEach(r => { completions[r.habit_id] = r.completed; });
+    renderHabits(); setSaveIndicator('');
+  }
+
+  // ── FULL SAVE (journal + all) ──
+  document.getElementById('btn-save').addEventListener('click', async () => {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session?.user) return;
+    const btn = document.getElementById('btn-save');
+    btn.disabled = true; btn.textContent = 'กำลังบันทึก...';
+    showSaving(); setSaveIndicator('Saving...');
+    try {
+      const { error: logErr } = await sbQuery(sb.from('daily_logs').upsert({
+        user_id: session.user.id, log_date: currentDate,
+        sleep_hours: parseFloat(document.getElementById('m-sleep').value) || null,
+        read_pages:  parseInt(document.getElementById('m-read').value)    || null,
+        weight_kg:   parseFloat(document.getElementById('m-weight').value) || null,
+        meditate_minutes: parseInt(document.getElementById('m-meditate').value) || null,
+        feelings: feelings || null,
+        thesis_notes: document.getElementById('j-thesis').value.trim() || null,
+        memorable_moments: document.getElementById('j-moments').value.trim() || null,
+      }, { onConflict: 'user_id,log_date' }), 'daily_log upsert');
+      if (logErr) throw logErr;
+      if (userHabits.length > 0) {
+        const hcRows = userHabits.map(h => ({ user_id: session.user.id, habit_id: h.id, log_date: currentDate, completed: !!completions[h.id] }));
+        const { error: hcErr } = await sbQuery(
+          sb.from('habit_completions').upsert(hcRows, { onConflict: 'user_id,habit_id,log_date' }), 'habits upsert');
+        if (hcErr) throw hcErr;
+      }
+      showSaved(); setSaveIndicator('Saved', true);
+    } catch(e) { showToast('บันทึกไม่สำเร็จ: ' + e.message, 'error'); setSaveIndicator(''); }
+    finally { btn.disabled = false; btn.textContent = 'บันทึกวันนี้'; }
+  });
+
+  function setSaveIndicator(text, ok = false) {
+    const el = document.getElementById('save-indicator');
+    el.textContent = text;
+    el.className = 'save-indicator' + (ok ? ' saved' : '');
+  }
+</script>
+</body>
+</html>

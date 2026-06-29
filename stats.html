@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DevOS — Statistics</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:          #F7F5F0;
+      --bg-card:     #FFFFFF;
+      --primary:     #2D4A3E;
+      --green-mid:   #2D6A4F;
+      --green-light: #E8EFEA;
+      --cream:       #F0EDE6;
+      --text:        #2C332F;
+      --text-sub:    #7A827E;
+      --border:      #E2E4E0;
+      --red:         #C0392B;
+      --radius:      16px;
+      --radius-lg:   24px;
+      --shadow-sm:   0 2px 8px rgba(45,74,62,0.05);
+      --shadow-md:   0 4px 16px rgba(45,74,62,0.09);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', 'Sarabun', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ── AUTH GATE ── */
+    #auth-gate {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh;
+    }
+    .auth-msg {
+      text-align: center;
+      background: var(--bg-card);
+      padding: 40px 48px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+    }
+    .auth-msg p { color: var(--text-sub); margin-bottom: 16px; font-family: 'Sarabun', sans-serif; }
+    .btn-go {
+      display: inline-block;
+      padding: 11px 28px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    .btn-go:hover { background: #1e332a; }
+
+    /* ── HEADER ── */
+    .app-header {
+      padding: 18px 0;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 28px;
+    }
+    .header-logo { font-size: 1.1rem; font-weight: 700; letter-spacing: 2px; color: var(--primary); }
+    .header-logo span { color: var(--text-sub); }
+    .header-nav { display: flex; gap: 8px; }
+    .nav-btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex; align-items: center; gap: 6px;
+      transition: all 0.2s;
+      background: var(--bg-card);
+      color: var(--text);
+      font-family: inherit;
+    }
+    .nav-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .nav-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    /* ── MAIN ── */
+    #app { display: none; }
+    .container { max-width: 960px; margin: 0 auto; padding: 0 20px 80px; }
+    .main {}
+
+    /* ── PAGE TITLE ── */
+    .page-header { margin-bottom: 24px; }
+    .page-header .label { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-sub); margin-bottom: 4px; }
+    .page-header h2 { font-size: 2rem; font-weight: 700; color: var(--primary); }
+
+    /* ── RANGE SELECTOR ── */
+    .range-bar {
+      display: flex; gap: 6px; margin-bottom: 24px;
+      background: var(--bg-card);
+      padding: 5px;
+      border-radius: 10px;
+      width: fit-content;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+    }
+    .range-btn {
+      padding: 7px 20px;
+      border: none;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      background: transparent;
+      color: var(--text-sub);
+      transition: all 0.18s;
+    }
+    .range-btn.active { background: var(--primary); color: #fff; }
+
+    /* ── SUMMARY CARDS ── */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .summary-card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid rgba(226,228,224,0.6);
+    }
+    /* .summary-label defined above in SVG ICONS block */
+    .summary-value { font-size: 26px; font-weight: 700; color: var(--primary); }
+    .summary-unit { font-size: 13px; font-weight: 500; color: var(--text-sub); margin-left: 3px; }
+    .summary-sub { font-size: 11px; color: var(--text-sub); margin-top: 4px; font-family: 'Sarabun', sans-serif; }
+
+    /* ── CHART CARDS ── */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .chart-card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid rgba(226,228,224,0.6);
+    }
+    .chart-card.full { grid-column: 1 / -1; }
+    .chart-header {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 16px;
+    }
+    .chart-icon {
+      width: 32px; height: 32px;
+      background: var(--green-light);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .chart-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-sub); }
+    .chart-wrap { position: relative; height: 200px; }
+
+    /* ── HABIT BAR ── */
+    .habit-stats { display: flex; flex-direction: column; gap: 12px; }
+    .habit-row { display: flex; align-items: center; gap: 12px; }
+    .habit-name-col { font-size: 13px; font-weight: 500; min-width: 140px; }
+    .habit-bar-wrap { flex: 1; background: var(--bg); border-radius: 999px; height: 10px; overflow: hidden; }
+    .habit-bar-fill { height: 100%; background: var(--primary); border-radius: 999px; transition: width 0.5s ease; }
+    .habit-pct { font-size: 12px; font-weight: 700; color: var(--text-sub); min-width: 40px; text-align: right; }
+
+    /* ── SVG ICONS ── */
+    .icon {
+      display: inline-block;
+      width: 13px; height: 13px;
+      vertical-align: middle;
+      flex-shrink: 0;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+      margin-right: 4px;
+      position: relative; top: -1px;
+    }
+    .icon-lg {
+      display: block;
+      width: 16px; height: 16px;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+      color: var(--primary);
+    }
+    .summary-label { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-sub); margin-bottom: 8px; }
+
+    /* ── EMPTY STATE ── */
+    .empty-state { text-align: center; padding: 40px; color: var(--text-sub); font-size: 14px; font-family: 'Sarabun', sans-serif; }
+
+    /* ── LOADING ── */
+    .loading-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(247,245,240,0.8);
+      backdrop-filter: blur(2px);
+      z-index: 50; align-items: center; justify-content: center;
+    }
+    .loading-overlay.active { display: flex; }
+    .loading-box {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      padding: 32px 48px;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      text-align: center;
+    }
+    .spinner {
+      width: 34px; height: 34px;
+      border: 3px solid rgba(45,74,62,0.12);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-title { font-size: 14px; font-weight: 700; color: var(--primary); }
+    .loading-sub   { font-size: 12px; color: var(--text-sub); margin-top: -8px; font-family: 'Sarabun', sans-serif; }
+    #dbg {
+      display: none;
+      position: fixed; bottom: 44px; left: 10px;
+      background: #1A3A2A; color: #7EC8A4;
+      padding: 10px 14px; font-size: 11px;
+      border-radius: 8px; z-index: 997;
+      max-width: 340px; font-family: monospace;
+      line-height: 1.6; max-height: 220px; overflow-y: auto;
+    }
+    #dbg-toggle {
+      position: fixed; bottom: 10px; left: 10px;
+      background: rgba(45,74,62,0.7); color: #7EC8A4;
+      border: none; padding: 4px 9px; border-radius: 5px;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
+      cursor: pointer; z-index: 998; font-family: monospace;
+      opacity: 0.35; transition: opacity 0.2s;
+    }
+    #dbg-toggle:hover { opacity: 1; }
+
+    /* ── MOBILE BOTTOM NAV ── */
+    .mobile-nav {
+      display: none;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--bg-card);
+      border-top: 1px solid var(--border);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      z-index: 300;
+      box-shadow: 0 -2px 10px rgba(45,74,62,0.07);
+    }
+    .mobile-nav-inner { display: flex; }
+    .mobile-nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      padding: 10px 4px;
+      text-decoration: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      color: var(--text-sub);
+      font-size: 9.5px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      transition: color 0.15s;
+      -webkit-tap-highlight-color: transparent;
+      line-height: 1;
+    }
+    .mobile-nav-item svg {
+      width: 22px; height: 22px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      margin-bottom: 2px;
+    }
+    .mobile-nav-item.active { color: var(--primary); }
+    .mobile-nav-item:active { opacity: 0.65; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 640px) {
+      .mobile-nav { display: block; }
+      .container { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+
+      /* Summary + Charts */
+      .summary-grid { grid-template-columns: repeat(2, 1fr); }
+      .charts-grid { grid-template-columns: 1fr; }
+      .chart-card.full { grid-column: 1; }
+
+      /* Header: ซ่อน nav links ทั้งหมด */
+      .header-nav { display: none; }
+
+      /* Page header */
+      .page-header h2 { font-size: 1.6rem; }
+
+      /* Range bar: scroll */
+      .range-bar { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+      .range-bar::-webkit-scrollbar { display: none; }
+
+      /* Habit bar: ชื่อสั้นลง */
+      .habit-name-col { min-width: 100px; font-size: 12px; }
+
+      /* Summary card: ตัวเลขใหญ่ขึ้น */
+      .summary-value { font-size: 22px; }
+    }
+
+    @media (max-width: 390px) {
+      .summary-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .summary-card { padding: 14px 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Auth gate -->
+<div id="auth-gate">
+  <div class="auth-msg">
+    <p>กรุณาเข้าสู่ระบบก่อน</p>
+    <a class="btn-go" href="index.html">ไปหน้า Login</a>
+  </div>
+</div>
+
+<!-- App -->
+<div id="app">
+  <div class="container">
+    <header class="app-header">
+      <div class="header-logo">DEV<span>OS</span></div>
+      <div class="header-nav">
+        <a class="nav-btn" href="index.html">Daily Log</a>
+        <a class="nav-btn" href="journal.html">Moments</a>
+        <a class="nav-btn active" href="stats.html">Statistics</a>
+        <button class="nav-btn" id="btn-refresh">Refresh</button>
+        <button class="nav-btn" id="btn-logout">ออกจากระบบ</button>
+      </div>
+    </header>
+
+  <main class="main">
+    <div class="page-header">
+      <div class="label">Performance Overview</div>
+      <h2>สถิติของคุณ</h2>
+    </div>
+
+    <!-- Range Selector -->
+    <div class="range-bar">
+      <button class="range-btn" data-days="7">7 วัน</button>
+      <button class="range-btn active" data-days="30">30 วัน</button>
+      <button class="range-btn" data-days="90">90 วัน</button>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="summary-label">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          Sleep เฉลี่ย
+        </div>
+        <div><span class="summary-value" id="avg-sleep">—</span><span class="summary-unit">hrs</span></div>
+        <div class="summary-sub" id="sub-sleep"></div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          Read เฉลี่ย
+        </div>
+        <div><span class="summary-value" id="avg-read">—</span><span class="summary-unit">pgs</span></div>
+        <div class="summary-sub" id="sub-read"></div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">
+          <svg class="icon" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Weight ล่าสุด
+        </div>
+        <div><span class="summary-value" id="avg-weight">—</span><span class="summary-unit">kg</span></div>
+        <div class="summary-sub" id="sub-weight"></div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          Meditate เฉลี่ย
+        </div>
+        <div><span class="summary-value" id="avg-meditate">—</span><span class="summary-unit">min</span></div>
+        <div class="summary-sub" id="sub-meditate"></div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-grid">
+
+      <!-- Sleep -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-icon">
+            <svg class="icon-lg" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </div>
+          <div class="chart-title">Sleep (ชั่วโมง)</div>
+        </div>
+        <div class="chart-wrap"><canvas id="chart-sleep"></canvas></div>
+      </div>
+
+      <!-- Weight -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-icon">
+            <svg class="icon-lg" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <div class="chart-title">Weight (kg)</div>
+        </div>
+        <div class="chart-wrap"><canvas id="chart-weight"></canvas></div>
+      </div>
+
+      <!-- Read -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-icon">
+            <svg class="icon-lg" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          </div>
+          <div class="chart-title">Read (หน้า/วัน)</div>
+        </div>
+        <div class="chart-wrap"><canvas id="chart-read"></canvas></div>
+      </div>
+
+      <!-- Meditate -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-icon">
+            <svg class="icon-lg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          </div>
+          <div class="chart-title">Meditate (นาที)</div>
+        </div>
+        <div class="chart-wrap"><canvas id="chart-meditate"></canvas></div>
+      </div>
+
+      <!-- Feelings -->
+      <div class="chart-card full">
+        <div class="chart-header">
+          <div class="chart-icon">
+            <svg class="icon-lg" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          <div class="chart-title">Feelings (1–5 คะแนน)</div>
+        </div>
+        <div class="chart-wrap"><canvas id="chart-feelings"></canvas></div>
+      </div>
+
+      <!-- Habits -->
+      <div class="chart-card full">
+        <div class="chart-header">
+          <div class="chart-icon">
+            <svg class="icon-lg" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          </div>
+          <div class="chart-title">Habit Completion Rate</div>
+        </div>
+        <div id="habit-stats-wrap" class="habit-stats">
+          <div class="empty-state">กำลังโหลด...</div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+  </div><!-- end .container -->
+</div>
+
+<div class="loading-overlay" id="loading">
+  <div class="loading-box">
+    <div class="spinner"></div>
+    <div class="loading-title">กำลังเชื่อมต่อ...</div>
+    <div class="loading-sub">ครั้งแรกอาจใช้เวลา 10–20 วินาที</div>
+  </div>
+</div>
+<div id="dbg"></div>
+<button id="dbg-toggle" title="Toggle debug log">LOG</button>
+
+<script>
+  const SUPABASE_URL  = 'https://lyncszmpwojopbvkmqmc.supabase.co';
+  const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5bmNzem1wd29qb3BidmttcW1jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyMTgwODIsImV4cCI6MjA5Nzc5NDA4Mn0.fzOPawbNz3kQTK5L4uVlDnWUxwgZ-V4suBFYD-tpcP4';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+  let currentDays = 30;
+  let charts = {};
+
+  // ── DEBUG ──
+  function dbg(msg) {
+    const el = document.getElementById('dbg');
+    if (el) {
+      const line = document.createElement('div');
+      line.textContent = `${new Date().toLocaleTimeString()} ${msg}`;
+      el.appendChild(line);
+      el.scrollTop = el.scrollHeight;
+    }
+    console.log('[DBG]', msg);
+  }
+
+  document.getElementById('dbg-toggle').addEventListener('click', () => {
+    const panel = document.getElementById('dbg');
+    panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+  });
+
+  function sbQ(promise, label, ms = 20000) {
+    dbg(`... ${label}`);
+    return Promise.race([
+      promise.then(r => { dbg(`ok  ${label}`); return r; }),
+      new Promise((_, reject) => setTimeout(() => {
+        dbg(`timeout ${label} (${ms}ms)`);
+        reject(new Error(`${label} timeout`));
+      }, ms))
+    ]);
+  }
+
+  // ── UTILS ──
+  function setLoading(on) { document.getElementById('loading').classList.toggle('active', on); }
+
+  function localStr(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  function dateRange(days) {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(start.getDate() - (days - 1));
+    return { from: localStr(start), to: localStr(end) };
+  }
+
+  function fmtDate(dateStr, days) {
+    const d = new Date(dateStr + 'T00:00:00');
+    if (days <= 7) return d.toLocaleDateString('th-TH', { weekday: 'short', day: 'numeric' });
+    if (days <= 30) return d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
+    return d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
+  }
+
+  function avg(arr) {
+    const vals = arr.filter(v => v != null && v !== '');
+    if (!vals.length) return null;
+    return (vals.reduce((a, b) => a + Number(b), 0) / vals.length).toFixed(1);
+  }
+
+  // ── CHART CONFIG ──
+  const CHART_DEFAULTS = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#9CA3AF', maxRotation: 45, maxTicksLimit: 8, includeBounds: true } },
+      y: { grid: { color: '#F3F4F6' }, ticks: { font: { size: 10 }, color: '#9CA3AF' }, beginAtZero: false },
+    },
+  };
+
+  function makeLineChart(id, labels, data, color = '#2D6A4F', fill = true) {
+    if (charts[id]) charts[id].destroy();
+    const ctx = document.getElementById(id).getContext('2d');
+    charts[id] = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          data,
+          borderColor: color,
+          backgroundColor: fill ? color + '18' : 'transparent',
+          borderWidth: 2.5,
+          pointRadius: labels.length > 20 ? 2 : 4,
+          pointBackgroundColor: color,
+          tension: 0.35,
+          fill,
+          spanGaps: true,
+        }],
+      },
+      options: { ...CHART_DEFAULTS },
+    });
+  }
+
+  function makeBarChart(id, labels, data, color = '#2D6A4F') {
+    if (charts[id]) charts[id].destroy();
+    const ctx = document.getElementById(id).getContext('2d');
+    charts[id] = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          data,
+          backgroundColor: color + 'CC',
+          borderRadius: 5,
+          borderSkipped: false,
+        }],
+      },
+      options: { ...CHART_DEFAULTS, scales: { ...CHART_DEFAULTS.scales, y: { ...CHART_DEFAULTS.scales.y, beginAtZero: true } } },
+    });
+  }
+
+  // ── LOAD DATA ──
+  let currentUser = null;
+  let currentToken = null; // access token จาก session
+
+  // ใช้ fetch() ตรงแทน Supabase client เพื่อหลีกเลี่ยง token-refresh hang
+  async function pgFetch(table, params) {
+    const url = `${SUPABASE_URL}/rest/v1/${table}?${params}`;
+    dbg(`⏳ GET ${table}...`);
+    const res = await fetch(url, {
+      headers: {
+        'apikey': SUPABASE_ANON,
+        'Authorization': `Bearer ${currentToken}`,
+        'Accept': 'application/json',
+      }
+    });
+    if (!res.ok) { dbg(`err ${table} HTTP ${res.status}`); return []; }
+    const data = await res.json();
+    dbg(`ok  ${table}: ${data.length} rows`);
+    return data;
+  }
+
+  async function loadStats(days, user) {
+    if (!user) user = currentUser;
+    if (!user) { dbg('no user, skip'); return; }
+    setLoading(true);
+    const safetyTimer = setTimeout(() => { dbg('safety timer 45s fired'); setLoading(false); }, 45000);
+    const { from, to } = dateRange(days);
+    dbg(`range: ${from} → ${to}`);
+
+    try {
+      // Daily logs — ใช้ fetch() ตรง ไม่ผ่าน Supabase client (หลีกเลี่ยง token-refresh hang)
+      const logs = await pgFetch('daily_logs',
+        `select=log_date,sleep_hours,read_pages,weight_kg,meditate_minutes,feelings` +
+        `&user_id=eq.${user.id}&log_date=gte.${from}&log_date=lte.${to}&order=log_date`
+      );
+
+      const rows = Array.isArray(logs) ? logs : [];
+
+      // All dates in range — ใช้ local date (ไม่ใช้ toISOString ซึ่งเป็น UTC)
+      function localDateStr(d) {
+        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      }
+      const allDates = [];
+      const cur = new Date(from + 'T00:00:00');
+      const endD = new Date(to + 'T00:00:00');
+      while (cur <= endD) {
+        allDates.push(localDateStr(cur));
+        cur.setDate(cur.getDate() + 1);
+      }
+      dbg(`allDates: ${allDates[0]} → ${allDates[allDates.length-1]} (${allDates.length} days)`);
+
+      const byDate = {};
+      rows.forEach(r => { byDate[r.log_date] = r; });
+
+      const labels   = allDates.map(d => fmtDate(d, days));
+      const sleepArr = allDates.map(d => byDate[d]?.sleep_hours ?? null);
+      const readArr  = allDates.map(d => byDate[d]?.read_pages  ?? null);
+      const weightArr= allDates.map(d => byDate[d]?.weight_kg   ?? null);
+      const meditArr = allDates.map(d => byDate[d]?.meditate_minutes ?? null);
+      const feelArr  = allDates.map(d => byDate[d]?.feelings    ?? null);
+
+      // Summary
+      const logsWithSleep   = rows.filter(r => r.sleep_hours   != null);
+      const logsWithRead    = rows.filter(r => r.read_pages    != null);
+      const logsWithMed     = rows.filter(r => r.meditate_minutes != null);
+      const logsWithWeight  = rows.filter(r => r.weight_kg     != null);
+
+      document.getElementById('avg-sleep').textContent    = avg(sleepArr)    ?? '—';
+      document.getElementById('avg-read').textContent     = avg(readArr)     ?? '—';
+      document.getElementById('avg-meditate').textContent = avg(meditArr)    ?? '—';
+      document.getElementById('avg-weight').textContent   = logsWithWeight.length
+        ? logsWithWeight[logsWithWeight.length - 1].weight_kg
+        : '—';
+
+      document.getElementById('sub-sleep').textContent    = logsWithSleep.length   ? `บันทึกแล้ว ${logsWithSleep.length} วัน` : 'ยังไม่มีข้อมูล';
+      document.getElementById('sub-read').textContent     = logsWithRead.length    ? `รวม ${logsWithRead.reduce((a,r)=>a+(r.read_pages||0),0)} หน้า` : 'ยังไม่มีข้อมูล';
+      document.getElementById('sub-meditate').textContent = logsWithMed.length     ? `รวม ${logsWithMed.reduce((a,r)=>a+(r.meditate_minutes||0),0)} นาที` : 'ยังไม่มีข้อมูล';
+      document.getElementById('sub-weight').textContent   = logsWithWeight.length  ? `บันทึกแล้ว ${logsWithWeight.length} วัน` : 'ยังไม่มีข้อมูล';
+
+      // Charts
+      makeLineChart('chart-sleep',    labels, sleepArr,  '#2D4A3E');
+      makeLineChart('chart-weight',   labels, weightArr, '#2D4A3E');
+      makeBarChart ('chart-read',     labels, readArr,   '#2D4A3E');
+      makeBarChart ('chart-meditate', labels, meditArr,  '#2D4A3E');
+
+      // Feelings chart
+      makeBarChart('chart-feelings', labels, feelArr, '#F59E0B');
+      if (charts['chart-feelings']) {
+        charts['chart-feelings'].options.scales.y.max = 5;
+        charts['chart-feelings'].options.scales.y.min = 0;
+        charts['chart-feelings'].update();
+      }
+
+      // Habits
+      await loadHabitStats(user.id, from, to, allDates.length);
+
+    } catch(e) {
+      console.error('loadStats error:', e);
+    } finally {
+      clearTimeout(safetyTimer);
+      setLoading(false);
+    }
+  }
+
+  // ── SVG ICON HELPERS (stats) ──
+  const _SI = {
+    ban:      `<circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>`,
+    dumbbell: `<path d="M6 5v14M18 5v14"/><path d="M2 9h4M20 9h2M2 15h4M20 15h2"/><rect x="6" y="8" width="12" height="8" rx="2"/>`,
+    trendUp:  `<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>`,
+    droplet:  `<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>`,
+    code:     `<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>`,
+    globe:    `<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>`,
+    heart:    `<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>`,
+    zap:      `<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>`,
+  };
+  const _SMAP = [
+    ['caffeine', _SI.ban], ['coffee', _SI.ban],
+    ['exercise', _SI.dumbbell], ['gym', _SI.dumbbell],
+    ['trade', _SI.trendUp],
+    ['water', _SI.droplet], ['drink', _SI.droplet],
+    ['skills', _SI.code], ['skill', _SI.code],
+    ['english', _SI.globe], ['language', _SI.globe],
+    ['healthy', _SI.heart], ['health', _SI.heart],
+  ];
+  function statsMakeIcon(d) {
+    return `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;flex-shrink:0;margin-right:6px;position:relative;top:-1px">${d}</svg>`;
+  }
+  function statsGetHabitIcon(name) {
+    const lower = name.toLowerCase();
+    for (const [k, d] of _SMAP) { if (lower.includes(k)) return statsMakeIcon(d); }
+    return statsMakeIcon(_SI.zap);
+  }
+  function statsStripEmoji(str) {
+    return str.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, '').trim();
+  }
+
+  async function loadHabitStats(userId, from, to, totalDays) {
+    const wrap = document.getElementById('habit-stats-wrap');
+
+    const habits = await pgFetch('habits',
+      `select=id,name,icon&user_id=eq.${userId}&is_active=eq.true&order=sort_order`
+    );
+
+    if (!habits || !habits.length) {
+      wrap.innerHTML = '<div class="empty-state">ยังไม่มี Habit</div>';
+      return;
+    }
+
+    const completions = await pgFetch('habit_completions',
+      `select=habit_id,completed&user_id=eq.${userId}&completed=eq.true&log_date=gte.${from}&log_date=lte.${to}`
+    );
+
+    const countMap = {};
+    (completions || []).forEach(c => {
+      countMap[c.habit_id] = (countMap[c.habit_id] || 0) + 1;
+    });
+
+    wrap.innerHTML = '';
+    habits.forEach(h => {
+      const count       = countMap[h.id] || 0;
+      const pct         = Math.round((count / totalDays) * 100);
+      const displayName = statsStripEmoji(h.name);
+      const iconSvg     = statsGetHabitIcon(h.name);
+      const row         = document.createElement('div');
+      row.className = 'habit-row';
+      row.innerHTML = `
+        <div class="habit-name-col">${iconSvg}${displayName}</div>
+        <div class="habit-bar-wrap">
+          <div class="habit-bar-fill" style="width: ${pct}%"></div>
+        </div>
+        <div class="habit-pct">${pct}%</div>
+      `;
+      wrap.appendChild(row);
+    });
+  }
+
+  // ── AUTH ──
+  let statsInitialized = false;
+  sb.auth.onAuthStateChange(async (event, session) => {
+    dbg(`auth: ${event}`);
+    if (session?.user) {
+      currentUser = session.user;
+      currentToken = session.access_token;
+      document.getElementById('auth-gate').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      if (!statsInitialized) {
+        statsInitialized = true;
+        try { await loadStats(currentDays, session.user); }
+        catch(e) { dbg('loadStats err: ' + e.message); statsInitialized = false; }
+      }
+    } else {
+      currentUser = null;
+      statsInitialized = false;
+      document.getElementById('auth-gate').style.display = 'flex';
+      document.getElementById('app').style.display = 'none';
+    }
+  });
+
+  document.getElementById('btn-logout').addEventListener('click', async () => {
+    await sb.auth.signOut();
+    window.location.href = 'index.html';
+  });
+
+  document.getElementById('btn-refresh').addEventListener('click', async () => {
+    statsInitialized = false;
+    dbg('Manual refresh...');
+    if (currentUser) {
+      statsInitialized = true;
+      try { await loadStats(currentDays, currentUser); }
+      catch(e) { dbg('refresh err: ' + e.message); statsInitialized = false; }
+    } else {
+      dbg('no user cached, checking session...');
+      const { data: { session } } = await sb.auth.getSession();
+      if (session?.user) {
+        currentUser = session.user;
+        statsInitialized = true;
+        try { await loadStats(currentDays, currentUser); }
+        catch(e) { dbg('refresh err: ' + e.message); statsInitialized = false; }
+      }
+    }
+  });
+
+  // ── RANGE BUTTONS ──
+  document.querySelectorAll('.range-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentDays = parseInt(btn.dataset.days);
+      await loadStats(currentDays, currentUser);
+    });
+  });
+</script>
+
+<!-- ══ MOBILE BOTTOM NAV ══ -->
+<nav class="mobile-nav">
+  <div class="mobile-nav-inner">
+    <a class="mobile-nav-item" href="index.html">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Daily
+    </a>
+    <a class="mobile-nav-item" href="journal.html">
+      <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      Moments
+    </a>
+    <a class="mobile-nav-item active" href="stats.html">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Stats
+    </a>
+    <button class="mobile-nav-item" onclick="document.getElementById('btn-logout').click()">
+      <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      ออกจากระบบ
+    </button>
+  </div>
+</nav>
+</body>
+</html>

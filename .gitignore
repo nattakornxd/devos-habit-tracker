@@ -1,0 +1,15 @@
+# ไฟล์ส่วนตัว
+API_Key_Supabase.txt
+pass_DB_Supabase.txt
+
+# เอกสาร
+*.docx
+*.pdf
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Server temp
+__pycache__/
+*.pyc
