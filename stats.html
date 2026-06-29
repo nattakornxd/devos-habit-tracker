@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DevOS — Statistics</title>
 
+  <!-- PWA -->
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="theme-color" content="#2D4A3E" />
+  <!-- iOS -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="DevOS" />
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -836,6 +845,17 @@
       await loadStats(currentDays, currentUser);
     });
   });
+</script>
+
+<!-- Service Worker Registration -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(r => console.log('[SW] registered', r.scope))
+        .catch(e => console.warn('[SW] failed', e));
+    });
+  }
 </script>
 
 <!-- ══ MOBILE BOTTOM NAV ══ -->
