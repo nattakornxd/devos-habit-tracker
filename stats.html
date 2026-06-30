@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DevOS — Statistics</title>
+  <meta name="theme-color" content="#5C7A6E" />
 
   <!-- PWA -->
   <link rel="manifest" href="./manifest.json" />
@@ -24,9 +25,9 @@
     :root {
       --bg:          #F7F5F0;
       --bg-card:     #FFFFFF;
-      --primary:     #2D4A3E;
-      --green-mid:   #2D6A4F;
-      --green-light: #E8EFEA;
+      --primary:     #5C7A6E;
+      --green-mid:   #5C7A6E;
+      --green-light: #EAF0EE;
       --cream:       #F0EDE6;
       --text:        #2C332F;
       --text-sub:    #7A827E;
@@ -345,8 +346,8 @@
 <!-- Auth gate -->
 <div id="auth-gate">
   <div class="auth-msg">
-    <p>กรุณาเข้าสู่ระบบก่อน</p>
-    <a class="btn-go" href="index.html">ไปหน้า Login</a>
+    <p>Please sign in first</p>
+    <a class="btn-go" href="index.html">Go to Login</a>
   </div>
 </div>
 
@@ -360,21 +361,21 @@
         <a class="nav-btn" href="journal.html">Moments</a>
         <a class="nav-btn active" href="stats.html">Statistics</a>
         <button class="nav-btn" id="btn-refresh">Refresh</button>
-        <button class="nav-btn" id="btn-logout">ออกจากระบบ</button>
+        <button class="nav-btn" id="btn-logout">Sign out</button>
       </div>
     </header>
 
   <main class="main">
     <div class="page-header">
       <div class="label">Performance Overview</div>
-      <h2>สถิติของคุณ</h2>
+      <h2>Your Statistics</h2>
     </div>
 
     <!-- Range Selector -->
     <div class="range-bar">
-      <button class="range-btn" data-days="7">7 วัน</button>
-      <button class="range-btn active" data-days="30">30 วัน</button>
-      <button class="range-btn" data-days="90">90 วัน</button>
+      <button class="range-btn" data-days="7">7 days</button>
+      <button class="range-btn active" data-days="30">30 days</button>
+      <button class="range-btn" data-days="90">90 days</button>
     </div>
 
     <!-- Summary Cards -->
@@ -382,7 +383,7 @@
       <div class="summary-card">
         <div class="summary-label">
           <svg class="icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-          Sleep เฉลี่ย
+          Avg Sleep
         </div>
         <div><span class="summary-value" id="avg-sleep">—</span><span class="summary-unit">hrs</span></div>
         <div class="summary-sub" id="sub-sleep"></div>
@@ -390,7 +391,7 @@
       <div class="summary-card">
         <div class="summary-label">
           <svg class="icon" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-          Read เฉลี่ย
+          Avg Read
         </div>
         <div><span class="summary-value" id="avg-read">—</span><span class="summary-unit">pgs</span></div>
         <div class="summary-sub" id="sub-read"></div>
@@ -398,7 +399,7 @@
       <div class="summary-card">
         <div class="summary-label">
           <svg class="icon" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-          Weight ล่าสุด
+          Latest Weight
         </div>
         <div><span class="summary-value" id="avg-weight">—</span><span class="summary-unit">kg</span></div>
         <div class="summary-sub" id="sub-weight"></div>
@@ -406,7 +407,7 @@
       <div class="summary-card">
         <div class="summary-label">
           <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-          Meditate เฉลี่ย
+          Avg Meditate
         </div>
         <div><span class="summary-value" id="avg-meditate">—</span><span class="summary-unit">min</span></div>
         <div class="summary-sub" id="sub-meditate"></div>
@@ -422,7 +423,7 @@
           <div class="chart-icon">
             <svg class="icon-lg" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
           </div>
-          <div class="chart-title">Sleep (ชั่วโมง)</div>
+          <div class="chart-title">Sleep (hours)</div>
         </div>
         <div class="chart-wrap"><canvas id="chart-sleep"></canvas></div>
       </div>
@@ -444,7 +445,7 @@
           <div class="chart-icon">
             <svg class="icon-lg" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
           </div>
-          <div class="chart-title">Read (หน้า/วัน)</div>
+          <div class="chart-title">Read (pages/day)</div>
         </div>
         <div class="chart-wrap"><canvas id="chart-read"></canvas></div>
       </div>
@@ -455,7 +456,7 @@
           <div class="chart-icon">
             <svg class="icon-lg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
           </div>
-          <div class="chart-title">Meditate (นาที)</div>
+          <div class="chart-title">Meditate (minutes)</div>
         </div>
         <div class="chart-wrap"><canvas id="chart-meditate"></canvas></div>
       </div>
@@ -466,7 +467,7 @@
           <div class="chart-icon">
             <svg class="icon-lg" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
           </div>
-          <div class="chart-title">Feelings (1–5 คะแนน)</div>
+          <div class="chart-title">Mood (1–5 score)</div>
         </div>
         <div class="chart-wrap"><canvas id="chart-feelings"></canvas></div>
       </div>
@@ -480,7 +481,7 @@
           <div class="chart-title">Habit Completion Rate</div>
         </div>
         <div id="habit-stats-wrap" class="habit-stats">
-          <div class="empty-state">กำลังโหลด...</div>
+          <div class="empty-state">Loading…</div>
         </div>
       </div>
 
@@ -492,8 +493,8 @@
 <div class="loading-overlay" id="loading">
   <div class="loading-box">
     <div class="spinner"></div>
-    <div class="loading-title">กำลังเชื่อมต่อ...</div>
-    <div class="loading-sub">ครั้งแรกอาจใช้เวลา 10–20 วินาที</div>
+    <div class="loading-title">Connecting…</div>
+    <div class="loading-sub">First load may take 10–20 seconds</div>
   </div>
 </div>
 <div id="dbg"></div>
@@ -551,9 +552,9 @@
 
   function fmtDate(dateStr, days) {
     const d = new Date(dateStr + 'T00:00:00');
-    if (days <= 7) return d.toLocaleDateString('th-TH', { weekday: 'short', day: 'numeric' });
-    if (days <= 30) return d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
-    return d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
+    if (days <= 7) return d.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' });
+    if (days <= 30) return d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+    return d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
   }
 
   function avg(arr) {
@@ -688,16 +689,16 @@
         ? logsWithWeight[logsWithWeight.length - 1].weight_kg
         : '—';
 
-      document.getElementById('sub-sleep').textContent    = logsWithSleep.length   ? `บันทึกแล้ว ${logsWithSleep.length} วัน` : 'ยังไม่มีข้อมูล';
-      document.getElementById('sub-read').textContent     = logsWithRead.length    ? `รวม ${logsWithRead.reduce((a,r)=>a+(r.read_pages||0),0)} หน้า` : 'ยังไม่มีข้อมูล';
-      document.getElementById('sub-meditate').textContent = logsWithMed.length     ? `รวม ${logsWithMed.reduce((a,r)=>a+(r.meditate_minutes||0),0)} นาที` : 'ยังไม่มีข้อมูล';
-      document.getElementById('sub-weight').textContent   = logsWithWeight.length  ? `บันทึกแล้ว ${logsWithWeight.length} วัน` : 'ยังไม่มีข้อมูล';
+      document.getElementById('sub-sleep').textContent    = logsWithSleep.length   ? `${logsWithSleep.length} days logged` : 'No data yet';
+      document.getElementById('sub-read').textContent     = logsWithRead.length    ? `${logsWithRead.reduce((a,r)=>a+(r.read_pages||0),0)} pages total` : 'No data yet';
+      document.getElementById('sub-meditate').textContent = logsWithMed.length     ? `${logsWithMed.reduce((a,r)=>a+(r.meditate_minutes||0),0)} min total` : 'No data yet';
+      document.getElementById('sub-weight').textContent   = logsWithWeight.length  ? `${logsWithWeight.length} days logged` : 'No data yet';
 
       // Charts
-      makeLineChart('chart-sleep',    labels, sleepArr,  '#2D4A3E');
-      makeLineChart('chart-weight',   labels, weightArr, '#2D4A3E');
-      makeBarChart ('chart-read',     labels, readArr,   '#2D4A3E');
-      makeBarChart ('chart-meditate', labels, meditArr,  '#2D4A3E');
+      makeLineChart('chart-sleep',    labels, sleepArr,  '#5C7A6E');
+      makeLineChart('chart-weight',   labels, weightArr, '#5C7A6E');
+      makeBarChart ('chart-read',     labels, readArr,   '#5C7A6E');
+      makeBarChart ('chart-meditate', labels, meditArr,  '#5C7A6E');
 
       // Feelings chart
       makeBarChart('chart-feelings', labels, feelArr, '#F59E0B');
@@ -758,7 +759,7 @@
     );
 
     if (!habits || !habits.length) {
-      wrap.innerHTML = '<div class="empty-state">ยังไม่มี Habit</div>';
+      wrap.innerHTML = '<div class="empty-state">No habits tracked yet</div>';
       return;
     }
 
@@ -875,9 +876,10 @@
     </a>
     <button class="mobile-nav-item" onclick="document.getElementById('btn-logout').click()">
       <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-      ออกจากระบบ
+      Sign out
     </button>
   </div>
 </nav>
 </body>
 </html>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
