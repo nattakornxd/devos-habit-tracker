@@ -174,4 +174,37 @@ CREATE TRIGGER monthly_reviews_updated_at
 CREATE INDEX idx_habits_user_id              ON public.habits(user_id);
 CREATE INDEX idx_daily_logs_user_date        ON public.daily_logs(user_id, log_date DESC);
 CREATE INDEX idx_habit_completions_date      ON public.habit_completions(user_id, log_date DESC);
-CRE
+CREATE INDEX idx_thesis_milestones_user      ON public.thesis_milestones(user_id);
+CREATE INDEX idx_freelance_tasks_user        ON public.freelance_tasks(user_id);
+CREATE INDEX idx_weekly_reviews_user         ON public.weekly_reviews(user_id, week_start DESC);
+CREATE INDEX idx_monthly_reviews_user        ON public.monthly_reviews(user_id, month_year DESC);
+
+-- ============================================================
+-- ROW LEVEL SECURITY
+-- ============================================================
+ALTER TABLE public.profiles          ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.habits            ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.daily_logs        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.habit_completions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.thesis_milestones ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.freelance_tasks   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.weekly_reviews    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.monthly_reviews   ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "own profile select"   ON public.profiles          FOR SELECT USING (auth.uid() = id);
+CREATE POLICY "own profile update"   ON public.profiles          FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY "own habits"           ON public.habits            FOR ALL    USING (auth.uid() = user_id);
+CREATE POLICY "own daily_logs"       ON public.daily_logs        FOR ALL    USING (auth.uid() = user_id);
+CREATE POLICY "own habit_completions"ON public.habit_completions FOR ALL    USING (auth.uid() = user_id);
+CREATE POLICY "own thesis_milestones"ON public.thesis_milestones FOR ALL    USING (auth.uid() = user_id);
+CREATE POLICY "own freelance_tasks"  ON public.freelance_tasks   FOR ALL    USING (auth.uid() = user_id);
+CREATE POLICY "own weekly_reviews"   ON public.weekly_reviews    FOR ALL    USING (auth.uid() = user_id);
+CREATE POLICY "own monthly_reviews"  ON public.monthly_reviews   FOR ALL    USING (auth.uid() = user_id);
+
+-- ============================================================
+-- MIGRATION (run these if upgrading existing DB)
+-- ============================================================
+-- ALTER TABLE public.daily_logs ADD COLUMN IF NOT EXISTS english_type TEXT CHECK (english_type IN ('Listening','Grammar','Vocabulary','Reading'));
+-- ALTER TABLE public.daily_logs ADD COLUMN IF NOT EXISTS trading_special_log TEXT;
+-- ALTER TABLE public.daily_logs ADD COLUMN IF NOT EXISTS freelance_used_ai BOOLEAN DEFAULT FALSE;
+-- (Create tables 5-8 above as new)

@@ -969,4 +969,1094 @@
         <div class="habit-label">📖 Daily English</div>
         <div class="habit-sub">Select practice type below when checked</div>
       </div>`;
-    engEl.addEventList
+    engEl.addEventListener('click', () => {
+      if (!engId) return;
+      completions[engId] = !completions[engId];
+      engEl.classList.toggle('checked', !!completions[engId]);
+      engEl.querySelector('.habit-check').textContent = completions[engId] ? '✓' : '';
+      document.getElementById('english-extra').classList.toggle('visible', !!completions[engId]);
+      saveHabitCompletion(engId);
+    });
+    wrap.insertBefore(engEl, document.getElementById('english-extra'));
+  }
+
+  // ── RENDER WEALTH ──
+  function renderWealthHabits() {
+    const wrap = document.getElementById('habits-wealth');
+    document.getElementById('skeleton-wealth').style.display = 'none';
+    wrap.style.display = 'block';
+    const trId = habitIdMap.trading;
+    const checked = trId ? !!completions[trId] : false;
+    const trEl = document.createElement('div');
+    trEl.className = 'habit-item' + (checked ? ' checked' : '');
+    trEl.id = 'habit-trading';
+    trEl.innerHTML = `
+      <div class="habit-check">${checked ? '✓' : ''}</div>
+      <div class="habit-body">
+        <div class="habit-label">📈 Trading Discipline</div>
+        <div class="habit-sub">No FOMO — wait for A+ setups</div>
+      </div>`;
+    trEl.addEventListener('click', () => {
+      if (!trId) return;
+      completions[trId] = !completions[trId];
+      trEl.classList.toggle('checked', !!completions[trId]);
+      trEl.querySelector('.habit-check').textContent = completions[trId] ? '✓' : '';
+      saveHabitCompletion(trId);
+    });
+    wrap.insertBefore(trEl, wrap.querySelector('.special-log-wrap'));
+  }
+
+  // ── SAVE HABIT COMPLETION ──
+  async function saveHabitCompletion(habitId) {
+    if (!currentUser) return;
+    showSaving();
+    const { error } = await sbQ(
+      sb.from('habit_completions').upsert({
+        user_id: currentUser.id,
+        habit_id: habitId,
+        log_date: currentDate,
+        completed: !!completions[habitId],
+      }, { onConflict: 'user_id,habit_id,log_date' }), 'saveHabit');
+    if (error) { showToast('Could not save habit', 'error'); return; }
+    showSaved();
+  }
+
+  // ── FEELINGS ──
+  function setFeelings(n) {
+    feelings = n;
+    document.querySelectorAll('.star-btn').forEach(b => {
+      b.classList.toggle('on', parseInt(b.dataset.val) <= n);
+    });
+    document.getElementById('feelings-desc').textContent = MOOD_LABELS[n] || '—';
+  }
+  document.querySelectorAll('.star-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      const v = parseInt(b.dataset.val);
+      setFeelings(feelings === v ? 0 : v);
+      scheduleAutoSave();
+    });
+  });
+
+  // ── SHOW SAVING / SAVED ──
+  function showSaving() { setSaveIndicator('Saving…', false); }
+  function showSaved()  { setSaveIndicator('Saved ✓', true); setTimeout(() => setSaveIndicator('', true), 2000); }
+
+  // ── AI TOGGLE ──
+  document.getElementById('ai-toggle-pill').addEventListener('click', () => {
+    freelanceUsedAI = !freelanceUsedAI;
+    document.getElementById('ai-toggle-pill').classList.toggle('on', freelanceUsedAI);
+    scheduleAutoSave();
+  });
+
+  // ── MOMENTS HINT ──
+  document.getElementById('j-moments').addEventListener('input', () => {
+    const lines = document.getElementById('j-moments').value.split('\n').length;
+    document.getElementById('moments-hint').textContent = `${lines} / 3 lines`;
+  });
+
+  // ── AUTO-SAVE ──
+  let _saveTimer = null;
+  function scheduleAutoSave() {
+    clearTimeout(_saveTimer);
+    _saveTimer = setTimeout(() => { if (currentUser) saveDay(); }, 1500);
+  }
+  ['m-sleep','m-read','m-weight','m-meditate','j-moments','trading-special-log'].forEach(id => {
+    document.getElementById(id).addEventListener('input', scheduleAutoSave);
+  });
+  document.getElementById('english-type-select').addEventListener('change', scheduleAutoSave);
+
+  // ── SAVE DAY ──
+  document.getElementById('btn-save').addEventListener('click', saveDay);
+  async function saveDay() {
+    if (!currentUser) return;
+    showSaving();
+    const payload = {
+      user_id:           currentUser.id,
+      log_date:          currentDate,
+      feelings,
+      sleep_hours:       parseFloat(document.getElementById('m-sleep').value)    || null,
+      read_pages:        parseInt(document.getElementById('m-read').value)        || null,
+      weight_kg:         parseFloat(document.getElementById('m-weight').value)    || null,
+      meditate_minutes:  parseInt(document.getElementById('m-meditate').value)    || null,
+      memorable_moments: document.getElementById('j-moments').value.trim()        || null,
+      trading_special_log: document.getElementById('trading-special-log').value.trim() || null,
+      english_type:      document.getElementById('english-type-select').value     || null,
+      freelance_used_ai: freelanceUsedAI,
+    };
+    try {
+      const { error } = await sbQ(
+        sb.from('daily_logs').upsert(payload, { onConflict: 'user_id,log_date' }), 'saveDay');
+      if (error) throw error;
+      showSaved();
+      showToast('Saved ✓', 'saved');
+    } catch(e) { showToast('Save failed: ' + e.message, 'error'); setSaveIndicator('Error', false); }
+  }
+
+  // ── CLEAR DAY ──
+  document.getElementById('btn-clear').addEventListener('click', () => {
+    document.getElementById('confirm-date-text').textContent = `Clear all data for ${formatDateEN(currentDate)}?`;
+    document.getElementById('confirm-overlay').classList.add('open');
+  });
+  document.getElementById('confirm-cancel').addEventListener('click', () => {
+    document.getElementById('confirm-overlay').classList.remove('open');
+  });
+  document.getElementById('confirm-ok').addEventListener('click', async () => {
+    document.getElementById('confirm-overlay').classList.remove('open');
+    if (!currentUser) return;
+    showSaving();
+    try {
+      await sbQ(sb.from('daily_logs').delete().eq('user_id', currentUser.id).eq('log_date', currentDate), 'clearDay log');
+      await sbQ(sb.from('habit_completions').delete().eq('user_id', currentUser.id).eq('log_date', currentDate), 'clearDay hc');
+      await loadDay(currentDate, currentUser.id);
+      showToast('Data cleared', 'saved');
+    } catch(e) { showToast('Clear failed', 'error'); }
+    finally { setSaveIndicator(''); }
+  });
+
+  // ── DATE NAV ──
+  function updateDateUI() {
+    document.getElementById('header-date').textContent = formatDateEN(currentDate);
+    document.getElementById('btn-next').disabled = isToday(currentDate);
+  }
+  document.getElementById('btn-prev').addEventListener('click', () => changeDate(-1));
+  document.getElementById('btn-next').addEventListener('click', () => changeDate(1));
+  async function changeDate(delta) {
+    if (!currentUser) return;
+    const d = strToDate(currentDate);
+    d.setDate(d.getDate() + delta);
+    if (d > new Date()) return;
+    currentDate = dateToStr(d);
+    updateDateUI();
+    await loadDay(currentDate, currentUser.id);
+  }
+
+  // ── CALENDAR ──
+  let calViewDate = new Date();
+  document.getElementById('header-date').addEventListener('click', e => {
+    e.stopPropagation();
+    const pop = document.getElementById('cal-popup');
+    calViewDate = strToDate(currentDate);
+    pop.classList.toggle('open');
+    if (pop.classList.contains('open')) renderCalendar(calViewDate);
+  });
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.date-nav')) {
+      document.getElementById('cal-popup').classList.remove('open');
+    }
+  });
+  document.getElementById('cal-prev-month').addEventListener('click', e => {
+    e.stopPropagation();
+    calViewDate.setMonth(calViewDate.getMonth() - 1);
+    renderCalendar(calViewDate);
+  });
+  document.getElementById('cal-next-month').addEventListener('click', e => {
+    e.stopPropagation();
+    calViewDate.setMonth(calViewDate.getMonth() + 1);
+    renderCalendar(calViewDate);
+  });
+  document.getElementById('cal-year-select').addEventListener('change', e => {
+    e.stopPropagation();
+    calViewDate.setFullYear(parseInt(e.target.value));
+    renderCalendar(calViewDate);
+  });
+  function renderCalendar(d) {
+    const year = d.getFullYear(), month = d.getMonth();
+    document.getElementById('cal-month-label').textContent = `${EN_MONTHS[month]} ${year}`;
+    const sel = document.getElementById('cal-year-select');
+    sel.innerHTML = '';
+    for (let y = year - 3; y <= year + 2; y++) {
+      const o = document.createElement('option');
+      o.value = y; o.textContent = y;
+      if (y === year) o.selected = true;
+      sel.appendChild(o);
+    }
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const today = new Date();
+    const container = document.getElementById('cal-days');
+    container.innerHTML = '';
+    for (let i = 0; i < firstDay; i++) {
+      const blank = document.createElement('div');
+      blank.className = 'cal-day other';
+      container.appendChild(blank);
+    }
+    for (let day = 1; day <= daysInMonth; day++) {
+      const ds = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+      const btn = document.createElement('button');
+      const isFuture = new Date(ds + 'T00:00:00') > today;
+      btn.className = 'cal-day' +
+        (ds === currentDate   ? ' selected' : '') +
+        (ds === dateToStr(today) ? ' today' : '') +
+        (isFuture ? ' disabled' : '');
+      btn.textContent = day;
+      btn.addEventListener('click', async () => {
+        if (isFuture) return;
+        currentDate = ds;
+        document.getElementById('cal-popup').classList.remove('open');
+        updateDateUI();
+        await loadDay(currentDate, currentUser.id);
+      });
+      container.appendChild(btn);
+    }
+  }
+
+  // ── LOAD FREELANCE TASKS ──
+  async function loadFreelanceTasks(userId) {
+    const { data } = await sbQ(sb.from('freelance_tasks').select('*').eq('user_id', userId).order('sort_order'), 'freelance_tasks load');
+    freelanceTasks = data || [];
+    renderFreelanceTasks();
+  }
+  function renderFreelanceTasks() {
+    const list = document.getElementById('freelance-task-list');
+    list.innerHTML = '';
+    freelanceTasks.forEach(t => {
+      const row = document.createElement('div');
+      row.className = 'task-row';
+      row.innerHTML = `
+        <div class="task-cb ${t.completed ? 'done' : ''}" data-id="${t.id}">${t.completed ? '✓' : ''}</div>
+        <div class="task-text ${t.completed ? 'done' : ''}" data-id="${t.id}">${t.task_text}</div>
+        <button class="task-del" data-id="${t.id}">×</button>`;
+      row.querySelector('.task-cb').addEventListener('click', () => toggleTask(t.id));
+      row.querySelector('.task-text').addEventListener('click', () => toggleTask(t.id));
+      row.querySelector('.task-del').addEventListener('click', e => { e.stopPropagation(); deleteTask(t.id); });
+      list.appendChild(row);
+    });
+  }
+  async function toggleTask(taskId) {
+    if (!currentUser) return;
+    const t = freelanceTasks.find(x => x.id === taskId);
+    if (!t) return;
+    t.completed = !t.completed;
+    renderFreelanceTasks();
+    const { error } = await sbQ(sb.from('freelance_tasks').update({ completed: t.completed }).eq('id', taskId), 'task toggle');
+    if (error) showToast('Could not update task', 'error');
+  }
+  async function deleteTask(taskId) {
+    if (!currentUser) return;
+    freelanceTasks = freelanceTasks.filter(x => x.id !== taskId);
+    renderFreelanceTasks();
+    const { error } = await sbQ(sb.from('freelance_tasks').delete().eq('id', taskId), 'task delete');
+    if (error) showToast('Could not delete task', 'error');
+  }
+  document.getElementById('btn-add-task').addEventListener('click', addTask);
+  document.getElementById('new-task-input').addEventListener('keydown', e => { if (e.key === 'Enter') addTask(); });
+  async function addTask() {
+    if (!currentUser) return;
+    const inp = document.getElementById('new-task-input');
+    const text = inp.value.trim();
+    if (!text) return;
+    inp.value = '';
+    const newTask = { user_id: currentUser.id, task_text: text, completed: false, sort_order: freelanceTasks.length };
+    const { data, error } = await sbQ(sb.from('freelance_tasks').insert(newTask).select().single(), 'task add');
+    if (error) { showToast('Could not add task', 'error'); return; }
+    freelanceTasks.push(data);
+    renderFreelanceTasks();
+  }
+
+  // ── THESIS MILESTONES ──
+  async function loadThesisMilestones(userId) {
+    const { data } = await sbQ(sb.from('thesis_milestones').select('*').eq('user_id', userId).order('step_number'), 'thesis_milestones load');
+    thesisMilestones = data || [];
+    for (let i = 1; i <= 6; i++) {
+      if (!thesisMilestones.find(m => m.step_number === i)) {
+        thesisMilestones.push({ step_number: i, completed: false, id: null });
+      }
+    }
+    thesisMilestones.sort((a, b) => a.step_number - b.step_number);
+    renderThesisSteps();
+  }
+  function renderThesisSteps() {
+    document.getElementById('skeleton-thesis').style.display = 'none';
+    document.getElementById('thesis-steps-wrap').style.display = 'block';
+    const wrap = document.getElementById('thesis-steps');
+    wrap.innerHTML = '';
+    let done = 0;
+    thesisMilestones.forEach(m => {
+      if (m.completed) done++;
+      const step = document.createElement('div');
+      step.className = 'thesis-step' + (m.completed ? ' done' : '');
+      step.innerHTML = `
+        <div class="step-num">${m.step_number}</div>
+        <div class="step-text">${THESIS_STEPS[m.step_number - 1]}</div>
+        <div class="step-check">✓</div>`;
+      step.addEventListener('click', () => toggleThesisStep(m.step_number, step));
+      wrap.appendChild(step);
+    });
+    document.getElementById('thesis-badge').textContent = `${done} / 6`;
+    document.getElementById('thesis-bar').style.width = `${Math.round((done/6)*100)}%`;
+  }
+  async function toggleThesisStep(stepNum, el) {
+    if (!currentUser) return;
+    const m = thesisMilestones.find(x => x.step_number === stepNum);
+    if (!m) return;
+    m.completed = !m.completed;
+    el.classList.toggle('done', m.completed);
+    const done = thesisMilestones.filter(x => x.completed).length;
+    document.getElementById('thesis-badge').textContent = `${done} / 6`;
+    document.getElementById('thesis-bar').style.width = `${Math.round((done/6)*100)}%`;
+    const { error } = await sbQ(
+      sb.from('thesis_milestones').upsert({
+        user_id: currentUser.id,
+        step_number: stepNum,
+        completed: m.completed,
+        completed_at: m.completed ? new Date().toISOString() : null,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'user_id,step_number' }), 'thesis save');
+    if (error) showToast('Could not save milestone', 'error');
+  }
+
+  // ── LOAD DAY ──
+  async function loadDay(dateStr, userId) {
+    completions = {}; feelings = 0; freelanceUsedAI = false;
+    setFeelings(0);
+    ['m-sleep','m-read','m-weight','m-meditate','j-moments','trading-special-log'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('english-type-select').value = '';
+    document.getElementById('english-extra').classList.remove('visible');
+    document.getElementById('ai-toggle-pill').classList.remove('on');
+
+    const { data: log } = await sbQ(
+      sb.from('daily_logs').select('*').eq('user_id', userId).eq('log_date', dateStr).maybeSingle(), 'loadDay log');
+    if (log) {
+      document.getElementById('m-sleep').value    = log.sleep_hours       ?? '';
+      document.getElementById('m-read').value     = log.read_pages        ?? '';
+      document.getElementById('m-weight').value   = log.weight_kg         ?? '';
+      document.getElementById('m-meditate').value = log.meditate_minutes  ?? '';
+      document.getElementById('j-moments').value  = log.memorable_moments ?? '';
+      document.getElementById('trading-special-log').value = log.trading_special_log ?? '';
+      if (log.english_type) document.getElementById('english-type-select').value = log.english_type;
+      freelanceUsedAI = !!log.freelance_used_ai;
+      document.getElementById('ai-toggle-pill').classList.toggle('on', freelanceUsedAI);
+      setFeelings(log.feelings || 0);
+    }
+
+    const { data: hc } = await sbQ(
+      sb.from('habit_completions').select('habit_id,completed').eq('user_id', userId).eq('log_date', dateStr), 'loadDay habits');
+    (hc || []).forEach(r => { completions[r.habit_id] = r.completed; });
+
+    refreshHabitUI();
+    await loadWorkoutWeek(userId);
+    setSaveIndicator('');
+  }
+
+  // ── REFRESH HABIT UI ──
+  function refreshHabitUI() {
+    const wakeId = habitIdMap.wake_up;
+    const wakeEl = document.getElementById('habit-wake');
+    if (wakeEl && wakeId) {
+      const c = !!completions[wakeId];
+      wakeEl.className = 'habit-item' + (c ? ' checked' : '');
+      wakeEl.querySelector('.habit-check').textContent = c ? '✓' : '';
+    }
+    const engId = habitIdMap.english;
+    const engEl = document.getElementById('habit-english');
+    if (engEl && engId) {
+      const c = !!completions[engId];
+      engEl.className = 'habit-item' + (c ? ' checked' : '');
+      engEl.querySelector('.habit-check').textContent = c ? '✓' : '';
+      document.getElementById('english-extra').classList.toggle('visible', c);
+    }
+    const trId = habitIdMap.trading;
+    const trEl = document.getElementById('habit-trading');
+    if (trEl && trId) {
+      const c = !!completions[trId];
+      trEl.className = 'habit-item' + (c ? ' checked' : '');
+      trEl.querySelector('.habit-check').textContent = c ? '✓' : '';
+    }
+  }
+
+  // ── WEEKLY REVIEW MODAL ──
+  async function openWeeklyReview() {
+    if (!currentUser) return;
+    const ws = getWeekStart(currentDate);
+    const wDate = strToDate(ws);
+    const weStr = dateToStr(new Date(wDate.getTime() + 6 * 86400000));
+    document.getElementById('weekly-meta').textContent = `Week of ${formatDateEN(ws)}`;
+    document.getElementById('modal-weekly').classList.add('open');
+    document.getElementById('weekly-habit-score').textContent = 'Calculating…';
+
+    const { data: rev } = await sbQ(
+      sb.from('weekly_reviews').select('*').eq('user_id', currentUser.id).eq('week_start', ws).maybeSingle(), 'weekly_review load');
+    document.getElementById('wr-trading').value   = rev?.trading_reflection || '';
+    document.getElementById('wr-freelance').value = rev?.freelance_checkin  || '';
+    document.getElementById('wr-thesis').value    = rev?.thesis_progress    || '';
+    document.getElementById('wr-blockers').value  = rev?.blockers_solutions || '';
+
+    const ids = Object.values(habitIdMap).filter(Boolean);
+    if (ids.length === 0) { document.getElementById('weekly-habit-score').textContent = 'No habits tracked'; return; }
+    const { data } = await sbQ(
+      sb.from('habit_completions').select('habit_id')
+        .eq('user_id', currentUser.id).eq('completed', true)
+        .gte('log_date', ws).lte('log_date', weStr), 'weekly habit completions');
+    const total = ids.length * 7;
+    const done  = (data || []).length;
+    const pct   = Math.round((done / total) * 100);
+    document.getElementById('weekly-habit-score').innerHTML =
+      `<strong style="color:var(--primary);font-size:18px;">${pct}%</strong> &nbsp;(${done} / ${total} habit-days)`;
+  }
+
+  document.getElementById('btn-weekly-review').addEventListener('click', openWeeklyReview);
+  document.getElementById('mobile-weekly-btn').addEventListener('click', openWeeklyReview);
+  document.getElementById('modal-weekly-close').addEventListener('click', () => { document.getElementById('modal-weekly').classList.remove('open'); });
+  document.getElementById('modal-weekly').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.classList.remove('open'); });
+
+  document.getElementById('btn-save-weekly').addEventListener('click', async () => {
+    if (!currentUser) return;
+    const btn = document.getElementById('btn-save-weekly');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    const ws = getWeekStart(currentDate);
+    try {
+      const { error } = await sbQ(sb.from('weekly_reviews').upsert({
+        user_id:            currentUser.id,
+        week_start:         ws,
+        trading_reflection: document.getElementById('wr-trading').value.trim()   || null,
+        freelance_checkin:  document.getElementById('wr-freelance').value.trim() || null,
+        thesis_progress:    document.getElementById('wr-thesis').value.trim()    || null,
+        blockers_solutions: document.getElementById('wr-blockers').value.trim()  || null,
+      }, { onConflict: 'user_id,week_start' }), 'weekly_review save');
+      if (error) throw error;
+      showToast('Weekly review saved ✓', 'saved');
+      document.getElementById('modal-weekly').classList.remove('open');
+    } catch(e) { showToast('Save failed: ' + e.message, 'error'); }
+    finally { btn.disabled = false; btn.textContent = 'Save Weekly Review'; }
+  });
+
+  // ── MONTHLY REVIEW MODAL ──
+  async function openMonthlyReview() {
+    if (!currentUser) return;
+    const my = getMonthYear(currentDate);
+    document.getElementById('monthly-meta').textContent = `${EN_MONTHS[parseInt(my.slice(5))-1]} ${my.slice(0,4)}`;
+    document.getElementById('modal-monthly').classList.add('open');
+    const { data } = await sbQ(
+      sb.from('monthly_reviews').select('*').eq('user_id', currentUser.id).eq('month_year', my).maybeSingle(), 'monthly_review load');
+    document.getElementById('mr-highlights').value = data?.highlights       || '';
+    document.getElementById('mr-goals').value      = data?.goal_adjustments || '';
+    document.getElementById('mr-focus').value      = data?.next_month_focus || '';
+  }
+
+  document.getElementById('btn-monthly-review').addEventListener('click', openMonthlyReview);
+  document.getElementById('modal-monthly-close').addEventListener('click', () => { document.getElementById('modal-monthly').classList.remove('open'); });
+  document.getElementById('modal-monthly').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.classList.remove('open'); });
+
+  document.getElementById('btn-save-monthly').addEventListener('click', async () => {
+    if (!currentUser) return;
+    const btn = document.getElementById('btn-save-monthly');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    const my = getMonthYear(currentDate);
+    try {
+      const { error } = await sbQ(sb.from('monthly_reviews').upsert({
+        user_id:          currentUser.id,
+        month_year:       my,
+        highlights:       document.getElementById('mr-highlights').value.trim() || null,
+        goal_adjustments: document.getElementById('mr-goals').value.trim()      || null,
+        next_month_focus: document.getElementById('mr-focus').value.trim()      || null,
+      }, { onConflict: 'user_id,month_year' }), 'monthly_review save');
+      if (error) throw error;
+      showToast('Monthly review saved ✓', 'saved');
+      document.getElementById('modal-monthly').classList.remove('open');
+    } catch(e) { showToast('Save failed: ' + e.message, 'error'); }
+    finally { btn.disabled = false; btn.textContent = 'Save Monthly Review'; }
+  });
+
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(r => console.log('[SW] registered', r.scope))
+        .catch(e => console.warn('[SW] failed', e));
+    });
+  }
+</script>
+</body>
+</html>ener('click', () => {
+      if (!engId) return;
+      completions[engId] = !completions[engId];
+      engEl.classList.toggle('checked', !!completions[engId]);
+      engEl.querySelector('.habit-check').textContent = completions[engId] ? '✓' : '';
+      document.getElementById('english-extra').classList.toggle('visible', !!completions[engId]);
+      saveHabitCompletion(engId);
+    });
+    wrap.insertBefore(engEl, document.getElementById('english-extra'));
+    // Show dropdown if already checked
+    if (checked) document.getElementById('english-extra').classList.add('visible');
+  }
+
+  // English type auto-save
+  document.getElementById('english-type-select').addEventListener('change', async () => {
+    if (!currentUser) return;
+    showSaving();
+    try {
+      const { error } = await sbQ(sb.from('daily_logs').upsert({
+        user_id: currentUser.id, log_date: currentDate,
+        english_type: document.getElementById('english-type-select').value || null,
+      }, { onConflict: 'user_id,log_date' }), 'english_type save');
+      if (error) throw error;
+      showSaved(); setSaveIndicator('Saved', true);
+    } catch(e) { showToast('Could not save', 'error'); }
+  });
+
+  // ── RENDER WEALTH ──
+  function renderWealthHabits() {
+    const wrap = document.getElementById('habits-wealth');
+    document.getElementById('skeleton-wealth').style.display = 'none';
+    wrap.style.display = 'block';
+    const trId = habitIdMap.trading;
+    const checked = trId ? !!completions[trId] : false;
+    const trEl = document.createElement('div');
+    trEl.className = 'habit-item' + (checked ? ' checked' : '');
+    trEl.id = 'habit-trading';
+    trEl.innerHTML = `
+      <div class="habit-check">${checked ? '✓' : ''}</div>
+      <div class="habit-body">
+        <div class="habit-label">📈 Trading Discipline</div>
+        <div class="habit-sub">Followed your trading rules today</div>
+      </div>`;
+    trEl.addEventListener('click', () => {
+      if (!trId) return;
+      completions[trId] = !completions[trId];
+      trEl.classList.toggle('checked', !!completions[trId]);
+      trEl.querySelector('.habit-check').textContent = completions[trId] ? '✓' : '';
+      saveHabitCompletion(trId);
+    });
+    wrap.insertBefore(trEl, wrap.querySelector('.special-log-wrap'));
+  }
+
+  // Trading special log auto-save
+  let _tradingTimer = null;
+  document.getElementById('trading-special-log').addEventListener('input', () => {
+    showSaving(); clearTimeout(_tradingTimer);
+    _tradingTimer = setTimeout(() => saveSpecialLog(), 1800);
+  });
+  async function saveSpecialLog() {
+    if (!currentUser) return;
+    try {
+      const { error } = await sbQ(sb.from('daily_logs').upsert({
+        user_id: currentUser.id, log_date: currentDate,
+        trading_special_log: document.getElementById('trading-special-log').value.trim() || null,
+      }, { onConflict: 'user_id,log_date' }), 'trading_special save');
+      if (error) throw error;
+      showSaved(); setSaveIndicator('Saved', true);
+    } catch(e) { showToast('Could not save', 'error'); }
+  }
+
+  // AI toggle
+  document.getElementById('ai-toggle-row').addEventListener('click', async () => {
+    if (!currentUser) return;
+    freelanceUsedAI = !freelanceUsedAI;
+    document.getElementById('ai-toggle-pill').classList.toggle('on', freelanceUsedAI);
+    showSaving();
+    try {
+      const { error } = await sbQ(sb.from('daily_logs').upsert({
+        user_id: currentUser.id, log_date: currentDate,
+        freelance_used_ai: freelanceUsedAI,
+      }, { onConflict: 'user_id,log_date' }), 'ai_toggle save');
+      if (error) throw error;
+      showSaved(); setSaveIndicator('Saved', true);
+    } catch(e) { showToast('Could not save', 'error'); }
+  });
+
+  // ── FREELANCE TASKS ──
+  async function loadFreelanceTasks(userId) {
+    const { data } = await sbQ(sb.from('freelance_tasks').select('*').eq('user_id', userId).order('sort_order'), 'freelance_tasks load');
+    freelanceTasks = data || [];
+    renderFreelanceTasks();
+  }
+
+  function renderFreelanceTasks() {
+    const list = document.getElementById('freelance-task-list');
+    list.innerHTML = '';
+    freelanceTasks.forEach(t => {
+      const row = document.createElement('div');
+      row.className = 'task-row';
+      row.innerHTML = `
+        <div class="task-cb ${t.completed ? 'done' : ''}" data-id="${t.id}">${t.completed ? '✓' : ''}</div>
+        <div class="task-text ${t.completed ? 'done' : ''}" data-id="${t.id}">${t.task_text}</div>
+        <button class="task-del" data-id="${t.id}">×</button>`;
+      row.querySelector('.task-cb').addEventListener('click', () => toggleTask(t.id));
+      row.querySelector('.task-text').addEventListener('click', () => toggleTask(t.id));
+      row.querySelector('.task-del').addEventListener('click', (e) => { e.stopPropagation(); deleteTask(t.id); });
+      list.appendChild(row);
+    });
+  }
+
+  async function toggleTask(taskId) {
+    if (!currentUser) return;
+    const t = freelanceTasks.find(x => x.id === taskId);
+    if (!t) return;
+    t.completed = !t.completed;
+    renderFreelanceTasks();
+    const { error } = await sbQ(sb.from('freelance_tasks').update({ completed: t.completed }).eq('id', taskId), 'task toggle');
+    if (error) showToast('Could not update task', 'error');
+  }
+
+  async function deleteTask(taskId) {
+    if (!currentUser) return;
+    freelanceTasks = freelanceTasks.filter(x => x.id !== taskId);
+    renderFreelanceTasks();
+    const { error } = await sbQ(sb.from('freelance_tasks').delete().eq('id', taskId), 'task delete');
+    if (error) showToast('Could not delete task', 'error');
+  }
+
+  document.getElementById('btn-add-task').addEventListener('click', addTask);
+  document.getElementById('new-task-input').addEventListener('keydown', e => { if (e.key === 'Enter') addTask(); });
+  async function addTask() {
+    if (!currentUser) return;
+    const inp = document.getElementById('new-task-input');
+    const text = inp.value.trim();
+    if (!text) return;
+    inp.value = '';
+    const newTask = { user_id: currentUser.id, task_text: text, completed: false, sort_order: freelanceTasks.length };
+    const { data, error } = await sbQ(sb.from('freelance_tasks').insert(newTask).select().single(), 'task add');
+    if (error) { showToast('Could not add task', 'error'); return; }
+    freelanceTasks.push(data);
+    renderFreelanceTasks();
+  }
+
+  // ── THESIS MILESTONES ──
+  async function loadThesisMilestones(userId) {
+    const { data } = await sbQ(sb.from('thesis_milestones').select('*').eq('user_id', userId).order('step_number'), 'thesis_milestones load');
+    thesisMilestones = data || [];
+    // Ensure all 6 steps exist
+    for (let i = 1; i <= 6; i++) {
+      if (!thesisMilestones.find(m => m.step_number === i)) {
+        thesisMilestones.push({ step_number: i, completed: false, id: null });
+      }
+    }
+    thesisMilestones.sort((a,b) => a.step_number - b.step_number);
+    renderThesisSteps();
+  }
+
+  function renderThesisSteps() {
+    document.getElementById('skeleton-thesis').style.display = 'none';
+    document.getElementById('thesis-steps-wrap').style.display = 'block';
+    const wrap = document.getElementById('thesis-steps');
+    wrap.innerHTML = '';
+    let done = 0;
+    thesisMilestones.forEach(m => {
+      if (m.completed) done++;
+      const step = document.createElement('div');
+      step.className = 'thesis-step' + (m.completed ? ' done' : '');
+      step.innerHTML = `
+        <div class="step-num">${m.step_number}</div>
+        <div class="step-text">${THESIS_STEPS[m.step_number - 1]}</div>
+        <div class="step-check">✓</div>`;
+      step.addEventListener('click', () => toggleThesisStep(m.step_number, step));
+      wrap.appendChild(step);
+    });
+    document.getElementById('thesis-badge').textContent = `${done} / 6`;
+    document.getElementById('thesis-bar').style.width = `${Math.round((done/6)*100)}%`;
+  }
+
+  async function toggleThesisStep(stepNum, el) {
+    if (!currentUser) return;
+    const m = thesisMilestones.find(x => x.step_number === stepNum);
+    if (!m) return;
+    m.completed = !m.completed;
+    el.classList.toggle('done', m.completed);
+    el.querySelector('.step-num').style.background = m.completed ? 'var(--cat-thesis)' : '';
+    el.querySelector('.step-num').style.color = m.completed ? '#fff' : '';
+    // Update badge & bar
+    const done = thesisMilestones.filter(x => x.completed).length;
+    document.getElementById('thesis-badge').textContent = `${done} / 6`;
+    document.getElementById('thesis-bar').style.width = `${Math.round((done/6)*100)}%`;
+    showSaving();
+    try {
+      const { error } = await sbQ(sb.from('thesis_milestones').upsert({
+        user_id: currentUser.id, step_number: stepNum, completed: m.completed,
+        completed_at: m.completed ? new Date().toISOString() : null,
+      }, { onConflict: 'user_id,step_number' }), 'thesis_milestone save');
+      if (error) throw error;
+      // Update local id if needed
+      if (!m.id) {
+        const { data } = await sbQ(sb.from('thesis_milestones').select('id').eq('user_id', currentUser.id).eq('step_number', stepNum).single(), 'thesis id fetch');
+        if (data) m.id = data.id;
+      }
+      showSaved(); setSaveIndicator('Saved', true);
+    } catch(e) { showToast('Could not save milestone', 'error'); m.completed = !m.completed; renderThesisSteps(); }
+  }
+
+  // ── HABIT COMPLETION SAVE ──
+  async function saveHabitCompletion(habitId) {
+    if (!currentUser) return;
+    showSaving();
+    try {
+      const { error } = await sbQ(sb.from('habit_completions').upsert({
+        user_id: currentUser.id, habit_id: habitId,
+        log_date: currentDate, completed: !!completions[habitId],
+      }, { onConflict: 'user_id,habit_id,log_date' }), 'habit save');
+      if (error) throw error;
+      showSaved(); setSaveIndicator('Saved', true);
+    } catch(e) { showToast('Could not save habit', 'error'); setSaveIndicator(''); }
+  }
+
+  // ── FEELINGS ──
+  const starBtns = document.querySelectorAll('.star-btn');
+  starBtns.forEach(btn => {
+    btn.addEventListener('click', () => { setFeelings(parseInt(btn.dataset.val)); scheduleMetricSave(); });
+  });
+  function setFeelings(val) {
+    feelings = val;
+    starBtns.forEach(btn => {
+      const on = parseInt(btn.dataset.val) <= val;
+      btn.classList.toggle('on', on);
+    });
+    document.getElementById('feelings-desc').textContent = val ? `${val} — ${MOOD_LABELS[val]}` : '—';
+  }
+
+  // ── METRICS AUTO-SAVE ──
+  let _metricTimer = null;
+  function scheduleMetricSave() {
+    showSaving(); clearTimeout(_metricTimer);
+    _metricTimer = setTimeout(() => saveMetrics(), 1500);
+  }
+  async function saveMetrics() {
+    if (!currentUser) return;
+    try {
+      const { error } = await sbQ(sb.from('daily_logs').upsert({
+        user_id: currentUser.id, log_date: currentDate,
+        sleep_hours:      parseFloat(document.getElementById('m-sleep').value)    || null,
+        read_pages:       parseInt(document.getElementById('m-read').value)        || null,
+        weight_kg:        parseFloat(document.getElementById('m-weight').value)   || null,
+        meditate_minutes: parseInt(document.getElementById('m-meditate').value)    || null,
+        feelings: feelings || null,
+      }, { onConflict: 'user_id,log_date' }), 'metrics save');
+      if (error) throw error;
+      showSaved(); setSaveIndicator('Saved', true);
+    } catch(e) { showToast('Could not save metrics', 'error'); }
+  }
+  ['m-sleep','m-read','m-weight','m-meditate'].forEach(id => {
+    const el = document.getElementById(id);
+    el.addEventListener('blur', scheduleMetricSave);
+    el.addEventListener('keydown', e => { if (e.key === 'Enter') el.blur(); });
+  });
+
+  // ── LINE COUNTER ──
+  const momentsTA = document.getElementById('j-moments');
+  const momentsHint = document.getElementById('moments-hint');
+  momentsTA.addEventListener('input', () => {
+    const n = momentsTA.value.split('\n').length;
+    momentsHint.textContent = `${n} / 3 lines`;
+    momentsHint.style.color = n > 3 ? 'var(--red)' : 'var(--text-sub)';
+  });
+
+  // ── DATE NAV ──
+  async function changeDate(delta) {
+    if (!currentUser) return;
+    const d = strToDate(currentDate);
+    d.setDate(d.getDate() + delta);
+    if (d > new Date()) return;
+    currentDate = dateToStr(d);
+    updateDateUI();
+    setLoading(true, 'Loading…');
+    try { await loadDay(currentDate, currentUser.id); } finally { setLoading(false); }
+  }
+  document.getElementById('btn-prev').addEventListener('click', () => changeDate(-1));
+  document.getElementById('btn-next').addEventListener('click', () => changeDate(+1));
+  function updateDateUI() {
+    document.getElementById('header-date').textContent = formatDateEN(currentDate);
+    document.getElementById('btn-next').disabled = isToday(currentDate);
+  }
+
+  // ── CALENDAR PICKER ──
+  let calYear, calMonth;
+  function openCalendar() {
+    const d = strToDate(currentDate);
+    calYear = d.getFullYear(); calMonth = d.getMonth();
+    buildYearSelect(); renderCalendar();
+    document.getElementById('cal-popup').classList.add('open');
+  }
+  function closeCalendar() { document.getElementById('cal-popup').classList.remove('open'); }
+  function buildYearSelect() {
+    const sel = document.getElementById('cal-year-select');
+    const ty = new Date().getFullYear();
+    sel.innerHTML = '';
+    for (let y = ty; y >= ty - 5; y--) {
+      const o = document.createElement('option');
+      o.value = y; o.textContent = y;
+      if (y === calYear) o.selected = true;
+      sel.appendChild(o);
+    }
+  }
+  function renderCalendar() {
+    document.getElementById('cal-month-label').textContent = EN_MONTHS[calMonth];
+    document.getElementById('cal-year-select').value = calYear;
+    const today = todayStr(), selected = currentDate;
+    const firstDay = new Date(calYear, calMonth, 1).getDay();
+    const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+    const daysInPrev  = new Date(calYear, calMonth, 0).getDate();
+    const cont = document.getElementById('cal-days');
+    cont.innerHTML = '';
+    for (let i = firstDay - 1; i >= 0; i--) {
+      const c = document.createElement('div'); c.className = 'cal-day cal-other'; c.textContent = daysInPrev - i; cont.appendChild(c);
+    }
+    for (let d = 1; d <= daysInMonth; d++) {
+      const ds = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const c = document.createElement('div'); c.textContent = d;
+      const cls = ['cal-day'];
+      if (ds === selected) cls.push('cal-selected');
+      else if (ds === today) cls.push('cal-today');
+      if (ds > today) cls.push('cal-disabled');
+      c.className = cls.join(' ');
+      if (ds <= today) c.addEventListener('click', async () => {
+        if (ds === currentDate) { closeCalendar(); return; }
+        closeCalendar(); currentDate = ds; updateDateUI();
+        setLoading(true, 'Loading…');
+        try { await loadDay(currentDate, currentUser.id); } finally { setLoading(false); }
+      });
+      cont.appendChild(c);
+    }
+    const total = firstDay + daysInMonth;
+    const rem = 7 - (total % 7 === 0 ? 7 : total % 7);
+    for (let d = 1; d <= rem; d++) { const c = document.createElement('div'); c.className = 'cal-day cal-other'; c.textContent = d; cont.appendChild(c); }
+  }
+  document.getElementById('header-date').addEventListener('click', e => { e.stopPropagation(); const p = document.getElementById('cal-popup'); p.classList.contains('open') ? closeCalendar() : openCalendar(); });
+  document.getElementById('cal-prev-month').addEventListener('click', e => { e.stopPropagation(); calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; } renderCalendar(); });
+  document.getElementById('cal-next-month').addEventListener('click', e => { e.stopPropagation(); const t = new Date(); if (calYear === t.getFullYear() && calMonth === t.getMonth()) return; calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; } renderCalendar(); });
+  document.getElementById('cal-year-select').addEventListener('change', e => { e.stopPropagation(); calYear = parseInt(e.target.value); renderCalendar(); });
+  document.getElementById('cal-popup').addEventListener('click', e => e.stopPropagation());
+  document.addEventListener('click', closeCalendar);
+
+  // ── LOAD DAY ──
+  async function loadDay(dateStr, userId) {
+    completions = {}; feelings = 0; freelanceUsedAI = false;
+    setFeelings(0);
+    ['m-sleep','m-read','m-weight','m-meditate','j-moments','trading-special-log'].forEach(id => { document.getElementById(id).value = ''; });
+    document.getElementById('english-type-select').value = '';
+    document.getElementById('english-extra').classList.remove('visible');
+    document.getElementById('ai-toggle-pill').classList.remove('on');
+
+    // Load daily log
+    const { data: log } = await sbQ(
+      sb.from('daily_logs').select('*').eq('user_id', userId).eq('log_date', dateStr).maybeSingle(), 'loadDay log');
+    if (log) {
+      document.getElementById('m-sleep').value    = log.sleep_hours       ?? '';
+      document.getElementById('m-read').value     = log.read_pages        ?? '';
+      document.getElementById('m-weight').value   = log.weight_kg         ?? '';
+      document.getElementById('m-meditate').value = log.meditate_minutes  ?? '';
+      document.getElementById('j-moments').value  = log.memorable_moments ?? '';
+      document.getElementById('trading-special-log').value = log.trading_special_log ?? '';
+      if (log.english_type) document.getElementById('english-type-select').value = log.english_type;
+      freelanceUsedAI = !!log.freelance_used_ai;
+      document.getElementById('ai-toggle-pill').classList.toggle('on', freelanceUsedAI);
+      setFeelings(log.feelings || 0);
+    }
+
+    // Load habit completions
+    const { data: hc } = await sbQ(
+      sb.from('habit_completions').select('habit_id,completed').eq('user_id', userId).eq('log_date', dateStr), 'loadDay habits');
+    (hc || []).forEach(r => { completions[r.habit_id] = r.completed; });
+
+    // Re-render habit checkboxes (in-place)
+    refreshHabitUI();
+
+    // Load workout week
+    await loadWorkoutWeek(userId);
+
+    setSaveIndicator('');
+  }
+
+  function refreshHabitUI() {
+    // Wake up
+    const wakeId = habitIdMap.wake_up;
+    const wakeEl = document.getElementById('habit-wake');
+    if (wakeEl && wakeId) {
+      const c = !!completions[wakeId];
+      wakeEl.className = 'habit-item' + (c ? ' checked' : '');
+      wakeEl.querySelector('.habit-check').textContent = c ? '✓' : '';
+    }
+    // English
+    const engId = habitIdMap.english;
+    const engEl = document.getElementById('habit-english');
+    if (engEl && engId) {
+      const c = !!completions[engId];
+      engEl.className = 'habit-item' + (c ? ' checked' : '');
+      engEl.querySelector('.habit-check').textContent = c ? '✓' : '';
+      document.getElementById('english-extra').classList.toggle('visible', c);
+    }
+    // Trading
+    const trId = habitIdMap.trading;
+    const trEl = document.getElementById('habit-trading');
+    if (trEl && trId) {
+      const c = !!completions[trId];
+      trEl.className = 'habit-item' + (c ? ' checked' : '');
+      trEl.querySelector('.habit-check').textContent = c ? '✓' : '';
+    }
+  }
+
+  // ── FULL SAVE (journal + all) ──
+  document.getElementById('btn-save').addEventListener('click', async () => {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session?.user) return;
+    const btn = document.getElementById('btn-save');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    showSaving(); setSaveIndicator('Saving…');
+    try {
+      const { error: logErr } = await sbQ(sb.from('daily_logs').upsert({
+        user_id: session.user.id, log_date: currentDate,
+        sleep_hours:      parseFloat(document.getElementById('m-sleep').value)    || null,
+        read_pages:       parseInt(document.getElementById('m-read').value)        || null,
+        weight_kg:        parseFloat(document.getElementById('m-weight').value)   || null,
+        meditate_minutes: parseInt(document.getElementById('m-meditate').value)    || null,
+        feelings: feelings || null,
+        memorable_moments: document.getElementById('j-moments').value.trim() || null,
+        trading_special_log: document.getElementById('trading-special-log').value.trim() || null,
+        english_type: document.getElementById('english-type-select').value || null,
+        freelance_used_ai: freelanceUsedAI,
+      }, { onConflict: 'user_id,log_date' }), 'full save daily_logs');
+      if (logErr) throw logErr;
+
+      // Save habit completions
+      const hcRows = Object.entries(habitIdMap)
+        .filter(([,id]) => id)
+        .map(([,id]) => ({ user_id: session.user.id, habit_id: id, log_date: currentDate, completed: !!completions[id] }));
+      if (hcRows.length) {
+        const { error: hcErr } = await sbQ(
+          sb.from('habit_completions').upsert(hcRows, { onConflict: 'user_id,habit_id,log_date' }), 'full save habits');
+        if (hcErr) throw hcErr;
+      }
+      showSaved(); setSaveIndicator('Saved', true);
+    } catch(e) { showToast('Save failed: ' + e.message, 'error'); setSaveIndicator(''); }
+    finally { btn.disabled = false; btn.textContent = 'Save Today'; }
+  });
+
+  // ── CLEAR DATA ──
+  document.getElementById('btn-clear').addEventListener('click', () => {
+    document.getElementById('confirm-date-text').innerHTML =
+      `All data for <strong>${formatDateEN(currentDate)}</strong> will be permanently deleted.`;
+    document.getElementById('confirm-overlay').classList.add('open');
+  });
+  document.getElementById('confirm-cancel').addEventListener('click', () => { document.getElementById('confirm-overlay').classList.remove('open'); });
+  document.getElementById('confirm-ok').addEventListener('click', async () => {
+    document.getElementById('confirm-overlay').classList.remove('open');
+    if (!currentUser) return;
+    showToast('Clearing…', 'saving');
+    try {
+      await sbQ(sb.from('daily_logs').delete().eq('user_id', currentUser.id).eq('log_date', currentDate), 'clear daily_logs');
+      const ids = Object.values(habitIdMap).filter(Boolean);
+      if (ids.length) {
+        const rows = ids.map(id => ({ user_id: currentUser.id, habit_id: id, log_date: currentDate, completed: false }));
+        await sbQ(sb.from('habit_completions').upsert(rows, { onConflict: 'user_id,habit_id,log_date' }), 'clear habits');
+      }
+      completions = {}; setFeelings(0); freelanceUsedAI = false;
+      ['m-sleep','m-read','m-weight','m-meditate','j-moments','trading-special-log'].forEach(id => { document.getElementById(id).value = ''; });
+      document.getElementById('english-type-select').value = '';
+      document.getElementById('english-extra').classList.remove('visible');
+      document.getElementById('ai-toggle-pill').classList.remove('on');
+      refreshHabitUI(); setSaveIndicator('');
+      showToast('Data cleared', 'saved');
+    } catch(e) { showToast('Clear failed: ' + e.message, 'error'); }
+  });
+
+  // ── WEEKLY REVIEW MODAL ──
+  function getWeekLabel(dateStr) {
+    const ws = getWeekStart(dateStr);
+    const we = strToDate(ws); we.setDate(we.getDate() + 6);
+    const fmt = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return `Week of ${fmt(strToDate(ws))} – ${fmt(we)}, ${strToDate(ws).getFullYear()}`;
+  }
+
+  async function openWeeklyReview() {
+    const ws = getWeekStart(currentDate);
+    document.getElementById('weekly-meta').textContent = getWeekLabel(currentDate);
+    document.getElementById('modal-weekly').classList.add('open');
+    // Load habit scores for the week
+    await loadWeeklyHabitScore(ws);
+    // Load saved review
+    const { data } = await sbQ(sb.from('weekly_reviews').select('*').eq('user_id', currentUser.id).eq('week_start', ws).maybeSingle(), 'weekly_review load');
+    document.getElementById('wr-trading').value   = data?.trading_reflection || '';
+    document.getElementById('wr-freelance').value = data?.freelance_checkin  || '';
+    document.getElementById('wr-thesis').value    = data?.thesis_progress    || '';
+    document.getElementById('wr-blockers').value  = data?.blockers_solutions || '';
+  }
+
+  async function loadWeeklyHabitScore(weekStart) {
+    const we = strToDate(weekStart); we.setDate(we.getDate() + 6);
+    const weStr = dateToStr(we);
+    const ids = Object.values(habitIdMap).filter(Boolean);
+    if (!ids.length) { document.getElementById('weekly-habit-score').textContent = 'No habits tracked yet.'; return; }
+    const { data } = await sbQ(
+      sb.from('habit_completions').select('habit_id,completed,log_date')
+        .eq('user_id', currentUser.id).eq('completed', true)
+        .gte('log_date', weekStart).lte('log_date', weStr), 'weekly habit completions');
+    const total = ids.length * 7;
+    const done  = (data || []).length;
+    const pct   = Math.round((done / total) * 100);
+    document.getElementById('weekly-habit-score').innerHTML =
+      `<strong style="color:var(--primary);font-size:18px;">${pct}%</strong> &nbsp;(${done} / ${total} habit-days completed)`;
+  }
+
+  document.getElementById('btn-weekly-review').addEventListener('click', openWeeklyReview);
+  document.getElementById('mobile-weekly-btn').addEventListener('click', openWeeklyReview);
+  document.getElementById('modal-weekly-close').addEventListener('click', () => { document.getElementById('modal-weekly').classList.remove('open'); });
+  document.getElementById('modal-weekly').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.classList.remove('open'); });
+
+  document.getElementById('btn-save-weekly').addEventListener('click', async () => {
+    if (!currentUser) return;
+    const btn = document.getElementById('btn-save-weekly');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    const ws = getWeekStart(currentDate);
+    try {
+      const { error } = await sbQ(sb.from('weekly_reviews').upsert({
+        user_id: currentUser.id, week_start: ws,
+        trading_reflection: document.getElementById('wr-trading').value.trim()   || null,
+        freelance_checkin:  document.getElementById('wr-freelance').value.trim() || null,
+        thesis_progress:    document.getElementById('wr-thesis').value.trim()    || null,
+        blockers_solutions: document.getElementById('wr-blockers').value.trim()  || null,
+      }, { onConflict: 'user_id,week_start' }), 'weekly_review save');
+      if (error) throw error;
+      showToast('Weekly review saved ✓', 'saved');
+      document.getElementById('modal-weekly').classList.remove('open');
+    } catch(e) { showToast('Save failed: ' + e.message, 'error'); }
+    finally { btn.disabled = false; btn.textContent = 'Save Weekly Review'; }
+  });
+
+  // ── MONTHLY REVIEW MODAL ──
+  async function openMonthlyReview() {
+    const my = getMonthYear(currentDate);
+    const d = strToDate(currentDate + '-01'.slice(currentDate.length - 3));
+    document.getElementById('monthly-meta').textContent = `${EN_MONTHS[parseInt(my.slice(5))-1]} ${my.slice(0,4)}`;
+    document.getElementById('modal-monthly').classList.add('open');
+    const { data } = await sbQ(sb.from('monthly_reviews').select('*').eq('user_id', currentUser.id).eq('month_year', my).maybeSingle(), 'monthly_review load');
+    document.getElementById('mr-highlights').value = data?.highlights       || '';
+    document.getElementById('mr-goals').value      = data?.goal_adjustments || '';
+    document.getElementById('mr-focus').value      = data?.next_month_focus || '';
+  }
+
+  document.getElementById('btn-monthly-review').addEventListener('click', openMonthlyReview);
+  document.getElementById('modal-monthly-close').addEventListener('click', () => { document.getElementById('modal-monthly').classList.remove('open'); });
+  document.getElementById('modal-monthly').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.classList.remove('open'); });
+
+  document.getElementById('btn-save-monthly').addEventListener('click', async () => {
+    if (!currentUser) return;
+    const btn = document.getElementById('btn-save-monthly');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    const my = getMonthYear(currentDate);
+    try {
+      const { error } = await sbQ(sb.from('monthly_reviews').upsert({
+        user_id: currentUser.id, month_year: my,
+        highlights:       document.getElementById('mr-highlights').value.trim() || null,
+        goal_adjustments: document.getElementById('mr-goals').value.trim()      || null,
+        next_month_focus: document.getElementById('mr-focus').value.trim()      || null,
+      }, { onConflict: 'user_id,month_year' }), 'monthly_review save');
+      if (error) throw error;
+      showToast('Monthly review saved ✓', 'saved');
+      document.getElementById('modal-monthly').classList.remove('open');
+    } catch(e) { showToast('Save failed: ' + e.message, 'error'); }
+    finally { btn.disabled = false; btn.textContent = 'Save Monthly Review'; }
+  });
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(r => console.log('[SW] registered', r.scope))
+        .catch(e => console.warn('[SW] failed', e));
+    });
+  }
+</script>
+</body>
+</html>
