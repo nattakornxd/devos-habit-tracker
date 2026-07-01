@@ -131,6 +131,26 @@ CREATE TABLE public.freelance_tasks (
 );
 
 -- ============================================================
+-- TABLE 6b: freelance_milestones
+-- Persistent 12-step roadmap tracker (not daily) — encodes the
+-- 4-week Freelance/Portfolio plan (setup -> structural/2D ->
+-- architectural/3D -> portfolio & apply). Mirrors thesis_milestones.
+-- ============================================================
+CREATE TABLE public.freelance_milestones (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id      UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  step_number  SMALLINT NOT NULL CHECK (step_number BETWEEN 1 AND 12),
+  completed    BOOLEAN NOT NULL DEFAULT FALSE,
+  completed_at TIMESTAMPTZ,
+  updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (user_id, step_number)
+);
+
+CREATE TRIGGER freelance_milestones_updated_at
+  BEFORE UPDATE ON public.freelance_milestones
+  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+-- ============================================================
 -- TABLE 7: weekly_reviews
 -- One row per ISO week per user
 -- ============================================================
@@ -179,6 +199,7 @@ CREATE INDEX idx_daily_logs_user_date        ON public.daily_logs(user_id, log_d
 CREATE INDEX idx_habit_completions_date      ON public.habit_completions(user_id, log_date DESC);
 CREATE INDEX idx_thesis_milestones_user      ON public.thesis_milestones(user_id);
 CREATE INDEX idx_freelance_tasks_user        ON public.freelance_tasks(user_id);
+CREATE INDEX idx_freelance_milestones_user   ON public.freelance_milestones(user_id);
 CREATE INDEX idx_weekly_reviews_user         ON public.weekly_reviews(user_id, week_start DESC);
 CREATE INDEX idx_monthly_reviews_user        ON public.monthly_reviews(user_id, month_year DESC);
 
@@ -189,20 +210,22 @@ ALTER TABLE public.profiles          ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.habits            ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.daily_logs        ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.habit_completions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.thesis_milestones ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.freelance_tasks   ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.weekly_reviews    ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.monthly_reviews   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.thesis_milestones    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.freelance_tasks      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.freelance_milestones ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.weekly_reviews       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.monthly_reviews      ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "own profile select"   ON public.profiles          FOR SELECT USING (auth.uid() = id);
-CREATE POLICY "own profile update"   ON public.profiles          FOR UPDATE USING (auth.uid() = id);
-CREATE POLICY "own habits"           ON public.habits            FOR ALL    USING (auth.uid() = user_id);
-CREATE POLICY "own daily_logs"       ON public.daily_logs        FOR ALL    USING (auth.uid() = user_id);
-CREATE POLICY "own habit_completions"ON public.habit_completions FOR ALL    USING (auth.uid() = user_id);
-CREATE POLICY "own thesis_milestones"ON public.thesis_milestones FOR ALL    USING (auth.uid() = user_id);
-CREATE POLICY "own freelance_tasks"  ON public.freelance_tasks   FOR ALL    USING (auth.uid() = user_id);
-CREATE POLICY "own weekly_reviews"   ON public.weekly_reviews    FOR ALL    USING (auth.uid() = user_id);
-CREATE POLICY "own monthly_reviews"  ON public.monthly_reviews   FOR ALL    USING (auth.uid() = user_id);
+CREATE POLICY "own profile select"      ON public.profiles          FOR SELECT USING (auth.uid() = id);
+CREATE POLICY "own profile update"      ON public.profiles          FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY "own habits"              ON public.habits            FOR ALL    USING (auth.uid() = user_id);
+CREATE POLICY "own daily_logs"          ON public.daily_logs        FOR ALL    USING (auth.uid() = user_id);
+CREATE POLICY "own habit_completions"   ON public.habit_completions FOR ALL    USING (auth.uid() = user_id);
+CREATE POLICY "own thesis_milestones"   ON public.thesis_milestones FOR ALL    USING (auth.uid() = user_id);
+CREATE POLICY "own freelance_tasks"     ON public.freelance_tasks   FOR ALL    USING (auth.uid() = user_id);
+CREATE POLICY "own freelance_milestones"ON public.freelance_milestones FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "own weekly_reviews"      ON public.weekly_reviews    FOR ALL    USING (auth.uid() = user_id);
+CREATE POLICY "own monthly_reviews"     ON public.monthly_reviews   FOR ALL    USING (auth.uid() = user_id);
 
 -- ============================================================
 -- MIGRATION (run these if upgrading existing DB)

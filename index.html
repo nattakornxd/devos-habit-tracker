@@ -186,6 +186,14 @@
     .step-check { font-size: 14px; color: var(--cat-work); opacity: 0; transition: opacity 0.18s; }
     .thesis-step.done .step-check { opacity: 1; }
     .thesis-progress-bar { height: 5px; background: var(--border); border-radius: 999px; overflow: hidden; margin-top: 14px; }
+    /* Freelance roadmap re-themes the shared thesis-step styles to accent (amber) instead of work-blue */
+    #freelance-roadmap-steps .thesis-step:hover { border-color: var(--accent); background: var(--accent-lt); }
+    #freelance-roadmap-steps .thesis-step.done { background: var(--accent-lt); border-color: var(--accent); }
+    #freelance-roadmap-steps .thesis-step.done .step-num { background: var(--accent); color: #fff; }
+    #freelance-roadmap-steps .thesis-step.done .step-text { color: var(--accent); font-weight: 600; }
+    #freelance-roadmap-steps .step-check { color: var(--accent); }
+    .roadmap-week-label { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--text-sub); margin: 14px 0 6px; }
+    .roadmap-week-label:first-child { margin-top: 0; }
     .thesis-progress-fill { height: 100%; background: var(--cat-work); border-radius: 999px; transition: width 0.5s ease; }
 
     /* ── FEELINGS ── */
@@ -452,7 +460,21 @@
             </div>
           </section>
 
-          <!-- Freelance -->
+          <!-- Freelance Roadmap (4-week plan → 12 milestones) -->
+          <section class="card" id="card-freelance-roadmap">
+            <div class="cat-header">
+              <div class="cat-dot" style="background:var(--accent)"></div>
+              <div class="cat-title">Freelance — 4-Week Portfolio Roadmap</div>
+              <span class="cat-badge" id="freelance-roadmap-badge" style="background:var(--accent-lt);color:var(--accent)">0 / 12</span>
+            </div>
+            <div id="skeleton-freelance-roadmap"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>
+            <div id="freelance-roadmap-wrap" style="display:none">
+              <div class="thesis-steps" id="freelance-roadmap-steps"></div>
+              <div class="thesis-progress-bar"><div class="thesis-progress-fill" id="freelance-roadmap-bar" style="width:0%; background:var(--accent);"></div></div>
+            </div>
+          </section>
+
+          <!-- Freelance Tasks -->
           <section class="card" id="card-freelance">
             <div class="cat-header">
               <div class="cat-dot" style="background:var(--accent)"></div>
@@ -636,6 +658,23 @@
     'Submission',
   ];
 
+  // Freelance roadmap milestone labels (4-week portfolio plan)
+  const FREELANCE_ROADMAP_STEPS = [
+    'Create Excel BOQ template',
+    'Install/update CAD software & set up shortcuts',
+    'Select building plan & define mock-up scope',
+    'Take off structural quantities (concrete/rebar/formwork)',
+    'Draw 2D plan or build basic 3D structure',
+    'Cross-check drawing vs. BOQ',
+    'Take off architectural quantities (tiles/paint/roof)',
+    'Build 3D architectural model with materials',
+    'Summarize BOQ (summary sheet)',
+    'Export CAD to PDF & capture 3D renders',
+    'Assemble portfolio (Canva)',
+    'AI-review portfolio & apply to freelance platforms',
+  ];
+  const FREELANCE_ROADMAP_WEEKS = [1,1,1,2,2,2,3,3,3,4,4,4]; // week number per step (index = step_number-1)
+
   const MOOD_LABELS = ['', 'Bad', 'Fair', 'Okay', 'Good', 'Excellent'];
   const EN_MONTHS   = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
@@ -648,6 +687,7 @@
   let freelanceUsedAI = false;
   let freelanceTasks  = [];       // [{id, task_text, completed, sort_order}]
   let thesisMilestones = [];      // [{step_number, completed, id}]
+  let freelanceRoadmap = [];      // [{step_number, completed, id}]
   let workoutWeekSet  = new Set(); // log_date strings within the current week where workout was completed
   let appInitialized  = false;
   let isRegister      = false;
@@ -784,6 +824,7 @@
       updateDateUI();
       await ensureHabits(user.id);
       await loadThesisMilestones(user.id);
+      await loadFreelanceMilestones(user.id);
       await loadFreelanceTasks(user.id);
       await loadDay(currentDate, user.id);
     } catch(e) {
@@ -1247,6 +1288,68 @@
       if (error) throw error;
       showSaved();
     } catch(e) { showToast('Could not save milestone', 'error'); m.completed = !m.completed; renderThesisSteps(); }
+  }
+
+  // ── FREELANCE ROADMAP MILESTONES ──
+  async function loadFreelanceMilestones(userId) {
+    const { data } = await sbQ(sb.from('freelance_milestones').select('*').eq('user_id', userId).order('step_number'), 'freelance_milestones load');
+    freelanceRoadmap = data || [];
+    for (let i = 1; i <= 12; i++) {
+      if (!freelanceRoadmap.find(m => m.step_number === i)) freelanceRoadmap.push({ step_number: i, completed: false, id: null });
+    }
+    freelanceRoadmap.sort((a, b) => a.step_number - b.step_number);
+    renderFreelanceRoadmapSteps();
+  }
+  function renderFreelanceRoadmapSteps() {
+    document.getElementById('skeleton-freelance-roadmap').style.display = 'none';
+    document.getElementById('freelance-roadmap-wrap').style.display = 'block';
+    const wrap = document.getElementById('freelance-roadmap-steps');
+    wrap.innerHTML = '';
+    let done = 0;
+    let lastWeek = 0;
+    freelanceRoadmap.forEach(m => {
+      if (m.completed) done++;
+      const wk = FREELANCE_ROADMAP_WEEKS[m.step_number - 1];
+      if (wk !== lastWeek) {
+        const wdiv = document.createElement('div');
+        wdiv.className = 'roadmap-week-label';
+        wdiv.textContent = `Week ${wk}`;
+        wrap.appendChild(wdiv);
+        lastWeek = wk;
+      }
+      const step = document.createElement('div');
+      step.className = 'thesis-step' + (m.completed ? ' done' : '');
+      step.innerHTML = `
+        <div class="step-num">${m.step_number}</div>
+        <div class="step-text">${FREELANCE_ROADMAP_STEPS[m.step_number - 1]}</div>
+        <div class="step-check">✓</div>`;
+      step.addEventListener('click', () => toggleFreelanceRoadmapStep(m.step_number, step));
+      wrap.appendChild(step);
+    });
+    document.getElementById('freelance-roadmap-badge').textContent = `${done} / 12`;
+    document.getElementById('freelance-roadmap-bar').style.width = `${Math.round((done/12)*100)}%`;
+  }
+  async function toggleFreelanceRoadmapStep(stepNum, el) {
+    if (!currentUser) return;
+    const m = freelanceRoadmap.find(x => x.step_number === stepNum);
+    if (!m) return;
+    m.completed = !m.completed;
+    el.classList.toggle('done', m.completed);
+    const done = freelanceRoadmap.filter(x => x.completed).length;
+    document.getElementById('freelance-roadmap-badge').textContent = `${done} / 12`;
+    document.getElementById('freelance-roadmap-bar').style.width = `${Math.round((done/12)*100)}%`;
+    showSaving();
+    try {
+      const { error } = await sbQ(sb.from('freelance_milestones').upsert({
+        user_id: currentUser.id,
+        step_number: stepNum,
+        completed: m.completed,
+        completed_at: m.completed ? new Date().toISOString() : null,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'user_id,step_number' }), 'freelance_milestone save');
+      if (error) throw error;
+      showSaved();
+    } catch(e) { showToast('Could not save roadmap step', 'error'); m.completed = !m.completed; renderFreelanceRoadmapSteps(); }
   }
 
   // ── LOAD DAY ──

@@ -75,6 +75,18 @@
     .chart-wrap { position: relative; height: 220px; }
     .icon-lg { display: block; width: 16px; height: 16px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; color: var(--primary); }
 
+    /* ── ROADMAP PROGRESS ── */
+    .roadmap-progress-summary { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; }
+    .roadmap-big-num { font-size: 26px; font-weight: 700; color: var(--accent); white-space: nowrap; }
+    .roadmap-pct { font-size: 13px; font-weight: 500; color: var(--text-sub); margin-left: 4px; }
+    .roadmap-bar-track { flex: 1; height: 8px; background: var(--border); border-radius: 999px; overflow: hidden; }
+    .roadmap-bar-fill { height: 100%; background: var(--accent); border-radius: 999px; transition: width 0.5s ease; }
+    .roadmap-weeks { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .roadmap-week-card { background: var(--accent-lt); border-radius: 10px; padding: 10px 12px; text-align: center; }
+    .roadmap-week-card .wk-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); margin-bottom: 4px; }
+    .roadmap-week-card .wk-count { font-size: 15px; font-weight: 700; color: var(--text); }
+    @media (max-width: 640px) { .roadmap-weeks { grid-template-columns: repeat(2, 1fr); } }
+
     /* ── SECTION LABEL ── */
     .section-label { font-size: 11px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-sub); margin: 32px 0 14px; display: flex; align-items: center; gap: 8px; }
 
@@ -206,6 +218,20 @@
         <div class="chart-wrap"><canvas id="chart-ai"></canvas></div>
       </div>
 
+      <!-- Roadmap progress -->
+      <div class="chart-card" id="roadmap-card">
+        <div class="chart-header">
+          <div class="chart-icon"><svg class="icon-lg" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+          <div class="chart-title">Freelance Roadmap Progress</div>
+        </div>
+        <div class="chart-sub">4-week portfolio milestone plan — tracked step-by-step on the Daily Log page.</div>
+        <div class="roadmap-progress-summary">
+          <div class="roadmap-big-num"><span id="roadmap-done">0</span> / 12<span class="roadmap-pct" id="roadmap-pct"></span></div>
+          <div class="roadmap-bar-track"><div class="roadmap-bar-fill" id="roadmap-bar-fill" style="width:0%"></div></div>
+        </div>
+        <div class="roadmap-weeks" id="roadmap-weeks"></div>
+      </div>
+
       <!-- Task timeline -->
       <div class="section-label">📋 Task Timeline</div>
       <div class="task-timeline" id="task-timeline">
@@ -312,6 +338,8 @@
   const EN_MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   function fmtMonthYear(my) { return `${EN_MONTHS[parseInt(my.slice(5))-1]} ${my.slice(0,4)}`; }
 
+  const FREELANCE_ROADMAP_WEEKS = [1,1,1,2,2,2,3,3,3,4,4,4]; // week number per step_number-1
+
   const CHART_DEFAULTS = {
     responsive: true, maintainAspectRatio: false,
     plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } },
@@ -329,8 +357,10 @@
       const tasks = await pgFetch('freelance_tasks', `select=id,task_text,completed,sort_order,created_at&user_id=eq.${user.id}&order=created_at.asc`);
       const logs  = await pgFetch('daily_logs', `select=log_date,freelance_used_ai&user_id=eq.${user.id}&order=log_date.asc`);
       const reviews = await pgFetch('weekly_reviews', `select=week_start,freelance_checkin&user_id=eq.${user.id}&freelance_checkin=not.is.null&order=week_start.desc`);
+      const milestones = await pgFetch('freelance_milestones', `select=step_number,completed&user_id=eq.${user.id}`);
 
       renderSummary(tasks, logs);
+      renderRoadmap(milestones);
       renderTaskChart(tasks);
       renderAiChart(logs);
       renderTimeline(tasks);
@@ -363,6 +393,29 @@
     const aiDays = logs.filter(l => l.freelance_used_ai).length;
     document.getElementById('sum-ai').textContent = loggedDays ? Math.round((aiDays/loggedDays)*100) : '—';
     document.getElementById('sum-ai-sub').textContent = loggedDays ? `${aiDays} of ${loggedDays} logged days` : 'No daily logs yet';
+  }
+
+  // ── ROADMAP PROGRESS (12-step milestone tracker) ──
+  function renderRoadmap(milestones) {
+    const doneSteps = new Set(milestones.filter(m => m.completed).map(m => m.step_number));
+    const totalDone = doneSteps.size;
+    document.getElementById('roadmap-done').textContent = totalDone;
+    document.getElementById('roadmap-pct').textContent = ` (${Math.round((totalDone/12)*100)}%)`;
+    document.getElementById('roadmap-bar-fill').style.width = `${Math.round((totalDone/12)*100)}%`;
+
+    const weekTotals = { 1:0, 2:0, 3:0, 4:0 };
+    const weekDone    = { 1:0, 2:0, 3:0, 4:0 };
+    FREELANCE_ROADMAP_WEEKS.forEach((wk, idx) => {
+      weekTotals[wk]++;
+      if (doneSteps.has(idx + 1)) weekDone[wk]++;
+    });
+    const wrap = document.getElementById('roadmap-weeks');
+    wrap.innerHTML = [1,2,3,4].map(wk => `
+      <div class="roadmap-week-card">
+        <div class="wk-label">Week ${wk}</div>
+        <div class="wk-count">${weekDone[wk]} / ${weekTotals[wk]}</div>
+      </div>
+    `).join('');
   }
 
   // ── TASKS ADDED VS COMPLETED, BY WEEK ADDED ──
