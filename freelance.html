@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DevOS — Freelance Progress</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="theme-color" content="#5C7A6E" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="DevOS" />
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg:          #F7F5F0;
+      --bg-card:     #FFFFFF;
+      --primary:     #5C7A6E;
+      --primary-dk:  #3D5C52;
+      --green-light: #EAF0EE;
+      --accent:      #C4956A;
+      --accent-lt:   #F7EDE1;
+      --text:        #2C332F;
+      --text-sub:    #7A827E;
+      --border:      #E2E4E0;
+      --red:         #C0392B;
+      --green-ok:    #4A9068;
+      --radius:      16px;
+      --radius-lg:   24px;
+      --shadow-sm:   0 2px 8px rgba(45,74,62,0.05);
+      --shadow-md:   0 4px 16px rgba(45,74,62,0.09);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', 'Sarabun', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.6; }
+
+    #auth-gate { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+    .auth-msg { text-align: center; background: var(--bg-card); padding: 40px 48px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); }
+    .auth-msg p { color: var(--text-sub); margin-bottom: 16px; font-family: 'Sarabun', sans-serif; }
+    .btn-go { display: inline-block; padding: 11px 28px; background: var(--primary); color: #fff; border-radius: 8px; font-weight: 600; font-size: 14px; text-decoration: none; }
+
+    #app { display: none; }
+    .container { max-width: 960px; margin: 0 auto; padding: 0 20px 80px; }
+
+    .app-header { padding: 18px 0; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); margin-bottom: 28px; }
+    .header-logo { font-size: 1.1rem; font-weight: 700; letter-spacing: 2px; color: var(--primary); }
+    .header-logo span { color: var(--text-sub); }
+    .header-nav { display: flex; gap: 8px; flex-wrap: wrap; }
+    .nav-btn { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; border: 1px solid var(--border); cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; background: var(--bg-card); color: var(--text); font-family: inherit; }
+    .nav-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .nav-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    .page-header { margin-bottom: 24px; }
+    .page-header .label { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-sub); margin-bottom: 4px; }
+    .page-header h2 { font-size: 2rem; font-weight: 700; color: var(--primary); }
+
+    .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+    .summary-card { background: var(--bg-card); border-radius: var(--radius); padding: 18px 20px; box-shadow: var(--shadow-sm); border: 1px solid rgba(226,228,224,0.6); }
+    .summary-label { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-sub); margin-bottom: 8px; }
+    .summary-value { font-size: 26px; font-weight: 700; color: var(--primary); }
+    .summary-unit { font-size: 13px; font-weight: 500; color: var(--text-sub); margin-left: 3px; }
+    .summary-sub { font-size: 11px; color: var(--text-sub); margin-top: 4px; font-family: 'Sarabun', sans-serif; }
+
+    .chart-card { background: var(--bg-card); border-radius: var(--radius); padding: 20px 22px; box-shadow: var(--shadow-sm); border: 1px solid rgba(226,228,224,0.6); margin-bottom: 16px; }
+    .chart-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+    .chart-icon { width: 32px; height: 32px; background: var(--green-light); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .chart-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-sub); }
+    .chart-sub { font-size: 12px; color: var(--text-sub); margin-top: -10px; margin-bottom: 14px; font-family: 'Sarabun', sans-serif; }
+    .chart-wrap { position: relative; height: 220px; }
+    .icon-lg { display: block; width: 16px; height: 16px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; color: var(--primary); }
+
+    /* ── SECTION LABEL ── */
+    .section-label { font-size: 11px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-sub); margin: 32px 0 14px; display: flex; align-items: center; gap: 8px; }
+
+    /* ── TASK TIMELINE ── */
+    .task-timeline { display: flex; flex-direction: column; gap: 8px; }
+    .task-row { display: flex; align-items: flex-start; gap: 12px; padding: 13px 15px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow-sm); }
+    .task-row.done { border-color: rgba(74,144,104,0.35); background: #F4FAF6; }
+    .task-dot { width: 20px; height: 20px; border-radius: 6px; border: 2px solid var(--border); flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; }
+    .task-row.done .task-dot { background: var(--green-ok); border-color: var(--green-ok); }
+    .task-body { flex: 1; min-width: 0; }
+    .task-text { font-size: 14px; color: var(--text); }
+    .task-row.done .task-text { color: var(--text-sub); text-decoration: line-through; }
+    .task-date { font-size: 11px; color: var(--text-sub); margin-top: 3px; font-family: 'Sarabun', sans-serif; }
+    .task-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.04em; flex-shrink: 0; margin-top: 2px; }
+    .task-badge.done { background: rgba(74,144,104,0.15); color: var(--green-ok); }
+    .task-badge.pending { background: var(--accent-lt); color: var(--accent); }
+
+    /* ── GROWTH NARRATIVE (weekly check-ins) ── */
+    .narrative-list { display: flex; flex-direction: column; gap: 12px; }
+    .narrative-card { background: var(--bg-card); border-radius: var(--radius); padding: 18px 20px; box-shadow: var(--shadow-sm); border: 1px solid rgba(226,228,224,0.6); border-left: 3px solid var(--accent); }
+    .narrative-week { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+    .narrative-text { font-size: 14px; color: var(--text); font-family: 'Sarabun', sans-serif; line-height: 1.75; white-space: pre-wrap; }
+
+    .empty-state { text-align: center; padding: 40px; color: var(--text-sub); font-size: 14px; font-family: 'Sarabun', sans-serif; background: var(--bg-card); border-radius: var(--radius); border: 1px solid rgba(226,228,224,0.6); }
+
+    .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(247,245,240,0.8); backdrop-filter: blur(2px); z-index: 50; align-items: center; justify-content: center; }
+    .loading-overlay.active { display: flex; }
+    .loading-box { background: var(--bg-card); border-radius: var(--radius-lg); padding: 32px 48px; box-shadow: var(--shadow-md); display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; }
+    .spinner { width: 34px; height: 34px; border: 3px solid rgba(45,74,62,0.12); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.75s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-title { font-size: 14px; font-weight: 700; color: var(--primary); }
+
+    #dbg { display: none; position: fixed; bottom: 44px; left: 10px; background: #1A3A2A; color: #7EC8A4; padding: 10px 14px; font-size: 11px; border-radius: 8px; z-index: 997; max-width: 340px; font-family: monospace; line-height: 1.6; max-height: 220px; overflow-y: auto; }
+    #dbg-toggle { position: fixed; bottom: 10px; left: 10px; background: rgba(45,74,62,0.7); color: #7EC8A4; border: none; padding: 4px 9px; border-radius: 5px; font-size: 10px; font-weight: 700; cursor: pointer; z-index: 998; font-family: monospace; opacity: 0.35; transition: opacity 0.2s; }
+    #dbg-toggle:hover { opacity: 1; }
+
+    /* ── MOBILE BOTTOM NAV ── */
+    .mobile-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-card); border-top: 1px solid var(--border); padding-bottom: env(safe-area-inset-bottom, 0px); z-index: 300; box-shadow: 0 -2px 10px rgba(45,74,62,0.07); }
+    .mobile-nav-inner { display: flex; }
+    .mobile-nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 10px 4px; text-decoration: none; background: none; border: none; cursor: pointer; font-family: inherit; color: var(--text-sub); font-size: 9.5px; font-weight: 600; letter-spacing: 0.03em; transition: color 0.15s; -webkit-tap-highlight-color: transparent; line-height: 1; }
+    .mobile-nav-item svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; margin-bottom: 2px; }
+    .mobile-nav-item.active { color: var(--primary); }
+    .mobile-nav-item:active { opacity: 0.65; }
+
+    @media (max-width: 640px) {
+      .mobile-nav { display: block; }
+      .container { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+      .header-nav { display: none; }
+      .page-header h2 { font-size: 1.6rem; }
+      .summary-grid { grid-template-columns: repeat(2, 1fr); }
+      .summary-value { font-size: 22px; }
+    }
+    @media (max-width: 390px) {
+      .summary-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .summary-card { padding: 14px 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="auth-gate">
+  <div class="auth-msg">
+    <p>Please sign in first</p>
+    <a class="btn-go" href="index.html">Go to Login</a>
+  </div>
+</div>
+
+<div id="app">
+  <div class="container">
+    <header class="app-header">
+      <div class="header-logo">DEV<span>OS</span></div>
+      <div class="header-nav">
+        <a class="nav-btn" href="index.html">Daily Log</a>
+        <a class="nav-btn" href="journal.html">Moments</a>
+        <a class="nav-btn" href="stats.html">Statistics</a>
+        <a class="nav-btn active" href="freelance.html">Freelance</a>
+        <button class="nav-btn" id="btn-refresh">Refresh</button>
+        <button class="nav-btn" id="btn-logout">Sign out</button>
+      </div>
+    </header>
+
+    <main>
+      <div class="page-header">
+        <div class="label">Freelance — Mock-up Project</div>
+        <h2>Progress &amp; Learning</h2>
+      </div>
+
+      <!-- Summary -->
+      <div class="summary-grid">
+        <div class="summary-card">
+          <div class="summary-label">Tasks Completed</div>
+          <div><span class="summary-value" id="sum-completed">—</span><span class="summary-unit">/ <span id="sum-total">—</span></span></div>
+          <div class="summary-sub" id="sum-rate-sub"></div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">Completed This Month</div>
+          <div><span class="summary-value" id="sum-month">—</span></div>
+          <div class="summary-sub" id="sum-month-sub"></div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">Pending Right Now</div>
+          <div><span class="summary-value" id="sum-pending">—</span></div>
+          <div class="summary-sub">tasks still on your list</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">AI Usage (overall)</div>
+          <div><span class="summary-value" id="sum-ai">—</span><span class="summary-unit">%</span></div>
+          <div class="summary-sub" id="sum-ai-sub"></div>
+        </div>
+      </div>
+
+      <!-- Tasks added vs cleared, per week -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-icon"><svg class="icon-lg" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+          <div class="chart-title">Tasks Added vs. Completed (by week added)</div>
+        </div>
+        <div class="chart-sub">Green = of that week's tasks, how many are done now. Amber = still pending. A shrinking amber pile over time means you're keeping up.</div>
+        <div class="chart-wrap"><canvas id="chart-tasks"></canvas></div>
+      </div>
+
+      <!-- AI usage trend -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-icon"><svg class="icon-lg" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg></div>
+          <div class="chart-title">AI Usage Rate (% of logged days per week)</div>
+        </div>
+        <div class="chart-sub">A gradually declining line can mean you're needing AI less as your own skills grow — or it can just mean lighter weeks. Read it alongside the task chart above.</div>
+        <div class="chart-wrap"><canvas id="chart-ai"></canvas></div>
+      </div>
+
+      <!-- Task timeline -->
+      <div class="section-label">📋 Task Timeline</div>
+      <div class="task-timeline" id="task-timeline">
+        <div class="empty-state">Loading…</div>
+      </div>
+
+      <!-- Growth narrative -->
+      <div class="section-label">🌱 What You Wrote — Weekly Check-ins</div>
+      <div class="narrative-list" id="narrative-list">
+        <div class="empty-state">Loading…</div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="loading-overlay" id="loading">
+  <div class="loading-box">
+    <div class="spinner"></div>
+    <div class="loading-title">Loading…</div>
+  </div>
+</div>
+<div id="dbg"></div>
+<button id="dbg-toggle" title="Toggle debug log">LOG</button>
+
+<!-- ══ MOBILE BOTTOM NAV ══ -->
+<nav class="mobile-nav">
+  <div class="mobile-nav-inner">
+    <a class="mobile-nav-item" href="index.html">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Daily
+    </a>
+    <a class="mobile-nav-item" href="journal.html">
+      <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      Moments
+    </a>
+    <a class="mobile-nav-item" href="stats.html">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Stats
+    </a>
+    <a class="mobile-nav-item active" href="freelance.html">
+      <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Freelance
+    </a>
+    <button class="mobile-nav-item" onclick="document.getElementById('btn-logout').click()">
+      <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign out
+    </button>
+  </div>
+</nav>
+
+<script>
+  const SUPABASE_URL  = 'https://lyncszmpwojopbvkmqmc.supabase.co';
+  const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5bmNzem1wd29qb3BidmttcW1jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyMTgwODIsImV4cCI6MjA5Nzc5NDA4Mn0.fzOPawbNz3kQTK5L4uVlDnWUxwgZ-V4suBFYD-tpcP4';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+  let currentUser = null;
+  let currentToken = null;
+  let charts = {};
+
+  // ── DEBUG ──
+  function dbg(msg) {
+    const el = document.getElementById('dbg');
+    if (el) { const d = document.createElement('div'); d.textContent = `${new Date().toLocaleTimeString()} ${msg}`; el.appendChild(d); el.scrollTop = el.scrollHeight; }
+    console.log('[DBG]', msg);
+  }
+  document.getElementById('dbg-toggle').addEventListener('click', () => {
+    const p = document.getElementById('dbg');
+    p.style.display = p.style.display === 'block' ? 'none' : 'block';
+  });
+
+  function setLoading(on) { document.getElementById('loading').classList.toggle('active', on); }
+
+  // Direct fetch() against PostgREST — avoids supabase-js token-refresh hangs (same pattern as stats.html)
+  async function pgFetch(table, params) {
+    const url = `${SUPABASE_URL}/rest/v1/${table}?${params}`;
+    dbg(`⏳ GET ${table}...`);
+    const res = await fetch(url, {
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${currentToken}`, 'Accept': 'application/json' }
+    });
+    if (!res.ok) { dbg(`err ${table} HTTP ${res.status}`); return []; }
+    const data = await res.json();
+    dbg(`ok  ${table}: ${data.length} rows`);
+    return data;
+  }
+
+  // ── UTILS ──
+  function localStr(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+  function strToDate(s) { return new Date(s + 'T00:00:00'); }
+  function getWeekStart(dateStr) {
+    const d = strToDate(dateStr);
+    const day = d.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
+    d.setDate(d.getDate() + diff);
+    return localStr(d);
+  }
+  function fmtWeekLabel(ws) {
+    const we = strToDate(ws); we.setDate(we.getDate() + 6);
+    const f = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return `${f(strToDate(ws))} – ${f(we)}`;
+  }
+  function fmtDateShort(dateStr) {
+    return strToDate(dateStr.slice(0,10)).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+  const EN_MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  function fmtMonthYear(my) { return `${EN_MONTHS[parseInt(my.slice(5))-1]} ${my.slice(0,4)}`; }
+
+  const CHART_DEFAULTS = {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#9CA3AF', maxRotation: 45, maxTicksLimit: 10 }, stacked: true },
+      y: { grid: { color: '#F3F4F6' }, ticks: { font: { size: 10 }, color: '#9CA3AF' }, beginAtZero: true, stacked: true },
+    },
+  };
+
+  // ── MAIN LOAD ──
+  async function loadFreelancePage(user) {
+    setLoading(true);
+    const safety = setTimeout(() => { dbg('safety timer fired'); setLoading(false); }, 45000);
+    try {
+      const tasks = await pgFetch('freelance_tasks', `select=id,task_text,completed,sort_order,created_at&user_id=eq.${user.id}&order=created_at.asc`);
+      const logs  = await pgFetch('daily_logs', `select=log_date,freelance_used_ai&user_id=eq.${user.id}&order=log_date.asc`);
+      const reviews = await pgFetch('weekly_reviews', `select=week_start,freelance_checkin&user_id=eq.${user.id}&freelance_checkin=not.is.null&order=week_start.desc`);
+
+      renderSummary(tasks, logs);
+      renderTaskChart(tasks);
+      renderAiChart(logs);
+      renderTimeline(tasks);
+      renderNarrative(reviews);
+    } catch (e) {
+      dbg('load error: ' + e.message);
+    } finally {
+      clearTimeout(safety);
+      setLoading(false);
+    }
+  }
+
+  // ── SUMMARY CARDS ──
+  function renderSummary(tasks, logs) {
+    const total = tasks.length;
+    const completed = tasks.filter(t => t.completed).length;
+    const pending = total - completed;
+    document.getElementById('sum-completed').textContent = completed;
+    document.getElementById('sum-total').textContent = total;
+    document.getElementById('sum-rate-sub').textContent = total ? `${Math.round((completed/total)*100)}% completion rate` : 'No tasks yet';
+    document.getElementById('sum-pending').textContent = pending;
+
+    const now = new Date();
+    const thisMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    const monthCount = tasks.filter(t => t.completed && t.created_at && t.created_at.slice(0,7) === thisMonth).length;
+    document.getElementById('sum-month').textContent = monthCount;
+    document.getElementById('sum-month-sub').textContent = fmtMonthYear(thisMonth);
+
+    const loggedDays = logs.length;
+    const aiDays = logs.filter(l => l.freelance_used_ai).length;
+    document.getElementById('sum-ai').textContent = loggedDays ? Math.round((aiDays/loggedDays)*100) : '—';
+    document.getElementById('sum-ai-sub').textContent = loggedDays ? `${aiDays} of ${loggedDays} logged days` : 'No daily logs yet';
+  }
+
+  // ── TASKS ADDED VS COMPLETED, BY WEEK ADDED ──
+  function renderTaskChart(tasks) {
+    if (!tasks.length) return;
+    const byWeek = {};
+    tasks.forEach(t => {
+      const ws = getWeekStart(t.created_at.slice(0,10));
+      if (!byWeek[ws]) byWeek[ws] = { done: 0, pending: 0 };
+      if (t.completed) byWeek[ws].done++; else byWeek[ws].pending++;
+    });
+    const weeks = Object.keys(byWeek).sort();
+    const labels = weeks.map(fmtWeekLabel);
+    const doneArr = weeks.map(w => byWeek[w].done);
+    const pendingArr = weeks.map(w => byWeek[w].pending);
+
+    if (charts.tasks) charts.tasks.destroy();
+    const ctx = document.getElementById('chart-tasks').getContext('2d');
+    charts.tasks = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          { label: 'Completed', data: doneArr, backgroundColor: '#4A9068CC', borderRadius: 4 },
+          { label: 'Pending',   data: pendingArr, backgroundColor: '#C4956ACC', borderRadius: 4 },
+        ],
+      },
+      options: CHART_DEFAULTS,
+    });
+  }
+
+  // ── AI USAGE % PER WEEK ──
+  function renderAiChart(logs) {
+    if (!logs.length) return;
+    const byWeek = {};
+    logs.forEach(l => {
+      const ws = getWeekStart(l.log_date);
+      if (!byWeek[ws]) byWeek[ws] = { total: 0, ai: 0 };
+      byWeek[ws].total++;
+      if (l.freelance_used_ai) byWeek[ws].ai++;
+    });
+    const weeks = Object.keys(byWeek).sort();
+    const labels = weeks.map(fmtWeekLabel);
+    const pctArr = weeks.map(w => Math.round((byWeek[w].ai / byWeek[w].total) * 100));
+
+    if (charts.ai) charts.ai.destroy();
+    const ctx = document.getElementById('chart-ai').getContext('2d');
+    charts.ai = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'AI usage %', data: pctArr,
+          borderColor: '#5C7A6E', backgroundColor: '#5C7A6E18',
+          borderWidth: 2.5, pointRadius: labels.length > 20 ? 2 : 4,
+          pointBackgroundColor: '#5C7A6E', tension: 0.35, fill: true, spanGaps: true,
+        }],
+      },
+      options: { ...CHART_DEFAULTS, scales: { ...CHART_DEFAULTS.scales, y: { ...CHART_DEFAULTS.scales.y, max: 100, stacked: false }, x: { ...CHART_DEFAULTS.scales.x, stacked: false } }, plugins: { legend: { display: false } } },
+    });
+  }
+
+  // ── TASK TIMELINE ──
+  function renderTimeline(tasks) {
+    const wrap = document.getElementById('task-timeline');
+    if (!tasks.length) { wrap.innerHTML = '<div class="empty-state">No tasks logged yet — add some on the Daily Log page.</div>'; return; }
+    const sorted = [...tasks].sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+    wrap.innerHTML = sorted.map(t => `
+      <div class="task-row ${t.completed ? 'done' : ''}">
+        <div class="task-dot">${t.completed ? '✓' : ''}</div>
+        <div class="task-body">
+          <div class="task-text">${escapeHtml(t.task_text)}</div>
+          <div class="task-date">Added ${fmtDateShort(t.created_at)}</div>
+        </div>
+        <div class="task-badge ${t.completed ? 'done' : 'pending'}">${t.completed ? 'Done' : 'Pending'}</div>
+      </div>
+    `).join('');
+  }
+
+  // ── GROWTH NARRATIVE (weekly check-ins) ──
+  function renderNarrative(reviews) {
+    const wrap = document.getElementById('narrative-list');
+    if (!reviews.length) { wrap.innerHTML = '<div class="empty-state">No Freelance Check-in notes yet — write one in the Weekly Review on the Statistics page.</div>'; return; }
+    wrap.innerHTML = reviews.map(r => `
+      <div class="narrative-card">
+        <div class="narrative-week">Week of ${fmtWeekLabel(r.week_start)}</div>
+        <div class="narrative-text">${escapeHtml(r.freelance_checkin)}</div>
+      </div>
+    `).join('');
+  }
+
+  function escapeHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = str == null ? '' : str;
+    return d.innerHTML;
+  }
+
+  // ── AUTH ──
+  let pageInitialized = false;
+  sb.auth.onAuthStateChange(async (event, session) => {
+    dbg(`auth: ${event}`);
+    if (session?.user) {
+      currentUser = session.user;
+      currentToken = session.access_token;
+      document.getElementById('auth-gate').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      if (!pageInitialized) {
+        pageInitialized = true;
+        try { await loadFreelancePage(session.user); }
+        catch(e) { dbg('init err: ' + e.message); pageInitialized = false; }
+      }
+    } else {
+      currentUser = null;
+      pageInitialized = false;
+      document.getElementById('auth-gate').style.display = 'flex';
+      document.getElementById('app').style.display = 'none';
+    }
+  });
+
+  document.getElementById('btn-logout').addEventListener('click', async () => {
+    await sb.auth.signOut();
+    window.location.href = 'index.html';
+  });
+
+  document.getElementById('btn-refresh').addEventListener('click', async () => {
+    pageInitialized = false;
+    if (currentUser) { pageInitialized = true; try { await loadFreelancePage(currentUser); } catch(e) { dbg('refresh err: ' + e.message); pageInitialized = false; } }
+  });
+</script>
+
+<!-- Service Worker Registration -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(r => console.log('[SW] registered', r.scope))
+        .catch(e => console.warn('[SW] failed', e));
+    });
+  }
+</script>
+</body>
+</html>
