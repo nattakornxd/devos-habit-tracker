@@ -308,6 +308,22 @@
     .mobile-nav-item.active { color: var(--primary); }
     .mobile-nav-item:active { opacity: 0.65; }
 
+    /* ── VIEW TABS (Overview / Reviews) ── */
+    .view-tabs { display: flex; gap: 6px; margin-bottom: 24px; background: var(--bg-card); padding: 5px; border-radius: 10px; width: fit-content; box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+    .view-tab { padding: 8px 22px; border: none; border-radius: 7px; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; background: transparent; color: var(--text-sub); transition: all 0.18s; }
+    .view-tab.active { background: var(--primary); color: #fff; }
+
+    /* ── REVIEWS (moved here from index.html — no more pop-up modals) ── */
+    .review-nav-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+    .review-score { margin-left: auto; font-size: 12px; color: var(--text-sub); font-family: 'Sarabun', sans-serif; }
+    .review-group { margin-bottom: 16px; }
+    .review-label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-sub); margin-bottom: 6px; }
+    .review-textarea { width: 100%; padding: 12px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; font-size: 14px; font-family: inherit; color: var(--text); resize: vertical; min-height: 80px; outline: none; transition: border-color 0.2s; line-height: 1.7; }
+    .review-textarea:focus { border-color: var(--primary); }
+    .btn-review-save { width: 100%; padding: 13px; background: var(--primary); color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background 0.2s; margin-top: 4px; }
+    .btn-review-save:hover { background: #1e332a; }
+    .btn-review-save:disabled { opacity: 0.6; cursor: not-allowed; }
+
     /* ── RESPONSIVE ── */
     @media (max-width: 640px) {
       .mobile-nav { display: block; }
@@ -324,9 +340,10 @@
       /* Page header */
       .page-header h2 { font-size: 1.6rem; }
 
-      /* Range bar: scroll */
-      .range-bar { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-      .range-bar::-webkit-scrollbar { display: none; }
+      /* Range bar / view tabs: scroll */
+      .range-bar, .view-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+      .range-bar::-webkit-scrollbar, .view-tabs::-webkit-scrollbar { display: none; }
+      .review-nav-row { gap: 8px; }
 
       /* Habit bar: ชื่อสั้นลง */
       .habit-name-col { min-width: 100px; font-size: 12px; }
@@ -371,6 +388,13 @@
       <h2>Your Statistics</h2>
     </div>
 
+    <!-- View Tabs: Overview / Reviews (weekly & monthly reviews live here now, not as pop-ups on the daily log) -->
+    <div class="view-tabs">
+      <button class="view-tab active" data-view="overview">📊 Overview</button>
+      <button class="view-tab" data-view="reviews">📝 Weekly &amp; Monthly Reviews</button>
+    </div>
+
+    <div id="view-overview">
     <!-- Range Selector -->
     <div class="range-bar">
       <button class="range-btn" data-days="7">7 days</button>
@@ -486,6 +510,65 @@
       </div>
 
     </div>
+    </div><!-- /#view-overview -->
+
+    <!-- ══ REVIEWS VIEW ══ -->
+    <div id="view-reviews" style="display:none">
+
+      <div class="page-header" style="margin-bottom:16px;">
+        <div class="label">Weekly Review</div>
+        <h2 id="wr-week-label" style="font-size:1.4rem;">Week of —</h2>
+      </div>
+      <div class="chart-card full" style="margin-bottom:24px;">
+        <div class="review-nav-row">
+          <button class="nav-btn" id="wr-prev">‹ Prev week</button>
+          <button class="nav-btn" id="wr-next">Next week ›</button>
+          <span class="review-score" id="wr-score">—</span>
+        </div>
+        <div class="review-group">
+          <label class="review-label">Trading Reflection</label>
+          <textarea class="review-textarea" id="wr-trading" placeholder="How was your discipline this week? Patterns noticed?"></textarea>
+        </div>
+        <div class="review-group">
+          <label class="review-label">Freelance Check-in</label>
+          <textarea class="review-textarea" id="wr-freelance" placeholder="Progress on mock-up project? Delivered? Blocked?"></textarea>
+        </div>
+        <div class="review-group">
+          <label class="review-label">Thesis Progress</label>
+          <textarea class="review-textarea" id="wr-thesis" placeholder="Which milestone advanced? What's next?"></textarea>
+        </div>
+        <div class="review-group">
+          <label class="review-label">Blockers &amp; Solutions</label>
+          <textarea class="review-textarea" id="wr-blockers" placeholder="What held you back? How will you fix it?"></textarea>
+        </div>
+        <button class="btn-review-save" id="btn-save-weekly">Save Weekly Review</button>
+      </div>
+
+      <div class="page-header" style="margin-bottom:16px;">
+        <div class="label">Monthly Review</div>
+        <h2 id="mr-month-label" style="font-size:1.4rem;">Month of —</h2>
+      </div>
+      <div class="chart-card full">
+        <div class="review-nav-row">
+          <button class="nav-btn" id="mr-prev">‹ Prev month</button>
+          <button class="nav-btn" id="mr-next">Next month ›</button>
+        </div>
+        <div class="review-group">
+          <label class="review-label">Monthly Highlights</label>
+          <textarea class="review-textarea" id="mr-highlights" placeholder="Top 3–5 wins this month…"></textarea>
+        </div>
+        <div class="review-group">
+          <label class="review-label">Goal Adjustments</label>
+          <textarea class="review-textarea" id="mr-goals" placeholder="What needs to change? What's working?"></textarea>
+        </div>
+        <div class="review-group">
+          <label class="review-label">Next Month Focus</label>
+          <textarea class="review-textarea" id="mr-focus" placeholder="Top 3 priorities for next month…"></textarea>
+        </div>
+        <button class="btn-review-save" id="btn-save-monthly">Save Monthly Review</button>
+      </div>
+
+    </div><!-- /#view-reviews -->
   </main>
   </div><!-- end .container -->
 </div>
@@ -845,6 +928,148 @@
       currentDays = parseInt(btn.dataset.days);
       await loadStats(currentDays, currentUser);
     });
+  });
+
+  // ══════════════════════════════════════════════════════════════
+  // VIEW TABS + WEEKLY / MONTHLY REVIEWS
+  // (Moved here from index.html — daily log page stays focused on
+  //  daily logging only; reviews live on the Statistics page.)
+  // ══════════════════════════════════════════════════════════════
+  function raceTimeout(p, ms = 15000, label = 'query') {
+    return Promise.race([
+      p,
+      new Promise((_, rej) => setTimeout(() => { dbg(`timeout ${label}`); rej(new Error(`${label} timed out`)); }, ms)),
+    ]);
+  }
+
+  const EN_MONTHS_R = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  function strToDateR(s) { return new Date(s + 'T00:00:00'); }
+  function getWeekStartR(dateStr) {
+    const d = strToDateR(dateStr);
+    const day = d.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
+    d.setDate(d.getDate() + diff);
+    return localStr(d);
+  }
+  function fmtWeekLabelR(ws) {
+    const we = strToDateR(ws); we.setDate(we.getDate() + 6);
+    const f = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return `${f(strToDateR(ws))} – ${f(we)}, ${strToDateR(ws).getFullYear()}`;
+  }
+  function fmtMonthLabelR(my) { return `${EN_MONTHS_R[parseInt(my.slice(5)) - 1]} ${my.slice(0, 4)}`; }
+
+  const todayLocalStrR = localStr(new Date());
+  let reviewWeekStart  = getWeekStartR(todayLocalStrR);
+  let reviewMonthYear  = todayLocalStrR.slice(0, 7);
+
+  // ── VIEW SWITCH ──
+  function switchView(view) {
+    document.getElementById('view-overview').style.display = view === 'overview' ? '' : 'none';
+    document.getElementById('view-reviews').style.display  = view === 'reviews'  ? '' : 'none';
+    document.querySelectorAll('.view-tab').forEach(t => t.classList.toggle('active', t.dataset.view === view));
+    if (view === 'reviews' && currentUser) { loadWeeklyReview(); loadMonthlyReview(); }
+  }
+  document.querySelectorAll('.view-tab').forEach(t => t.addEventListener('click', () => switchView(t.dataset.view)));
+
+  // ── WEEKLY REVIEW ──
+  async function loadWeeklyReview() {
+    if (!currentUser) return;
+    document.getElementById('wr-week-label').textContent = `Week of ${fmtWeekLabelR(reviewWeekStart)}`;
+    document.getElementById('wr-score').textContent = 'Calculating…';
+    document.getElementById('wr-next').disabled = reviewWeekStart >= getWeekStartR(todayLocalStrR);
+    try {
+      const { data: rev } = await raceTimeout(
+        sb.from('weekly_reviews').select('*').eq('user_id', currentUser.id).eq('week_start', reviewWeekStart).maybeSingle(),
+        15000, 'weekly_review load');
+      document.getElementById('wr-trading').value   = rev?.trading_reflection || '';
+      document.getElementById('wr-freelance').value = rev?.freelance_checkin  || '';
+      document.getElementById('wr-thesis').value    = rev?.thesis_progress    || '';
+      document.getElementById('wr-blockers').value  = rev?.blockers_solutions || '';
+
+      const we = strToDateR(reviewWeekStart); we.setDate(we.getDate() + 6);
+      const weStr = localStr(we);
+      const habits = await pgFetch('habits', `select=id&user_id=eq.${currentUser.id}&is_active=eq.true`);
+      const ids = (habits || []).map(h => h.id);
+      if (!ids.length) { document.getElementById('wr-score').textContent = 'No habits tracked yet'; return; }
+      const completions = await pgFetch('habit_completions',
+        `select=habit_id&user_id=eq.${currentUser.id}&completed=eq.true&log_date=gte.${reviewWeekStart}&log_date=lte.${weStr}`);
+      const total = ids.length * 7;
+      const done  = (completions || []).length;
+      const pct   = total ? Math.round((done / total) * 100) : 0;
+      document.getElementById('wr-score').textContent = `${pct}% habit score (${done}/${total} habit-days)`;
+    } catch (e) { dbg('loadWeeklyReview err: ' + e.message); document.getElementById('wr-score').textContent = '—'; }
+  }
+  document.getElementById('wr-prev').addEventListener('click', () => {
+    const d = strToDateR(reviewWeekStart); d.setDate(d.getDate() - 7);
+    reviewWeekStart = localStr(d); loadWeeklyReview();
+  });
+  document.getElementById('wr-next').addEventListener('click', () => {
+    const d = strToDateR(reviewWeekStart); d.setDate(d.getDate() + 7);
+    const next = localStr(d);
+    if (next > getWeekStartR(todayLocalStrR)) return;
+    reviewWeekStart = next; loadWeeklyReview();
+  });
+  document.getElementById('btn-save-weekly').addEventListener('click', async () => {
+    if (!currentUser) return;
+    const btn = document.getElementById('btn-save-weekly');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    try {
+      const { error } = await raceTimeout(sb.from('weekly_reviews').upsert({
+        user_id: currentUser.id,
+        week_start: reviewWeekStart,
+        trading_reflection: document.getElementById('wr-trading').value.trim()   || null,
+        freelance_checkin:  document.getElementById('wr-freelance').value.trim() || null,
+        thesis_progress:    document.getElementById('wr-thesis').value.trim()    || null,
+        blockers_solutions: document.getElementById('wr-blockers').value.trim()  || null,
+      }, { onConflict: 'user_id,week_start' }), 15000, 'weekly_review save');
+      if (error) throw error;
+      btn.textContent = 'Saved ✓';
+    } catch (e) { dbg('save weekly review err: ' + e.message); btn.textContent = 'Save failed — retry'; }
+    finally { setTimeout(() => { btn.disabled = false; btn.textContent = 'Save Weekly Review'; }, 1600); }
+  });
+
+  // ── MONTHLY REVIEW ──
+  async function loadMonthlyReview() {
+    if (!currentUser) return;
+    document.getElementById('mr-month-label').textContent = fmtMonthLabelR(reviewMonthYear);
+    document.getElementById('mr-next').disabled = reviewMonthYear >= todayLocalStrR.slice(0, 7);
+    try {
+      const { data } = await raceTimeout(
+        sb.from('monthly_reviews').select('*').eq('user_id', currentUser.id).eq('month_year', reviewMonthYear).maybeSingle(),
+        15000, 'monthly_review load');
+      document.getElementById('mr-highlights').value = data?.highlights       || '';
+      document.getElementById('mr-goals').value      = data?.goal_adjustments || '';
+      document.getElementById('mr-focus').value      = data?.next_month_focus || '';
+    } catch (e) { dbg('loadMonthlyReview err: ' + e.message); }
+  }
+  function shiftMonthYear(my, delta) {
+    let [y, m] = my.split('-').map(Number);
+    m += delta;
+    if (m < 1) { m = 12; y--; } else if (m > 12) { m = 1; y++; }
+    return `${y}-${String(m).padStart(2, '0')}`;
+  }
+  document.getElementById('mr-prev').addEventListener('click', () => { reviewMonthYear = shiftMonthYear(reviewMonthYear, -1); loadMonthlyReview(); });
+  document.getElementById('mr-next').addEventListener('click', () => {
+    const next = shiftMonthYear(reviewMonthYear, 1);
+    if (next > todayLocalStrR.slice(0, 7)) return;
+    reviewMonthYear = next; loadMonthlyReview();
+  });
+  document.getElementById('btn-save-monthly').addEventListener('click', async () => {
+    if (!currentUser) return;
+    const btn = document.getElementById('btn-save-monthly');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    try {
+      const { error } = await raceTimeout(sb.from('monthly_reviews').upsert({
+        user_id: currentUser.id,
+        month_year: reviewMonthYear,
+        highlights:       document.getElementById('mr-highlights').value.trim() || null,
+        goal_adjustments: document.getElementById('mr-goals').value.trim()      || null,
+        next_month_focus: document.getElementById('mr-focus').value.trim()      || null,
+      }, { onConflict: 'user_id,month_year' }), 15000, 'monthly_review save');
+      if (error) throw error;
+      btn.textContent = 'Saved ✓';
+    } catch (e) { dbg('save monthly review err: ' + e.message); btn.textContent = 'Save failed — retry'; }
+    finally { setTimeout(() => { btn.disabled = false; btn.textContent = 'Save Monthly Review'; }, 1600); }
   });
 </script>
 

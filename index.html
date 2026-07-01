@@ -43,8 +43,8 @@
       /* Category accent colors */
       --cat-foundation: #5C7A6E;
       --cat-growth:     #7A6E9E;
-      --cat-wealth:     #C4956A;
-      --cat-thesis:     #6E8CAE;
+      --cat-work:       #6E8CAE;
+      --cat-trading:    #C4956A;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -91,8 +91,6 @@
     .header-actions { display: flex; align-items: center; gap: 8px; }
     .header-actions a, .header-actions button { background: var(--surface); border: 1px solid var(--border); padding: 8px 15px; border-radius: var(--radius-sm); font-weight: 500; font-size: 13px; cursor: pointer; transition: all 0.2s; color: var(--text); text-decoration: none; font-family: inherit; }
     .header-actions a:hover, .header-actions button:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
-    .btn-review { background: var(--accent-lt) !important; color: var(--accent) !important; border-color: rgba(196,149,106,0.35) !important; font-weight: 600 !important; }
-    .btn-review:hover { background: var(--accent) !important; color: #fff !important; border-color: var(--accent) !important; }
     .save-indicator { font-size: 12px; color: var(--text-sub); font-weight: 500; }
     .save-indicator.saved { color: var(--green-ok); }
 
@@ -100,6 +98,15 @@
     .greeting { margin-bottom: 28px; }
     .section-label { font-size: 10px; font-weight: 700; letter-spacing: 1.8px; text-transform: uppercase; color: var(--text-sub); margin-bottom: 4px; }
     .greeting h2 { font-size: 2rem; font-weight: 700; color: var(--primary); }
+
+    /* ── ZONES (visual chunking: action vs reflective) ── */
+    .zone { margin-bottom: 30px; }
+    .zone-header { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-sub); margin-bottom: 14px; padding: 0 2px; }
+    .zone-panel { border-radius: 26px; padding: 18px 18px 6px; }
+    .zone-panel.zone-do   { background: rgba(92,122,110,0.06);  border: 1.5px dashed rgba(92,122,110,0.28); }
+    .zone-panel.zone-note { background: rgba(196,149,106,0.08); border: 1.5px dashed rgba(196,149,106,0.32); }
+    .zone-panel .card:last-child { margin-bottom: 12px; }
+    .zone-hint { font-size: 11.5px; color: var(--text-sub); margin: -6px 0 14px 2px; font-style: italic; }
 
     /* ── CARD ── */
     .card { background: var(--surface); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 18px; box-shadow: var(--shadow-sm); border: 1px solid rgba(228,224,218,0.7); }
@@ -122,30 +129,30 @@
     .habit-label { font-weight: 600; font-size: 14px; flex: 1; }
     .habit-sub { font-size: 12px; color: var(--text-sub); margin-top: 1px; }
 
-    /* ── WORKOUT PROGRESS ── */
-    .workout-wrap { margin-top: 14px; padding: 14px 15px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-md); }
+    /* Trading zone habit items use the amber accent when checked */
+    #card-trading .habit-item.checked { background: var(--accent-lt); border-color: #E0BE97; }
+    #card-trading .habit-item.checked .habit-check { background: var(--accent); border-color: var(--accent); }
+
+    /* ── WORKOUT WEEKLY PROGRESS (read-only summary, driven by habit_completions) ── */
+    .workout-progress-wrap { margin-top: 8px; padding: 12px 15px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-md); }
     .workout-label { font-size: 12px; font-weight: 600; color: var(--text-sub); margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
-    .workout-days { display: flex; gap: 6px; margin-bottom: 10px; }
-    .workout-day { flex: 1; height: 32px; border-radius: 6px; border: 2px solid var(--border); background: var(--bg); cursor: pointer; transition: all 0.18s; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: var(--text-sub); }
-    .workout-day:hover { border-color: var(--primary); color: var(--primary); }
-    .workout-day.done { background: var(--primary); border-color: var(--primary); color: #fff; }
     .workout-progress-bar { height: 6px; background: var(--border); border-radius: 999px; overflow: hidden; }
     .workout-progress-fill { height: 100%; background: var(--primary); border-radius: 999px; transition: width 0.4s ease; }
 
-    /* ── ENGLISH DROPDOWN ── */
-    .english-extra { margin-top: 8px; padding: 0 15px 12px; display: none; }
-    .english-extra.visible { display: block; }
+    /* ── PROGRESSIVE-DISCLOSURE DROPDOWNS (English type / Workout type) ── */
+    .progressive-extra { margin-top: 8px; padding: 0 15px 12px; display: none; }
+    .progressive-extra.visible { display: block; animation: fadeInDown 0.18s ease; }
     .english-type-select { width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; font-family: inherit; background: var(--surface); color: var(--text); cursor: pointer; }
     .english-type-select:focus { outline: none; border-color: var(--cat-growth); }
 
-    /* ── TRADING SPECIAL LOG ── */
-    .special-log-wrap { margin-top: 10px; padding: 12px 15px; background: var(--accent-lt); border: 1px solid rgba(196,149,106,0.25); border-radius: var(--radius-md); }
-    .special-log-label { font-size: 11px; font-weight: 700; color: var(--accent); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
-    .special-log-input { width: 100%; background: transparent; border: none; font-size: 13px; font-family: inherit; color: var(--text); resize: none; outline: none; min-height: 52px; line-height: 1.6; }
-    .special-log-input::placeholder { color: var(--text-sub); opacity: 0.7; }
+    /* ── REFLECTIVE INSET (used inside Trading card for notes) ── */
+    .reflect-inset { margin-top: 10px; padding: 12px 15px; background: var(--accent-lt); border: 1px solid rgba(196,149,106,0.25); border-radius: var(--radius-md); }
+    .reflect-inset-label { font-size: 11px; font-weight: 700; color: var(--accent); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+    .reflect-inset-input { width: 100%; background: transparent; border: none; font-size: 13px; font-family: inherit; color: var(--text); resize: vertical; outline: none; min-height: 64px; line-height: 1.6; }
+    .reflect-inset-input::placeholder { color: var(--text-sub); opacity: 0.75; }
 
     /* ── FREELANCE TASKS ── */
-    .freelance-tasks { margin-top: 12px; }
+    .freelance-tasks { margin-top: 4px; }
     .task-input-row { display: flex; gap: 8px; margin-bottom: 10px; }
     .task-input { flex: 1; padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; font-family: inherit; background: var(--surface-2); color: var(--text); }
     .task-input:focus { outline: none; border-color: var(--accent); }
@@ -155,7 +162,7 @@
     .task-row { display: flex; align-items: center; gap: 10px; padding: 9px 12px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); }
     .task-cb { width: 17px; height: 17px; border: 2px solid var(--border); border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s; }
     .task-cb.done { background: var(--green-ok); border-color: var(--green-ok); color: #fff; font-size: 10px; font-weight: 700; }
-    .task-text { flex: 1; font-size: 13px; color: var(--text); transition: color 0.15s; }
+    .task-text { flex: 1; font-size: 13px; color: var(--text); transition: color 0.15s; cursor: pointer; }
     .task-text.done { color: var(--text-sub); text-decoration: line-through; }
     .task-del { background: none; border: none; color: var(--text-sub); cursor: pointer; font-size: 16px; padding: 0 2px; transition: color 0.15s; line-height: 1; }
     .task-del:hover { color: var(--red); }
@@ -170,16 +177,16 @@
     /* ── THESIS MILESTONES ── */
     .thesis-steps { display: flex; flex-direction: column; gap: 8px; }
     .thesis-step { display: flex; align-items: center; gap: 12px; padding: 13px 15px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-md); cursor: pointer; transition: all 0.18s; user-select: none; }
-    .thesis-step:hover { border-color: var(--cat-thesis); background: #EFF4F8; }
+    .thesis-step:hover { border-color: var(--cat-work); background: #EFF4F8; }
     .thesis-step.done { background: #EFF4F8; border-color: #A8C0D4; }
     .step-num { width: 26px; height: 26px; border-radius: 50%; background: var(--border); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--text-sub); flex-shrink: 0; transition: all 0.18s; }
-    .thesis-step.done .step-num { background: var(--cat-thesis); color: #fff; }
+    .thesis-step.done .step-num { background: var(--cat-work); color: #fff; }
     .step-text { flex: 1; font-size: 14px; font-weight: 500; color: var(--text); }
-    .thesis-step.done .step-text { color: var(--cat-thesis); font-weight: 600; }
-    .step-check { font-size: 14px; color: var(--cat-thesis); opacity: 0; transition: opacity 0.18s; }
+    .thesis-step.done .step-text { color: var(--cat-work); font-weight: 600; }
+    .step-check { font-size: 14px; color: var(--cat-work); opacity: 0; transition: opacity 0.18s; }
     .thesis-step.done .step-check { opacity: 1; }
     .thesis-progress-bar { height: 5px; background: var(--border); border-radius: 999px; overflow: hidden; margin-top: 14px; }
-    .thesis-progress-fill { height: 100%; background: var(--cat-thesis); border-radius: 999px; transition: width 0.5s ease; }
+    .thesis-progress-fill { height: 100%; background: var(--cat-work); border-radius: 999px; transition: width 0.5s ease; }
 
     /* ── FEELINGS ── */
     .feelings-row { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
@@ -268,24 +275,6 @@
     .btn-confirm-ok { background: var(--red); border: none; color: #fff; }
     .btn-confirm-ok:hover { background: #a93226; }
 
-    /* ── REVIEW MODAL ── */
-    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(3px); z-index: 500; align-items: flex-start; justify-content: center; padding: 24px 16px; overflow-y: auto; }
-    .modal-overlay.open { display: flex; }
-    .modal-box { background: var(--surface); border-radius: var(--radius-lg); padding: 32px; width: 100%; max-width: 600px; box-shadow: var(--shadow-md); animation: modalIn 0.22s ease; margin: auto; }
-    @keyframes modalIn { from { opacity:0; transform: translateY(-12px); } to { opacity:1; transform: translateY(0); } }
-    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
-    .modal-title { font-size: 18px; font-weight: 700; color: var(--text); }
-    .modal-close { background: none; border: none; font-size: 22px; color: var(--text-sub); cursor: pointer; padding: 0 4px; line-height: 1; transition: color 0.15s; }
-    .modal-close:hover { color: var(--text); }
-    .modal-section { margin-bottom: 18px; }
-    .modal-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-sub); margin-bottom: 6px; display: block; }
-    .modal-textarea { width: 100%; padding: 12px 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 14px; font-family: inherit; color: var(--text); resize: vertical; min-height: 80px; outline: none; transition: border-color 0.2s; line-height: 1.7; }
-    .modal-textarea:focus { border-color: var(--primary); }
-    .modal-meta { font-size: 12px; color: var(--text-sub); margin-bottom: 20px; }
-    .btn-modal-save { width: 100%; padding: 13px; background: var(--primary); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background 0.2s; margin-top: 8px; }
-    .btn-modal-save:hover { background: var(--primary-dk); }
-    .btn-modal-save:disabled { opacity: 0.6; cursor: not-allowed; }
-
     /* ── MOBILE BOTTOM NAV ── */
     .mobile-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); padding-bottom: env(safe-area-inset-bottom, 0px); z-index: 300; box-shadow: 0 -2px 10px rgba(60,80,70,0.07); }
     .mobile-nav-inner { display: flex; }
@@ -316,7 +305,7 @@
       .cal-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) !important; width: calc(100vw - 48px); max-width: 300px; z-index: 500; }
       .login-card { padding: 36px 24px; margin: 20px; max-width: none; }
       .greeting h2 { font-size: 1.6rem; }
-      .modal-box { padding: 24px; }
+      .zone-panel { padding: 14px 12px 4px; border-radius: 20px; }
     }
     @media (max-width: 390px) {
       .card { padding: 18px 16px; }
@@ -344,7 +333,7 @@
 <div id="app">
   <div class="container">
 
-    <!-- Header -->
+    <!-- Header & Date Picker -->
     <header>
       <div class="logo">DEV<span>OS</span></div>
       <div class="date-nav">
@@ -372,9 +361,7 @@
       <div class="header-actions">
         <span class="save-indicator" id="save-indicator"></span>
         <a href="journal.html" class="nav-link">Moments</a>
-        <a href="stats.html" class="nav-link">Statistics</a>
-        <button class="btn-review" id="btn-weekly-review">Weekly Review</button>
-        <button class="btn-review" id="btn-monthly-review">Monthly Review</button>
+        <a href="stats.html" class="nav-link">Statistics &amp; Reviews</a>
         <button id="btn-logout">Sign out</button>
       </div>
     </header>
@@ -386,77 +373,87 @@
         <h2 id="greeting-text">Good morning</h2>
       </section>
 
-      <!-- ── FOUNDATION ── -->
-      <section class="card" id="card-foundation">
-        <div class="cat-header">
-          <div class="cat-dot" style="background:var(--cat-foundation)"></div>
-          <div class="cat-title">Foundation — Health &amp; Routines</div>
-        </div>
-        <div id="skeleton-foundation"><div class="skeleton"></div><div class="skeleton"></div></div>
-        <div id="habits-foundation" style="display:none">
-          <!-- Wake up habit rendered here -->
-          <!-- Workout section -->
-          <div class="workout-wrap" id="workout-wrap">
-            <div class="workout-label">
-              <span>🏋️ Workout — Goal: 2–3 times / week</span>
-              <span id="workout-count-label">0 / 3</span>
-            </div>
-            <div class="workout-days" id="workout-days">
-              <div class="workout-day" data-day="0">Mon</div>
-              <div class="workout-day" data-day="1">Tue</div>
-              <div class="workout-day" data-day="2">Wed</div>
-              <div class="workout-day" data-day="3">Thu</div>
-              <div class="workout-day" data-day="4">Fri</div>
-              <div class="workout-day" data-day="5">Sat</div>
-              <div class="workout-day" data-day="6">Sun</div>
-            </div>
-            <div class="workout-progress-bar">
-              <div class="workout-progress-fill" id="workout-bar" style="width:0%"></div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <!-- ══ 1. DAILY HABITS CHECKLIST ══ -->
+      <div class="zone">
+        <div class="zone-header">☀️ Daily Habits Checklist</div>
+        <div class="zone-panel zone-do">
 
-      <!-- ── GROWTH ── -->
-      <section class="card" id="card-growth">
-        <div class="cat-header">
-          <div class="cat-dot" style="background:var(--cat-growth)"></div>
-          <div class="cat-title">Growth — Self-Improvement</div>
-        </div>
-        <div id="skeleton-growth"><div class="skeleton"></div></div>
-        <div id="habits-growth" style="display:none">
-          <!-- English habit rendered here -->
-          <div class="english-extra" id="english-extra">
-            <select class="english-type-select" id="english-type-select">
-              <option value="">— Select practice type —</option>
-              <option value="Listening">Listening</option>
-              <option value="Grammar">Grammar</option>
-              <option value="Vocabulary">Vocabulary</option>
-              <option value="Reading">Reading</option>
-            </select>
-          </div>
-        </div>
-      </section>
-
-      <!-- ── WEALTH ── -->
-      <section class="card" id="card-wealth">
-        <div class="cat-header">
-          <div class="cat-dot" style="background:var(--cat-wealth)"></div>
-          <div class="cat-title">Wealth — Finance &amp; Career</div>
-        </div>
-        <div id="skeleton-wealth"><div class="skeleton"></div><div class="skeleton"></div></div>
-        <div id="habits-wealth" style="display:none">
-          <!-- Trading habit rendered here -->
-          <div class="special-log-wrap">
-            <div class="special-log-label">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              1:10 RRR Setup Log
+          <!-- Foundation -->
+          <section class="card" id="card-foundation">
+            <div class="cat-header">
+              <div class="cat-dot" style="background:var(--cat-foundation)"></div>
+              <div class="cat-title">Foundation — Health &amp; Routines</div>
             </div>
-            <textarea class="special-log-input" id="trading-special-log" placeholder="Log any high-RRR setup observed today (does not affect win-rate stats)…"></textarea>
-          </div>
+            <div id="skeleton-foundation"><div class="skeleton"></div><div class="skeleton"></div></div>
+            <div id="habits-foundation" style="display:none">
+              <!-- Workout habit rendered here -->
+              <div class="progressive-extra" id="workout-extra">
+                <select class="english-type-select" id="workout-type-select">
+                  <option value="">— Select workout type —</option>
+                  <option value="Weight Training">🏋️ Weight Training</option>
+                  <option value="Cardio">🏃 Cardio</option>
+                  <option value="Other">✨ Other</option>
+                </select>
+              </div>
+              <div class="workout-progress-wrap" id="workout-progress-wrap">
+                <div class="workout-label">
+                  <span>🏋️ Weekly Goal — 2–3 times / week</span>
+                  <span id="workout-count-label">0 / 3</span>
+                </div>
+                <div class="workout-progress-bar">
+                  <div class="workout-progress-fill" id="workout-bar" style="width:0%"></div>
+                </div>
+              </div>
+              <!-- Wake up habit rendered here -->
+            </div>
+          </section>
+
+          <!-- Growth -->
+          <section class="card" id="card-growth">
+            <div class="cat-header">
+              <div class="cat-dot" style="background:var(--cat-growth)"></div>
+              <div class="cat-title">Growth — Self-Improvement</div>
+            </div>
+            <div id="skeleton-growth"><div class="skeleton"></div></div>
+            <div id="habits-growth" style="display:none">
+              <!-- English habit rendered here -->
+              <div class="progressive-extra" id="english-extra">
+                <select class="english-type-select" id="english-type-select">
+                  <option value="">— Select practice type —</option>
+                  <option value="Listening">Listening</option>
+                  <option value="Grammar">Grammar</option>
+                  <option value="Vocabulary">Vocabulary</option>
+                  <option value="Reading">Reading</option>
+                </select>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+
+      <!-- ══ 2. WORK & EDUCATION WORKSPACE ══ -->
+      <div class="zone">
+        <div class="zone-header">🎯 Work &amp; Education Workspace</div>
+        <div class="zone-panel zone-do">
+
+          <!-- Thesis -->
+          <section class="card" id="card-thesis">
+            <div class="cat-header">
+              <div class="cat-dot" style="background:var(--cat-work)"></div>
+              <div class="cat-title">Thesis — Master's Milestones</div>
+              <span class="cat-badge" id="thesis-badge" style="background:var(--primary-lt);color:var(--cat-work)">0 / 6</span>
+            </div>
+            <div id="skeleton-thesis"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>
+            <div id="thesis-steps-wrap" style="display:none">
+              <div class="thesis-steps" id="thesis-steps"></div>
+              <div class="thesis-progress-bar"><div class="thesis-progress-fill" id="thesis-bar" style="width:0%"></div></div>
+            </div>
+          </section>
+
           <!-- Freelance -->
-          <div style="margin-top:16px;">
-            <div class="cat-header" style="margin-bottom:10px;">
+          <section class="card" id="card-freelance">
+            <div class="cat-header">
               <div class="cat-dot" style="background:var(--accent)"></div>
               <div class="cat-title">Freelance — Mock-up Project</div>
             </div>
@@ -471,130 +468,93 @@
                 <div class="toggle-pill" id="ai-toggle-pill"></div>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
+          </section>
 
-      <!-- ── THESIS ── -->
-      <section class="card" id="card-thesis">
-        <div class="cat-header">
-          <div class="cat-dot" style="background:var(--cat-thesis)"></div>
-          <div class="cat-title">Thesis — Master's Milestones</div>
-          <span class="cat-badge" id="thesis-badge" style="background:var(--primary-lt);color:var(--cat-thesis)">0 / 6</span>
         </div>
-        <div id="skeleton-thesis"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>
-        <div id="thesis-steps-wrap" style="display:none">
-          <div class="thesis-steps" id="thesis-steps"></div>
-          <div class="thesis-progress-bar"><div class="thesis-progress-fill" id="thesis-bar" style="width:0%"></div></div>
-        </div>
-      </section>
+      </div>
 
-      <!-- Core Metrics -->
-      <section class="card">
-        <div class="section-label" style="margin-bottom:18px;">Core Metrics</div>
-        <div class="feelings-row">
-          <span class="feelings-label">Mood</span>
-          <button class="star-btn" data-val="1">★</button>
-          <button class="star-btn" data-val="2">★</button>
-          <button class="star-btn" data-val="3">★</button>
-          <button class="star-btn" data-val="4">★</button>
-          <button class="star-btn" data-val="5">★</button>
-          <span class="feelings-desc" id="feelings-desc">—</span>
+      <!-- ══ 3. TRADING DISCIPLINE (SIMPLIFIED) ══ -->
+      <div class="zone">
+        <div class="zone-header">📈 Trading Discipline</div>
+        <div class="zone-panel zone-do">
+          <section class="card" id="card-trading">
+            <div class="cat-header">
+              <div class="cat-dot" style="background:var(--cat-trading)"></div>
+              <div class="cat-title">Trading — Discipline Check</div>
+            </div>
+            <div id="skeleton-trading"><div class="skeleton"></div><div class="skeleton"></div></div>
+            <div id="habits-trading" style="display:none">
+              <!-- Trading + Journal-verification habit items rendered here -->
+              <div class="reflect-inset" id="trading-notes-wrap">
+                <div class="reflect-inset-label">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                  Trading Mental Notes
+                </div>
+                <textarea class="reflect-inset-input" id="trading-notes" placeholder="Record your wins, mistakes, or psychological/emotional state during trading today…"></textarea>
+              </div>
+            </div>
+          </section>
         </div>
-        <div class="metrics-grid">
-          <div class="metric-group">
-            <label class="metric-label"><svg class="icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>Sleep</label>
-            <div class="input-wrapper"><input class="metric-input" type="number" inputmode="decimal" id="m-sleep" placeholder="0" min="0" max="24" step="0.5" /><span class="metric-unit">hrs</span></div>
-          </div>
-          <div class="metric-group">
-            <label class="metric-label"><svg class="icon" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Read</label>
-            <div class="input-wrapper"><input class="metric-input" type="number" inputmode="numeric" id="m-read" placeholder="0" min="0" /><span class="metric-unit">pgs</span></div>
-          </div>
-          <div class="metric-group">
-            <label class="metric-label"><svg class="icon" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Weight</label>
-            <div class="input-wrapper"><input class="metric-input" type="number" inputmode="decimal" id="m-weight" placeholder="0" min="0" step="0.1" /><span class="metric-unit">kg</span></div>
-          </div>
-          <div class="metric-group">
-            <label class="metric-label"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>Meditate</label>
-            <div class="input-wrapper"><input class="metric-input" type="number" inputmode="numeric" id="m-meditate" placeholder="0" min="0" /><span class="metric-unit">min</span></div>
-          </div>
-        </div>
-      </section>
+      </div>
 
-      <!-- Deep Journal -->
-      <section class="card">
-        <div class="section-label" style="margin-bottom:18px;">Deep Journal</div>
-        <div class="journal-group">
-          <label class="journal-label">Memorable Moments</label>
-          <span class="journal-desc">Small wins, gratitude, anything worth remembering today</span>
-          <textarea class="journal-textarea" id="j-moments" rows="3" placeholder="Great coffee, good trade, finished a chapter…"></textarea>
-          <div class="char-hint" id="moments-hint">0 / 3 lines</div>
+      <!-- ══ 4. EVENING REFLECTION ══ -->
+      <div class="zone">
+        <div class="zone-header">🌙 Evening Reflection</div>
+        <div class="zone-panel zone-note">
+
+          <!-- Core Metrics -->
+          <section class="card">
+            <div class="section-label" style="margin-bottom:18px;">Core Metrics</div>
+            <div class="feelings-row">
+              <span class="feelings-label">Mood</span>
+              <button class="star-btn" data-val="1">★</button>
+              <button class="star-btn" data-val="2">★</button>
+              <button class="star-btn" data-val="3">★</button>
+              <button class="star-btn" data-val="4">★</button>
+              <button class="star-btn" data-val="5">★</button>
+              <span class="feelings-desc" id="feelings-desc">—</span>
+            </div>
+            <div class="metrics-grid">
+              <div class="metric-group">
+                <label class="metric-label"><svg class="icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>Sleep</label>
+                <div class="input-wrapper"><input class="metric-input" type="number" inputmode="decimal" id="m-sleep" placeholder="0" min="0" max="24" step="0.5" /><span class="metric-unit">hrs</span></div>
+              </div>
+              <div class="metric-group">
+                <label class="metric-label"><svg class="icon" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Pages Read</label>
+                <div class="input-wrapper"><input class="metric-input" type="number" inputmode="numeric" id="m-read" placeholder="0" min="0" /><span class="metric-unit">pgs</span></div>
+              </div>
+              <div class="metric-group">
+                <label class="metric-label"><svg class="icon" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Weight</label>
+                <div class="input-wrapper"><input class="metric-input" type="number" inputmode="decimal" id="m-weight" placeholder="0" min="0" step="0.1" /><span class="metric-unit">kg</span></div>
+              </div>
+              <div class="metric-group">
+                <label class="metric-label"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>Focus</label>
+                <div class="input-wrapper"><input class="metric-input" type="number" inputmode="numeric" id="m-focus" placeholder="0" min="0" /><span class="metric-unit">min</span></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Deep Journal -->
+          <section class="card">
+            <div class="section-label" style="margin-bottom:18px;">Deep Journal</div>
+            <div class="journal-group">
+              <label class="journal-label">Gratitude &amp; Small Wins</label>
+              <span class="journal-desc">3 lines — anything you're grateful for, or a small win from today</span>
+              <textarea class="journal-textarea" id="j-moments" rows="3" placeholder="Great coffee, good trade, finished a chapter…"></textarea>
+              <div class="char-hint" id="moments-hint">0 / 3 lines</div>
+            </div>
+            <button class="btn-save" id="btn-save">Save Today</button>
+            <button class="btn-clear" id="btn-clear">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              Clear today's data
+            </button>
+          </section>
+
         </div>
-        <button class="btn-save" id="btn-save">Save Today</button>
-        <button class="btn-clear" id="btn-clear">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-          Clear today's data
-        </button>
-      </section>
+      </div>
     </main>
   </div><!-- /.container -->
 </div><!-- /#app -->
-
-<!-- ══ WEEKLY REVIEW MODAL ══ -->
-<div class="modal-overlay" id="modal-weekly">
-  <div class="modal-box">
-    <div class="modal-header">
-      <div class="modal-title">📅 Weekly Review</div>
-      <button class="modal-close" id="modal-weekly-close">×</button>
-    </div>
-    <div class="modal-meta" id="weekly-meta">Week of —</div>
-    <div class="modal-section">
-      <label class="modal-label">Habit Score — Foundation &amp; Growth</label>
-      <div id="weekly-habit-score" style="font-size:13px;color:var(--text-sub);margin-bottom:12px;">Loading…</div>
-    </div>
-    <div class="modal-section">
-      <label class="modal-label">Trading Reflection</label>
-      <textarea class="modal-textarea" id="wr-trading" placeholder="How was your discipline this week? Patterns noticed?"></textarea>
-    </div>
-    <div class="modal-section">
-      <label class="modal-label">Freelance Check-in</label>
-      <textarea class="modal-textarea" id="wr-freelance" placeholder="Progress on mock-up project? Delivered? Blocked?"></textarea>
-    </div>
-    <div class="modal-section">
-      <label class="modal-label">Thesis Progress</label>
-      <textarea class="modal-textarea" id="wr-thesis" placeholder="Which milestone advanced? What's next?"></textarea>
-    </div>
-    <div class="modal-section">
-      <label class="modal-label">Blockers &amp; Solutions</label>
-      <textarea class="modal-textarea" id="wr-blockers" placeholder="What held you back? How will you fix it?"></textarea>
-    </div>
-    <button class="btn-modal-save" id="btn-save-weekly">Save Weekly Review</button>
-  </div>
-</div>
-
-<!-- ══ MONTHLY REVIEW MODAL ══ -->
-<div class="modal-overlay" id="modal-monthly">
-  <div class="modal-box">
-    <div class="modal-header">
-      <div class="modal-title">🗓 Monthly Review</div>
-      <button class="modal-close" id="modal-monthly-close">×</button>
-    </div>
-    <div class="modal-meta" id="monthly-meta">Month of —</div>
-    <div class="modal-section">
-      <label class="modal-label">Monthly Highlights</label>
-      <textarea class="modal-textarea" id="mr-highlights" placeholder="Top 3–5 wins this month…"></textarea>
-    </div>
-    <div class="modal-section">
-      <label class="modal-label">Goal Adjustments</label>
-      <textarea class="modal-textarea" id="mr-goals" placeholder="What needs to change? What's working?"></textarea>
-    </div>
-    <div class="modal-section">
-      <label class="modal-label">Next Month Focus</label>
-      <textarea class="modal-textarea" id="mr-focus" placeholder="Top 3 priorities for next month…"></textarea>
-    </div>
-    <button class="btn-modal-save" id="btn-save-monthly">Save Monthly Review</button>
-  </div>
-</div>
 
 <!-- Confirm Dialog -->
 <div class="confirm-overlay" id="confirm-overlay">
@@ -639,10 +599,6 @@
       <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
       Stats
     </a>
-    <button class="mobile-nav-item" id="mobile-weekly-btn">
-      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><polyline points="9 11 12 14 22 4"/></svg>
-      Review
-    </button>
     <button class="mobile-nav-item" onclick="document.getElementById('btn-logout').click()">
       <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       Sign out
@@ -655,15 +611,15 @@
   const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5bmNzem1wd29qb3BidmttcW1jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyMTgwODIsImV4cCI6MjA5Nzc5NDA4Mn0.fzOPawbNz3kQTK5L4uVlDnWUxwgZ-V4suBFYD-tpcP4';
   const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-  // ── FIXED HABITS ──
-  // Foundation habits stored as DB habits with these canonical names
-  const FOUNDATION_HABITS = [
-    { key: 'wake_up',  name: 'Wake up at 05:00 AM', icon: '🌅' },
+  // ── FIXED HABITS (5 total) ──
+  const HABIT_DEFS = [
+    { key: 'workout',        name: 'Workout',                 sort_order: 1 },
+    { key: 'wake_up',        name: 'Wake up at 05:00 AM',    sort_order: 2 },
+    { key: 'english',        name: 'Daily English',          sort_order: 3 },
+    { key: 'trading',        name: 'Trading Discipline',     sort_order: 4 },
+    { key: 'journal_verify', name: 'Trading Journal Logged', sort_order: 5 },
   ];
-  const GROWTH_HABITS = [
-    { key: 'english',  name: 'Daily English',        icon: '📖' },
-  ];
-  const TRADING_HABIT = { key: 'trading', name: 'Trading Discipline', icon: '📈' };
+  const WORKOUT_TYPES = ['Weight Training', 'Cardio', 'Other'];
 
   // Thesis milestone labels
   const THESIS_STEPS = [
@@ -679,20 +635,18 @@
   const EN_MONTHS   = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
   // ── STATE ──
-  let currentDate    = todayStr();
-  let currentUser    = null;
-  let userHabits     = [];       // from DB
-  let completions    = {};       // habit_id -> bool
-  let feelings       = 0;
-  let freelanceUsedAI= false;
-  let freelanceTasks = [];       // [{id, task_text, completed, sort_order}]
-  let thesisMilestones = [];     // [{step_number, completed, id}]
-  let workoutDays    = {};       // {weekStart: {0:bool,…6:bool}}
-  let appInitialized = false;
-  let isRegister     = false;
-
-  // habit ids mapped by key (populated after DB load)
-  let habitIdMap = {}; // e.g. { wake_up: 'uuid', english: 'uuid', trading: 'uuid' }
+  let currentDate     = todayStr();
+  let currentUser     = null;
+  let userHabits      = [];       // from DB
+  let completions     = {};       // habit_id -> bool
+  let feelings         = 0;
+  let freelanceUsedAI = false;
+  let freelanceTasks  = [];       // [{id, task_text, completed, sort_order}]
+  let thesisMilestones = [];      // [{step_number, completed, id}]
+  let workoutWeekSet  = new Set(); // log_date strings within the current week where workout was completed
+  let appInitialized  = false;
+  let isRegister      = false;
+  let habitIdMap      = {};       // e.g. { wake_up: 'uuid', english: 'uuid', trading: 'uuid', journal_verify: 'uuid' }
 
   // ── DEBUG ──
   function dbg(msg) {
@@ -705,7 +659,7 @@
     p.style.display = p.style.display === 'block' ? 'none' : 'block';
   });
 
-  // ── TOAST ──
+  // ── TOAST + SAVE INDICATOR (single canonical implementation) ──
   const _toast = document.getElementById('toast');
   let _toastTimer = null;
   function showToast(msg, type = 'info') {
@@ -714,8 +668,13 @@
     _toast.className = `toast show ${type}`;
     if (type !== 'saving') _toastTimer = setTimeout(() => { _toast.className = 'toast'; }, type === 'error' ? 4000 : 2500);
   }
-  function showSaving() { showToast('Saving…', 'saving'); }
-  function showSaved()  { showToast('Saved ✓', 'saved'); }
+  function setSaveIndicator(text, ok = false) {
+    const el = document.getElementById('save-indicator');
+    el.textContent = text;
+    el.className = 'save-indicator' + (ok ? ' saved' : '');
+  }
+  function showSaving() { setSaveIndicator('Saving…', false); }
+  function showSaved()  { setSaveIndicator('Saved ✓', true); setTimeout(() => setSaveIndicator('', true), 2000); }
 
   // ── SUPABASE QUERY WRAPPER ──
   function sbQ(promise, label, ms = 20000) {
@@ -734,7 +693,6 @@
   function dateToStr(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
   function strToDate(s) { return new Date(s + 'T00:00:00'); }
   function isToday(s) { return s === todayStr(); }
-
   function formatDateEN(s) {
     return new Date(s + 'T00:00:00').toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
   }
@@ -746,7 +704,6 @@
     return dateToStr(d);
   }
   function getMonthYear(s) { return s.slice(0, 7); } // 'YYYY-MM'
-
   function greet() {
     const h = new Date().getHours();
     if (h < 12) return 'Good morning ☀️';
@@ -756,11 +713,6 @@
   function setLoading(on, title = 'Loading…', sub = '') {
     document.getElementById('loading').classList.toggle('active', on);
     if (on) { document.getElementById('loading-title').textContent = title; document.getElementById('loading-sub').textContent = sub; }
-  }
-  function setSaveIndicator(text, ok = false) {
-    const el = document.getElementById('save-indicator');
-    el.textContent = text;
-    el.className = 'save-indicator' + (ok ? ' saved' : '');
   }
 
   // ── AUTH ──
@@ -836,37 +788,64 @@
     } finally { clearTimeout(safety); setLoading(false); }
   }
 
-  // ── ENSURE HABITS (3 fixed habits) ──
+  // ── ENSURE HABITS (4 fixed habits) ──
   async function ensureHabits(userId) {
     const { data, error } = await sbQ(sb.from('habits').select('*').eq('user_id', userId).order('sort_order'), 'habits SELECT');
     if (error) { showToast('Could not load habits', 'error'); return; }
 
-    const allNeeded = [
-      { key: 'wake_up', name: 'Wake up at 05:00 AM', sort_order: 1 },
-      { key: 'english', name: 'Daily English',        sort_order: 2 },
-      { key: 'trading', name: 'Trading Discipline',   sort_order: 3 },
-    ];
-
     if (data && data.length > 0) {
       userHabits = data;
+      // Backfill any newly-added fixed habit that doesn't exist yet for this user (e.g. journal_verify)
+      const missing = HABIT_DEFS.filter(def => !data.some(h => h.name === def.name));
+      if (missing.length) {
+        const toInsert = missing.map(h => ({ user_id: userId, name: h.name, icon: '', sort_order: h.sort_order, is_active: true }));
+        const { data: added } = await sbQ(sb.from('habits').insert(toInsert).select(), 'habits backfill INSERT');
+        if (added) userHabits = userHabits.concat(added);
+      }
     } else {
-      const toInsert = allNeeded.map(h => ({ user_id: userId, name: h.name, icon: '', sort_order: h.sort_order, is_active: true }));
+      const toInsert = HABIT_DEFS.map(h => ({ user_id: userId, name: h.name, icon: '', sort_order: h.sort_order, is_active: true }));
       const { data: inserted, error: insErr } = await sbQ(sb.from('habits').insert(toInsert).select(), 'habits INSERT');
       if (insErr) { showToast('Could not create habits', 'error'); return; }
       userHabits = inserted || [];
     }
 
-    // Map habit IDs
+    // Map habit IDs (exact match first to avoid 'Trading Discipline' vs 'Trading Journal Logged' collisions)
     habitIdMap = {};
     for (const h of userHabits) {
-      if (h.name.includes('Wake up') || h.name.includes('wake'))  habitIdMap.wake_up = h.id;
-      if (h.name.includes('English') || h.name.includes('english')) habitIdMap.english = h.id;
-      if (h.name.includes('Trading') || h.name.includes('trading')) habitIdMap.trading = h.id;
+      if (h.name === 'Trading Discipline')        { habitIdMap.trading = h.id; continue; }
+      if (h.name === 'Trading Journal Logged')    { habitIdMap.journal_verify = h.id; continue; }
+      if (h.name === 'Workout')                   { habitIdMap.workout = h.id; continue; }
+      if (h.name.includes('Wake'))                { habitIdMap.wake_up = h.id; continue; }
+      if (h.name.includes('English'))             { habitIdMap.english = h.id; continue; }
     }
 
     renderFoundationHabits();
     renderGrowthHabits();
-    renderWealthHabits();
+    renderTradingHabits();
+  }
+
+  // ── GENERIC HABIT ITEM BUILDER ──
+  function createHabitItem(elId, habitKey, iconLabel, subText, onToggle) {
+    const habitId = habitIdMap[habitKey];
+    const checked = habitId ? !!completions[habitId] : false;
+    const el = document.createElement('div');
+    el.className = 'habit-item' + (checked ? ' checked' : '');
+    el.id = elId;
+    el.innerHTML = `
+      <div class="habit-check">${checked ? '✓' : ''}</div>
+      <div class="habit-body">
+        <div class="habit-label">${iconLabel}</div>
+        <div class="habit-sub">${subText}</div>
+      </div>`;
+    el.addEventListener('click', () => {
+      if (!habitId) return;
+      completions[habitId] = !completions[habitId];
+      el.classList.toggle('checked', !!completions[habitId]);
+      el.querySelector('.habit-check').textContent = completions[habitId] ? '✓' : '';
+      if (onToggle) onToggle(!!completions[habitId]);
+      saveHabitCompletion(habitId);
+    });
+    return el;
   }
 
   // ── RENDER FOUNDATION ──
@@ -874,151 +853,85 @@
     const wrap = document.getElementById('habits-foundation');
     document.getElementById('skeleton-foundation').style.display = 'none';
     wrap.style.display = 'block';
-    // Wake up item
-    const wakeId = habitIdMap.wake_up;
-    const checked = wakeId ? !!completions[wakeId] : false;
-    const wakeEl = document.createElement('div');
-    wakeEl.className = 'habit-item' + (checked ? ' checked' : '');
-    wakeEl.id = 'habit-wake';
-    wakeEl.innerHTML = `
-      <div class="habit-check">${checked ? '✓' : ''}</div>
-      <div class="habit-body">
-        <div class="habit-label">🌅 Wake up at 05:00 AM</div>
-        <div class="habit-sub">Early rise — Foundation habit</div>
-      </div>`;
-    wakeEl.addEventListener('click', () => {
-      if (!wakeId) return;
-      completions[wakeId] = !completions[wakeId];
-      wakeEl.classList.toggle('checked', !!completions[wakeId]);
-      wakeEl.querySelector('.habit-check').textContent = completions[wakeId] ? '✓' : '';
-      saveHabitCompletion(wakeId);
+
+    // Workout: simple checkbox + progressive-disclosure type dropdown
+    const workoutEl = createHabitItem('habit-workout', 'workout', '🏋️ Workout today', 'Tick when done — pick a type below', (checked) => {
+      document.getElementById('workout-extra').classList.toggle('visible', checked);
+      if (checked) workoutWeekSet.add(currentDate); else workoutWeekSet.delete(currentDate);
+      renderWorkoutProgress();
     });
-    // Insert before workout-wrap
-    wrap.insertBefore(wakeEl, document.getElementById('workout-wrap'));
-    renderWorkout();
+    wrap.insertBefore(workoutEl, document.getElementById('workout-extra'));
+    if (workoutEl.classList.contains('checked')) document.getElementById('workout-extra').classList.add('visible');
+
+    // Wake up — appended after the workout block
+    const wakeEl = createHabitItem('habit-wake', 'wake_up', '🌅 Wake up at 05:00 AM', 'Early rise — Foundation habit');
+    wrap.appendChild(wakeEl);
+
+    renderWorkoutProgress();
   }
 
-  // ── WORKOUT ──
-  function renderWorkout() {
-    const ws = getWeekStart(currentDate);
-    const days = workoutDays[ws] || {};
-    let count = Object.values(days).filter(Boolean).length;
+  // ── WORKOUT WEEKLY PROGRESS (read-only, computed from habit_completions) ──
+  function renderWorkoutProgress() {
+    const count = workoutWeekSet.size;
     const goal = 3;
     document.getElementById('workout-count-label').textContent = `${count} / ${goal}`;
-    document.getElementById('workout-bar').style.width = `${Math.min(100, (count/goal)*100)}%`;
-    document.querySelectorAll('.workout-day').forEach(btn => {
-      const d = parseInt(btn.dataset.day);
-      btn.classList.toggle('done', !!days[d]);
-      btn.onclick = () => toggleWorkoutDay(ws, d, btn);
-    });
+    document.getElementById('workout-bar').style.width = `${Math.min(100, (count / goal) * 100)}%`;
+  }
+  async function loadWorkoutWeekProgress(userId) {
+    workoutWeekSet = new Set();
+    const habitId = habitIdMap.workout;
+    if (habitId) {
+      const ws = getWeekStart(currentDate);
+      const weD = strToDate(ws); weD.setDate(weD.getDate() + 6);
+      const weStr = dateToStr(weD);
+      const { data } = await sbQ(
+        sb.from('habit_completions').select('log_date,completed')
+          .eq('user_id', userId).eq('habit_id', habitId).eq('completed', true)
+          .gte('log_date', ws).lte('log_date', weStr), 'workout week load');
+      (data || []).forEach(r => workoutWeekSet.add(r.log_date));
+    }
+    renderWorkoutProgress();
   }
 
-  async function toggleWorkoutDay(weekStart, dayIdx, btn) {
-    if (!currentUser) return;
-    const ws = workoutDays[weekStart] || {};
-    ws[dayIdx] = !ws[dayIdx];
-    workoutDays[weekStart] = ws;
-    btn.classList.toggle('done', !!ws[dayIdx]);
-    let count = Object.values(ws).filter(Boolean).length;
-    document.getElementById('workout-count-label').textContent = `${count} / 3`;
-    document.getElementById('workout-bar').style.width = `${Math.min(100, (count/3)*100)}%`;
-    // Persist as JSON in daily_logs.thesis_notes field repurposed? No — store in a separate key in daily_logs via memorable_moments?
-    // We store workout week data as JSON in a special daily_log for the Monday of the week
-    await saveWorkoutWeek(weekStart, ws);
-  }
-
-  async function saveWorkoutWeek(weekStart, days) {
-    if (!currentUser) return;
-    showSaving();
-    const payload = JSON.stringify(days);
-    try {
-      const { error } = await sbQ(
-        sb.from('daily_logs').upsert({
-          user_id: currentUser.id,
-          log_date: weekStart,
-          thesis_notes: `__workout__${payload}`,
-        }, { onConflict: 'user_id,log_date' }), 'workout save');
-      if (error) throw error;
-      showSaved(); setSaveIndicator('Saved', true);
-    } catch(e) { showToast('Could not save workout data', 'error'); }
-  }
-
-  async function loadWorkoutWeek(userId) {
-    const ws = getWeekStart(currentDate);
-    const { data } = await sbQ(
-      sb.from('daily_logs').select('thesis_notes').eq('user_id', userId).eq('log_date', ws).maybeSingle(), 'workout load');
-    if (data?.thesis_notes?.startsWith('__workout__')) {
-      try { workoutDays[ws] = JSON.parse(data.thesis_notes.replace('__workout__', '')); } catch(e) { workoutDays[ws] = {}; }
-    } else { workoutDays[ws] = {}; }
-    renderWorkout();
-  }
-
-  // ── RENDER GROWTH ──
+  // ── RENDER GROWTH (progressive disclosure: dropdown only shows once checked) ──
   function renderGrowthHabits() {
     const wrap = document.getElementById('habits-growth');
     document.getElementById('skeleton-growth').style.display = 'none';
     wrap.style.display = 'block';
-    const engId = habitIdMap.english;
-    const checked = engId ? !!completions[engId] : false;
-    const engEl = document.createElement('div');
-    engEl.className = 'habit-item' + (checked ? ' checked' : '');
-    engEl.id = 'habit-english';
-    engEl.innerHTML = `
-      <div class="habit-check">${checked ? '✓' : ''}</div>
-      <div class="habit-body">
-        <div class="habit-label">📖 Daily English</div>
-        <div class="habit-sub">Select practice type below when checked</div>
-      </div>`;
-    engEl.addEventListener('click', () => {
-      if (!engId) return;
-      completions[engId] = !completions[engId];
-      engEl.classList.toggle('checked', !!completions[engId]);
-      engEl.querySelector('.habit-check').textContent = completions[engId] ? '✓' : '';
-      document.getElementById('english-extra').classList.toggle('visible', !!completions[engId]);
-      saveHabitCompletion(engId);
+    const engEl = createHabitItem('habit-english', 'english', '📖 Daily English', 'Tick to reveal practice type', (checked) => {
+      document.getElementById('english-extra').classList.toggle('visible', checked);
     });
     wrap.insertBefore(engEl, document.getElementById('english-extra'));
+    if (engEl.classList.contains('checked')) document.getElementById('english-extra').classList.add('visible');
   }
 
-  // ── RENDER WEALTH ──
-  function renderWealthHabits() {
-    const wrap = document.getElementById('habits-wealth');
-    document.getElementById('skeleton-wealth').style.display = 'none';
+  // ── RENDER TRADING (simplified: 2 checkboxes + notes) ──
+  function renderTradingHabits() {
+    const wrap = document.getElementById('habits-trading');
+    document.getElementById('skeleton-trading').style.display = 'none';
     wrap.style.display = 'block';
-    const trId = habitIdMap.trading;
-    const checked = trId ? !!completions[trId] : false;
-    const trEl = document.createElement('div');
-    trEl.className = 'habit-item' + (checked ? ' checked' : '');
-    trEl.id = 'habit-trading';
-    trEl.innerHTML = `
-      <div class="habit-check">${checked ? '✓' : ''}</div>
-      <div class="habit-body">
-        <div class="habit-label">📈 Trading Discipline</div>
-        <div class="habit-sub">No FOMO — wait for A+ setups</div>
-      </div>`;
-    trEl.addEventListener('click', () => {
-      if (!trId) return;
-      completions[trId] = !completions[trId];
-      trEl.classList.toggle('checked', !!completions[trId]);
-      trEl.querySelector('.habit-check').textContent = completions[trId] ? '✓' : '';
-      saveHabitCompletion(trId);
-    });
-    wrap.insertBefore(trEl, wrap.querySelector('.special-log-wrap'));
+    const notesWrap = document.getElementById('trading-notes-wrap');
+    const trEl   = createHabitItem('habit-trading', 'trading', '📈 Followed trading rules today', 'Trading Discipline — no FOMO, wait for A+ setups');
+    const jvEl   = createHabitItem('habit-journal-verify', 'journal_verify', '🗒️ Logged in main journal', 'Journal Verification — confirms today\'s trades are logged in your dedicated journal');
+    wrap.insertBefore(trEl, notesWrap);
+    wrap.insertBefore(jvEl, notesWrap);
   }
 
   // ── SAVE HABIT COMPLETION ──
   async function saveHabitCompletion(habitId) {
     if (!currentUser) return;
     showSaving();
-    const { error } = await sbQ(
-      sb.from('habit_completions').upsert({
-        user_id: currentUser.id,
-        habit_id: habitId,
-        log_date: currentDate,
-        completed: !!completions[habitId],
-      }, { onConflict: 'user_id,habit_id,log_date' }), 'saveHabit');
-    if (error) { showToast('Could not save habit', 'error'); return; }
-    showSaved();
+    try {
+      const { error } = await sbQ(
+        sb.from('habit_completions').upsert({
+          user_id: currentUser.id,
+          habit_id: habitId,
+          log_date: currentDate,
+          completed: !!completions[habitId],
+        }, { onConflict: 'user_id,habit_id,log_date' }), 'saveHabit');
+      if (error) throw error;
+      showSaved();
+    } catch(e) { showToast('Could not save habit', 'error'); setSaveIndicator(''); }
   }
 
   // ── FEELINGS ──
@@ -1027,7 +940,7 @@
     document.querySelectorAll('.star-btn').forEach(b => {
       b.classList.toggle('on', parseInt(b.dataset.val) <= n);
     });
-    document.getElementById('feelings-desc').textContent = MOOD_LABELS[n] || '—';
+    document.getElementById('feelings-desc').textContent = n ? `${n} — ${MOOD_LABELS[n]}` : '—';
   }
   document.querySelectorAll('.star-btn').forEach(b => {
     b.addEventListener('click', () => {
@@ -1037,64 +950,87 @@
     });
   });
 
-  // ── SHOW SAVING / SAVED ──
-  function showSaving() { setSaveIndicator('Saving…', false); }
-  function showSaved()  { setSaveIndicator('Saved ✓', true); setTimeout(() => setSaveIndicator('', true), 2000); }
-
-  // ── AI TOGGLE ──
-  document.getElementById('ai-toggle-pill').addEventListener('click', () => {
+  // ── AI TOGGLE (Freelance) ──
+  document.getElementById('ai-toggle-row').addEventListener('click', () => {
     freelanceUsedAI = !freelanceUsedAI;
     document.getElementById('ai-toggle-pill').classList.toggle('on', freelanceUsedAI);
     scheduleAutoSave();
   });
 
-  // ── MOMENTS HINT ──
-  document.getElementById('j-moments').addEventListener('input', () => {
-    const lines = document.getElementById('j-moments').value.split('\n').length;
-    document.getElementById('moments-hint').textContent = `${lines} / 3 lines`;
+  // ── DEEP JOURNAL LINE COUNTER ──
+  const momentsTA   = document.getElementById('j-moments');
+  const momentsHint = document.getElementById('moments-hint');
+  momentsTA.addEventListener('input', () => {
+    const n = momentsTA.value.split('\n').length;
+    momentsHint.textContent = `${n} / 3 lines`;
+    momentsHint.style.color = n > 3 ? 'var(--red)' : 'var(--text-sub)';
+    scheduleAutoSave();
   });
 
-  // ── AUTO-SAVE ──
+  // ── AUTO-SAVE (debounced) — covers all reflective / input fields in one upsert ──
   let _saveTimer = null;
   function scheduleAutoSave() {
+    showSaving();
     clearTimeout(_saveTimer);
-    _saveTimer = setTimeout(() => { if (currentUser) saveDay(); }, 1500);
+    _saveTimer = setTimeout(saveDailyLog, 1300);
   }
-  ['m-sleep','m-read','m-weight','m-meditate','j-moments','trading-special-log'].forEach(id => {
+  ['m-sleep','m-read','m-weight','m-focus','trading-notes'].forEach(id => {
     document.getElementById(id).addEventListener('input', scheduleAutoSave);
   });
   document.getElementById('english-type-select').addEventListener('change', scheduleAutoSave);
+  document.getElementById('workout-type-select').addEventListener('change', scheduleAutoSave);
 
-  // ── SAVE DAY ──
-  document.getElementById('btn-save').addEventListener('click', saveDay);
-  async function saveDay() {
-    if (!currentUser) return;
-    showSaving();
-    const payload = {
-      user_id:           currentUser.id,
-      log_date:          currentDate,
-      feelings,
-      sleep_hours:       parseFloat(document.getElementById('m-sleep').value)    || null,
-      read_pages:        parseInt(document.getElementById('m-read').value)        || null,
-      weight_kg:         parseFloat(document.getElementById('m-weight').value)    || null,
-      meditate_minutes:  parseInt(document.getElementById('m-meditate').value)    || null,
-      memorable_moments: document.getElementById('j-moments').value.trim()        || null,
-      trading_special_log: document.getElementById('trading-special-log').value.trim() || null,
-      english_type:      document.getElementById('english-type-select').value     || null,
-      freelance_used_ai: freelanceUsedAI,
+  function buildDailyLogPayload() {
+    return {
+      user_id:              currentUser.id,
+      log_date:             currentDate,
+      feelings:             feelings || null,
+      sleep_hours:          parseFloat(document.getElementById('m-sleep').value)  || null,
+      read_pages:           parseInt(document.getElementById('m-read').value)      || null,
+      weight_kg:            parseFloat(document.getElementById('m-weight').value) || null,
+      meditate_minutes:     parseInt(document.getElementById('m-focus').value)     || null,
+      memorable_moments:    document.getElementById('j-moments').value.trim()      || null,
+      trading_special_log:  document.getElementById('trading-notes').value.trim()  || null,
+      english_type:         document.getElementById('english-type-select').value   || null,
+      workout_type:         document.getElementById('workout-type-select').value   || null,
+      freelance_used_ai:    freelanceUsedAI,
     };
+  }
+
+  async function saveDailyLog() {
+    if (!currentUser) return;
     try {
-      const { error } = await sbQ(
-        sb.from('daily_logs').upsert(payload, { onConflict: 'user_id,log_date' }), 'saveDay');
+      const { error } = await sbQ(sb.from('daily_logs').upsert(buildDailyLogPayload(), { onConflict: 'user_id,log_date' }), 'saveDailyLog');
       if (error) throw error;
       showSaved();
-      showToast('Saved ✓', 'saved');
-    } catch(e) { showToast('Save failed: ' + e.message, 'error'); setSaveIndicator('Error', false); }
+    } catch(e) { showToast('Save failed: ' + e.message, 'error'); setSaveIndicator(''); }
   }
+
+  // ── SAVE TODAY (manual / immediate full save) ──
+  document.getElementById('btn-save').addEventListener('click', async () => {
+    if (!currentUser) return;
+    clearTimeout(_saveTimer);
+    const btn = document.getElementById('btn-save');
+    btn.disabled = true; btn.textContent = 'Saving…'; showSaving();
+    try {
+      const { error: logErr } = await sbQ(sb.from('daily_logs').upsert(buildDailyLogPayload(), { onConflict: 'user_id,log_date' }), 'full save daily_logs');
+      if (logErr) throw logErr;
+      const hcRows = Object.values(habitIdMap).filter(Boolean).map(id => ({
+        user_id: currentUser.id, habit_id: id, log_date: currentDate, completed: !!completions[id],
+      }));
+      if (hcRows.length) {
+        const { error: hcErr } = await sbQ(sb.from('habit_completions').upsert(hcRows, { onConflict: 'user_id,habit_id,log_date' }), 'full save habits');
+        if (hcErr) throw hcErr;
+      }
+      showSaved();
+      showToast('Saved ✓', 'saved');
+    } catch(e) { showToast('Save failed: ' + e.message, 'error'); setSaveIndicator(''); }
+    finally { btn.disabled = false; btn.textContent = 'Save Today'; }
+  });
 
   // ── CLEAR DAY ──
   document.getElementById('btn-clear').addEventListener('click', () => {
-    document.getElementById('confirm-date-text').textContent = `Clear all data for ${formatDateEN(currentDate)}?`;
+    document.getElementById('confirm-date-text').innerHTML = `All data for <strong>${formatDateEN(currentDate)}</strong> will be permanently deleted.`;
     document.getElementById('confirm-overlay').classList.add('open');
   });
   document.getElementById('confirm-cancel').addEventListener('click', () => {
@@ -1103,13 +1039,17 @@
   document.getElementById('confirm-ok').addEventListener('click', async () => {
     document.getElementById('confirm-overlay').classList.remove('open');
     if (!currentUser) return;
-    showSaving();
+    showToast('Clearing…', 'saving');
     try {
       await sbQ(sb.from('daily_logs').delete().eq('user_id', currentUser.id).eq('log_date', currentDate), 'clearDay log');
-      await sbQ(sb.from('habit_completions').delete().eq('user_id', currentUser.id).eq('log_date', currentDate), 'clearDay hc');
+      const ids = Object.values(habitIdMap).filter(Boolean);
+      if (ids.length) {
+        const rows = ids.map(id => ({ user_id: currentUser.id, habit_id: id, log_date: currentDate, completed: false }));
+        await sbQ(sb.from('habit_completions').upsert(rows, { onConflict: 'user_id,habit_id,log_date' }), 'clearDay hc');
+      }
       await loadDay(currentDate, currentUser.id);
       showToast('Data cleared', 'saved');
-    } catch(e) { showToast('Clear failed', 'error'); }
+    } catch(e) { showToast('Clear failed: ' + e.message, 'error'); }
     finally { setSaveIndicator(''); }
   });
 
@@ -1127,7 +1067,8 @@
     if (d > new Date()) return;
     currentDate = dateToStr(d);
     updateDateUI();
-    await loadDay(currentDate, currentUser.id);
+    setLoading(true, 'Loading…');
+    try { await loadDay(currentDate, currentUser.id); } finally { setLoading(false); }
   }
 
   // ── CALENDAR ──
@@ -1139,25 +1080,18 @@
     pop.classList.toggle('open');
     if (pop.classList.contains('open')) renderCalendar(calViewDate);
   });
+  document.getElementById('cal-popup').addEventListener('click', e => e.stopPropagation());
   document.addEventListener('click', e => {
-    if (!e.target.closest('.date-nav')) {
-      document.getElementById('cal-popup').classList.remove('open');
-    }
+    if (!e.target.closest('.date-nav')) document.getElementById('cal-popup').classList.remove('open');
   });
   document.getElementById('cal-prev-month').addEventListener('click', e => {
-    e.stopPropagation();
-    calViewDate.setMonth(calViewDate.getMonth() - 1);
-    renderCalendar(calViewDate);
+    e.stopPropagation(); calViewDate.setMonth(calViewDate.getMonth() - 1); renderCalendar(calViewDate);
   });
   document.getElementById('cal-next-month').addEventListener('click', e => {
-    e.stopPropagation();
-    calViewDate.setMonth(calViewDate.getMonth() + 1);
-    renderCalendar(calViewDate);
+    e.stopPropagation(); calViewDate.setMonth(calViewDate.getMonth() + 1); renderCalendar(calViewDate);
   });
   document.getElementById('cal-year-select').addEventListener('change', e => {
-    e.stopPropagation();
-    calViewDate.setFullYear(parseInt(e.target.value));
-    renderCalendar(calViewDate);
+    e.stopPropagation(); calViewDate.setFullYear(parseInt(e.target.value)); renderCalendar(calViewDate);
   });
   function renderCalendar(d) {
     const year = d.getFullYear(), month = d.getMonth();
@@ -1177,7 +1111,7 @@
     container.innerHTML = '';
     for (let i = 0; i < firstDay; i++) {
       const blank = document.createElement('div');
-      blank.className = 'cal-day other';
+      blank.className = 'cal-day cal-other';
       container.appendChild(blank);
     }
     for (let day = 1; day <= daysInMonth; day++) {
@@ -1185,22 +1119,24 @@
       const btn = document.createElement('button');
       const isFuture = new Date(ds + 'T00:00:00') > today;
       btn.className = 'cal-day' +
-        (ds === currentDate   ? ' selected' : '') +
-        (ds === dateToStr(today) ? ' today' : '') +
-        (isFuture ? ' disabled' : '');
+        (ds === currentDate   ? ' cal-selected' : '') +
+        (ds === dateToStr(today) ? ' cal-today' : '') +
+        (isFuture ? ' cal-disabled' : '');
       btn.textContent = day;
       btn.addEventListener('click', async () => {
         if (isFuture) return;
-        currentDate = ds;
         document.getElementById('cal-popup').classList.remove('open');
+        if (ds === currentDate) return;
+        currentDate = ds;
         updateDateUI();
-        await loadDay(currentDate, currentUser.id);
+        setLoading(true, 'Loading…');
+        try { await loadDay(currentDate, currentUser.id); } finally { setLoading(false); }
       });
       container.appendChild(btn);
     }
   }
 
-  // ── LOAD FREELANCE TASKS ──
+  // ── FREELANCE TASKS ──
   async function loadFreelanceTasks(userId) {
     const { data } = await sbQ(sb.from('freelance_tasks').select('*').eq('user_id', userId).order('sort_order'), 'freelance_tasks load');
     freelanceTasks = data || [];
@@ -1228,8 +1164,10 @@
     if (!t) return;
     t.completed = !t.completed;
     renderFreelanceTasks();
+    showSaving();
     const { error } = await sbQ(sb.from('freelance_tasks').update({ completed: t.completed }).eq('id', taskId), 'task toggle');
-    if (error) showToast('Could not update task', 'error');
+    if (error) { showToast('Could not update task', 'error'); return; }
+    showSaved();
   }
   async function deleteTask(taskId) {
     if (!currentUser) return;
@@ -1258,9 +1196,7 @@
     const { data } = await sbQ(sb.from('thesis_milestones').select('*').eq('user_id', userId).order('step_number'), 'thesis_milestones load');
     thesisMilestones = data || [];
     for (let i = 1; i <= 6; i++) {
-      if (!thesisMilestones.find(m => m.step_number === i)) {
-        thesisMilestones.push({ step_number: i, completed: false, id: null });
-      }
+      if (!thesisMilestones.find(m => m.step_number === i)) thesisMilestones.push({ step_number: i, completed: false, id: null });
     }
     thesisMilestones.sort((a, b) => a.step_number - b.step_number);
     renderThesisSteps();
@@ -1294,41 +1230,50 @@
     const done = thesisMilestones.filter(x => x.completed).length;
     document.getElementById('thesis-badge').textContent = `${done} / 6`;
     document.getElementById('thesis-bar').style.width = `${Math.round((done/6)*100)}%`;
-    const { error } = await sbQ(
-      sb.from('thesis_milestones').upsert({
+    showSaving();
+    try {
+      const { error } = await sbQ(sb.from('thesis_milestones').upsert({
         user_id: currentUser.id,
         step_number: stepNum,
         completed: m.completed,
         completed_at: m.completed ? new Date().toISOString() : null,
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id,step_number' }), 'thesis save');
-    if (error) showToast('Could not save milestone', 'error');
+      if (error) throw error;
+      showSaved();
+    } catch(e) { showToast('Could not save milestone', 'error'); m.completed = !m.completed; renderThesisSteps(); }
   }
 
   // ── LOAD DAY ──
   async function loadDay(dateStr, userId) {
     completions = {}; feelings = 0; freelanceUsedAI = false;
     setFeelings(0);
-    ['m-sleep','m-read','m-weight','m-meditate','j-moments','trading-special-log'].forEach(id => {
+    ['m-sleep','m-read','m-weight','m-focus','j-moments','trading-notes'].forEach(id => {
       document.getElementById(id).value = '';
     });
     document.getElementById('english-type-select').value = '';
     document.getElementById('english-extra').classList.remove('visible');
+    document.getElementById('workout-type-select').value = '';
+    document.getElementById('workout-extra').classList.remove('visible');
     document.getElementById('ai-toggle-pill').classList.remove('on');
+    document.getElementById('moments-hint').textContent = '0 / 3 lines';
 
     const { data: log } = await sbQ(
       sb.from('daily_logs').select('*').eq('user_id', userId).eq('log_date', dateStr).maybeSingle(), 'loadDay log');
     if (log) {
-      document.getElementById('m-sleep').value    = log.sleep_hours       ?? '';
-      document.getElementById('m-read').value     = log.read_pages        ?? '';
-      document.getElementById('m-weight').value   = log.weight_kg         ?? '';
-      document.getElementById('m-meditate').value = log.meditate_minutes  ?? '';
-      document.getElementById('j-moments').value  = log.memorable_moments ?? '';
-      document.getElementById('trading-special-log').value = log.trading_special_log ?? '';
+      document.getElementById('m-sleep').value  = log.sleep_hours       ?? '';
+      document.getElementById('m-read').value   = log.read_pages        ?? '';
+      document.getElementById('m-weight').value = log.weight_kg         ?? '';
+      document.getElementById('m-focus').value  = log.meditate_minutes  ?? '';
+      document.getElementById('j-moments').value = log.memorable_moments ?? '';
+      document.getElementById('trading-notes').value = log.trading_special_log ?? '';
       if (log.english_type) document.getElementById('english-type-select').value = log.english_type;
+      if (log.workout_type) document.getElementById('workout-type-select').value = log.workout_type;
       freelanceUsedAI = !!log.freelance_used_ai;
       document.getElementById('ai-toggle-pill').classList.toggle('on', freelanceUsedAI);
       setFeelings(log.feelings || 0);
+      const lines = (log.memorable_moments || '').split('\n').length;
+      document.getElementById('moments-hint').textContent = `${lines} / 3 lines`;
     }
 
     const { data: hc } = await sbQ(
@@ -1336,717 +1281,28 @@
     (hc || []).forEach(r => { completions[r.habit_id] = r.completed; });
 
     refreshHabitUI();
-    await loadWorkoutWeek(userId);
+    await loadWorkoutWeekProgress(userId);
     setSaveIndicator('');
   }
 
   // ── REFRESH HABIT UI ──
   function refreshHabitUI() {
-    const wakeId = habitIdMap.wake_up;
-    const wakeEl = document.getElementById('habit-wake');
-    if (wakeEl && wakeId) {
-      const c = !!completions[wakeId];
-      wakeEl.className = 'habit-item' + (c ? ' checked' : '');
-      wakeEl.querySelector('.habit-check').textContent = c ? '✓' : '';
-    }
-    const engId = habitIdMap.english;
-    const engEl = document.getElementById('habit-english');
-    if (engEl && engId) {
-      const c = !!completions[engId];
-      engEl.className = 'habit-item' + (c ? ' checked' : '');
-      engEl.querySelector('.habit-check').textContent = c ? '✓' : '';
-      document.getElementById('english-extra').classList.toggle('visible', c);
-    }
-    const trId = habitIdMap.trading;
-    const trEl = document.getElementById('habit-trading');
-    if (trEl && trId) {
-      const c = !!completions[trId];
-      trEl.className = 'habit-item' + (c ? ' checked' : '');
-      trEl.querySelector('.habit-check').textContent = c ? '✓' : '';
-    }
+    const sync = (elId, habitKey, extra) => {
+      const id = habitIdMap[habitKey];
+      const el = document.getElementById(elId);
+      if (!el || !id) return;
+      const c = !!completions[id];
+      el.classList.toggle('checked', c);
+      el.querySelector('.habit-check').textContent = c ? '✓' : '';
+      if (extra) extra(c);
+    };
+    sync('habit-workout', 'workout', c => document.getElementById('workout-extra').classList.toggle('visible', c));
+    sync('habit-wake', 'wake_up');
+    sync('habit-english', 'english', c => document.getElementById('english-extra').classList.toggle('visible', c));
+    sync('habit-trading', 'trading');
+    sync('habit-journal-verify', 'journal_verify');
   }
 
-  // ── WEEKLY REVIEW MODAL ──
-  async function openWeeklyReview() {
-    if (!currentUser) return;
-    const ws = getWeekStart(currentDate);
-    const wDate = strToDate(ws);
-    const weStr = dateToStr(new Date(wDate.getTime() + 6 * 86400000));
-    document.getElementById('weekly-meta').textContent = `Week of ${formatDateEN(ws)}`;
-    document.getElementById('modal-weekly').classList.add('open');
-    document.getElementById('weekly-habit-score').textContent = 'Calculating…';
-
-    const { data: rev } = await sbQ(
-      sb.from('weekly_reviews').select('*').eq('user_id', currentUser.id).eq('week_start', ws).maybeSingle(), 'weekly_review load');
-    document.getElementById('wr-trading').value   = rev?.trading_reflection || '';
-    document.getElementById('wr-freelance').value = rev?.freelance_checkin  || '';
-    document.getElementById('wr-thesis').value    = rev?.thesis_progress    || '';
-    document.getElementById('wr-blockers').value  = rev?.blockers_solutions || '';
-
-    const ids = Object.values(habitIdMap).filter(Boolean);
-    if (ids.length === 0) { document.getElementById('weekly-habit-score').textContent = 'No habits tracked'; return; }
-    const { data } = await sbQ(
-      sb.from('habit_completions').select('habit_id')
-        .eq('user_id', currentUser.id).eq('completed', true)
-        .gte('log_date', ws).lte('log_date', weStr), 'weekly habit completions');
-    const total = ids.length * 7;
-    const done  = (data || []).length;
-    const pct   = Math.round((done / total) * 100);
-    document.getElementById('weekly-habit-score').innerHTML =
-      `<strong style="color:var(--primary);font-size:18px;">${pct}%</strong> &nbsp;(${done} / ${total} habit-days)`;
-  }
-
-  document.getElementById('btn-weekly-review').addEventListener('click', openWeeklyReview);
-  document.getElementById('mobile-weekly-btn').addEventListener('click', openWeeklyReview);
-  document.getElementById('modal-weekly-close').addEventListener('click', () => { document.getElementById('modal-weekly').classList.remove('open'); });
-  document.getElementById('modal-weekly').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.classList.remove('open'); });
-
-  document.getElementById('btn-save-weekly').addEventListener('click', async () => {
-    if (!currentUser) return;
-    const btn = document.getElementById('btn-save-weekly');
-    btn.disabled = true; btn.textContent = 'Saving…';
-    const ws = getWeekStart(currentDate);
-    try {
-      const { error } = await sbQ(sb.from('weekly_reviews').upsert({
-        user_id:            currentUser.id,
-        week_start:         ws,
-        trading_reflection: document.getElementById('wr-trading').value.trim()   || null,
-        freelance_checkin:  document.getElementById('wr-freelance').value.trim() || null,
-        thesis_progress:    document.getElementById('wr-thesis').value.trim()    || null,
-        blockers_solutions: document.getElementById('wr-blockers').value.trim()  || null,
-      }, { onConflict: 'user_id,week_start' }), 'weekly_review save');
-      if (error) throw error;
-      showToast('Weekly review saved ✓', 'saved');
-      document.getElementById('modal-weekly').classList.remove('open');
-    } catch(e) { showToast('Save failed: ' + e.message, 'error'); }
-    finally { btn.disabled = false; btn.textContent = 'Save Weekly Review'; }
-  });
-
-  // ── MONTHLY REVIEW MODAL ──
-  async function openMonthlyReview() {
-    if (!currentUser) return;
-    const my = getMonthYear(currentDate);
-    document.getElementById('monthly-meta').textContent = `${EN_MONTHS[parseInt(my.slice(5))-1]} ${my.slice(0,4)}`;
-    document.getElementById('modal-monthly').classList.add('open');
-    const { data } = await sbQ(
-      sb.from('monthly_reviews').select('*').eq('user_id', currentUser.id).eq('month_year', my).maybeSingle(), 'monthly_review load');
-    document.getElementById('mr-highlights').value = data?.highlights       || '';
-    document.getElementById('mr-goals').value      = data?.goal_adjustments || '';
-    document.getElementById('mr-focus').value      = data?.next_month_focus || '';
-  }
-
-  document.getElementById('btn-monthly-review').addEventListener('click', openMonthlyReview);
-  document.getElementById('modal-monthly-close').addEventListener('click', () => { document.getElementById('modal-monthly').classList.remove('open'); });
-  document.getElementById('modal-monthly').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.classList.remove('open'); });
-
-  document.getElementById('btn-save-monthly').addEventListener('click', async () => {
-    if (!currentUser) return;
-    const btn = document.getElementById('btn-save-monthly');
-    btn.disabled = true; btn.textContent = 'Saving…';
-    const my = getMonthYear(currentDate);
-    try {
-      const { error } = await sbQ(sb.from('monthly_reviews').upsert({
-        user_id:          currentUser.id,
-        month_year:       my,
-        highlights:       document.getElementById('mr-highlights').value.trim() || null,
-        goal_adjustments: document.getElementById('mr-goals').value.trim()      || null,
-        next_month_focus: document.getElementById('mr-focus').value.trim()      || null,
-      }, { onConflict: 'user_id,month_year' }), 'monthly_review save');
-      if (error) throw error;
-      showToast('Monthly review saved ✓', 'saved');
-      document.getElementById('modal-monthly').classList.remove('open');
-    } catch(e) { showToast('Save failed: ' + e.message, 'error'); }
-    finally { btn.disabled = false; btn.textContent = 'Save Monthly Review'; }
-  });
-
-</script>
-
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js')
-        .then(r => console.log('[SW] registered', r.scope))
-        .catch(e => console.warn('[SW] failed', e));
-    });
-  }
-</script>
-</body>
-</html>ener('click', () => {
-      if (!engId) return;
-      completions[engId] = !completions[engId];
-      engEl.classList.toggle('checked', !!completions[engId]);
-      engEl.querySelector('.habit-check').textContent = completions[engId] ? '✓' : '';
-      document.getElementById('english-extra').classList.toggle('visible', !!completions[engId]);
-      saveHabitCompletion(engId);
-    });
-    wrap.insertBefore(engEl, document.getElementById('english-extra'));
-    // Show dropdown if already checked
-    if (checked) document.getElementById('english-extra').classList.add('visible');
-  }
-
-  // English type auto-save
-  document.getElementById('english-type-select').addEventListener('change', async () => {
-    if (!currentUser) return;
-    showSaving();
-    try {
-      const { error } = await sbQ(sb.from('daily_logs').upsert({
-        user_id: currentUser.id, log_date: currentDate,
-        english_type: document.getElementById('english-type-select').value || null,
-      }, { onConflict: 'user_id,log_date' }), 'english_type save');
-      if (error) throw error;
-      showSaved(); setSaveIndicator('Saved', true);
-    } catch(e) { showToast('Could not save', 'error'); }
-  });
-
-  // ── RENDER WEALTH ──
-  function renderWealthHabits() {
-    const wrap = document.getElementById('habits-wealth');
-    document.getElementById('skeleton-wealth').style.display = 'none';
-    wrap.style.display = 'block';
-    const trId = habitIdMap.trading;
-    const checked = trId ? !!completions[trId] : false;
-    const trEl = document.createElement('div');
-    trEl.className = 'habit-item' + (checked ? ' checked' : '');
-    trEl.id = 'habit-trading';
-    trEl.innerHTML = `
-      <div class="habit-check">${checked ? '✓' : ''}</div>
-      <div class="habit-body">
-        <div class="habit-label">📈 Trading Discipline</div>
-        <div class="habit-sub">Followed your trading rules today</div>
-      </div>`;
-    trEl.addEventListener('click', () => {
-      if (!trId) return;
-      completions[trId] = !completions[trId];
-      trEl.classList.toggle('checked', !!completions[trId]);
-      trEl.querySelector('.habit-check').textContent = completions[trId] ? '✓' : '';
-      saveHabitCompletion(trId);
-    });
-    wrap.insertBefore(trEl, wrap.querySelector('.special-log-wrap'));
-  }
-
-  // Trading special log auto-save
-  let _tradingTimer = null;
-  document.getElementById('trading-special-log').addEventListener('input', () => {
-    showSaving(); clearTimeout(_tradingTimer);
-    _tradingTimer = setTimeout(() => saveSpecialLog(), 1800);
-  });
-  async function saveSpecialLog() {
-    if (!currentUser) return;
-    try {
-      const { error } = await sbQ(sb.from('daily_logs').upsert({
-        user_id: currentUser.id, log_date: currentDate,
-        trading_special_log: document.getElementById('trading-special-log').value.trim() || null,
-      }, { onConflict: 'user_id,log_date' }), 'trading_special save');
-      if (error) throw error;
-      showSaved(); setSaveIndicator('Saved', true);
-    } catch(e) { showToast('Could not save', 'error'); }
-  }
-
-  // AI toggle
-  document.getElementById('ai-toggle-row').addEventListener('click', async () => {
-    if (!currentUser) return;
-    freelanceUsedAI = !freelanceUsedAI;
-    document.getElementById('ai-toggle-pill').classList.toggle('on', freelanceUsedAI);
-    showSaving();
-    try {
-      const { error } = await sbQ(sb.from('daily_logs').upsert({
-        user_id: currentUser.id, log_date: currentDate,
-        freelance_used_ai: freelanceUsedAI,
-      }, { onConflict: 'user_id,log_date' }), 'ai_toggle save');
-      if (error) throw error;
-      showSaved(); setSaveIndicator('Saved', true);
-    } catch(e) { showToast('Could not save', 'error'); }
-  });
-
-  // ── FREELANCE TASKS ──
-  async function loadFreelanceTasks(userId) {
-    const { data } = await sbQ(sb.from('freelance_tasks').select('*').eq('user_id', userId).order('sort_order'), 'freelance_tasks load');
-    freelanceTasks = data || [];
-    renderFreelanceTasks();
-  }
-
-  function renderFreelanceTasks() {
-    const list = document.getElementById('freelance-task-list');
-    list.innerHTML = '';
-    freelanceTasks.forEach(t => {
-      const row = document.createElement('div');
-      row.className = 'task-row';
-      row.innerHTML = `
-        <div class="task-cb ${t.completed ? 'done' : ''}" data-id="${t.id}">${t.completed ? '✓' : ''}</div>
-        <div class="task-text ${t.completed ? 'done' : ''}" data-id="${t.id}">${t.task_text}</div>
-        <button class="task-del" data-id="${t.id}">×</button>`;
-      row.querySelector('.task-cb').addEventListener('click', () => toggleTask(t.id));
-      row.querySelector('.task-text').addEventListener('click', () => toggleTask(t.id));
-      row.querySelector('.task-del').addEventListener('click', (e) => { e.stopPropagation(); deleteTask(t.id); });
-      list.appendChild(row);
-    });
-  }
-
-  async function toggleTask(taskId) {
-    if (!currentUser) return;
-    const t = freelanceTasks.find(x => x.id === taskId);
-    if (!t) return;
-    t.completed = !t.completed;
-    renderFreelanceTasks();
-    const { error } = await sbQ(sb.from('freelance_tasks').update({ completed: t.completed }).eq('id', taskId), 'task toggle');
-    if (error) showToast('Could not update task', 'error');
-  }
-
-  async function deleteTask(taskId) {
-    if (!currentUser) return;
-    freelanceTasks = freelanceTasks.filter(x => x.id !== taskId);
-    renderFreelanceTasks();
-    const { error } = await sbQ(sb.from('freelance_tasks').delete().eq('id', taskId), 'task delete');
-    if (error) showToast('Could not delete task', 'error');
-  }
-
-  document.getElementById('btn-add-task').addEventListener('click', addTask);
-  document.getElementById('new-task-input').addEventListener('keydown', e => { if (e.key === 'Enter') addTask(); });
-  async function addTask() {
-    if (!currentUser) return;
-    const inp = document.getElementById('new-task-input');
-    const text = inp.value.trim();
-    if (!text) return;
-    inp.value = '';
-    const newTask = { user_id: currentUser.id, task_text: text, completed: false, sort_order: freelanceTasks.length };
-    const { data, error } = await sbQ(sb.from('freelance_tasks').insert(newTask).select().single(), 'task add');
-    if (error) { showToast('Could not add task', 'error'); return; }
-    freelanceTasks.push(data);
-    renderFreelanceTasks();
-  }
-
-  // ── THESIS MILESTONES ──
-  async function loadThesisMilestones(userId) {
-    const { data } = await sbQ(sb.from('thesis_milestones').select('*').eq('user_id', userId).order('step_number'), 'thesis_milestones load');
-    thesisMilestones = data || [];
-    // Ensure all 6 steps exist
-    for (let i = 1; i <= 6; i++) {
-      if (!thesisMilestones.find(m => m.step_number === i)) {
-        thesisMilestones.push({ step_number: i, completed: false, id: null });
-      }
-    }
-    thesisMilestones.sort((a,b) => a.step_number - b.step_number);
-    renderThesisSteps();
-  }
-
-  function renderThesisSteps() {
-    document.getElementById('skeleton-thesis').style.display = 'none';
-    document.getElementById('thesis-steps-wrap').style.display = 'block';
-    const wrap = document.getElementById('thesis-steps');
-    wrap.innerHTML = '';
-    let done = 0;
-    thesisMilestones.forEach(m => {
-      if (m.completed) done++;
-      const step = document.createElement('div');
-      step.className = 'thesis-step' + (m.completed ? ' done' : '');
-      step.innerHTML = `
-        <div class="step-num">${m.step_number}</div>
-        <div class="step-text">${THESIS_STEPS[m.step_number - 1]}</div>
-        <div class="step-check">✓</div>`;
-      step.addEventListener('click', () => toggleThesisStep(m.step_number, step));
-      wrap.appendChild(step);
-    });
-    document.getElementById('thesis-badge').textContent = `${done} / 6`;
-    document.getElementById('thesis-bar').style.width = `${Math.round((done/6)*100)}%`;
-  }
-
-  async function toggleThesisStep(stepNum, el) {
-    if (!currentUser) return;
-    const m = thesisMilestones.find(x => x.step_number === stepNum);
-    if (!m) return;
-    m.completed = !m.completed;
-    el.classList.toggle('done', m.completed);
-    el.querySelector('.step-num').style.background = m.completed ? 'var(--cat-thesis)' : '';
-    el.querySelector('.step-num').style.color = m.completed ? '#fff' : '';
-    // Update badge & bar
-    const done = thesisMilestones.filter(x => x.completed).length;
-    document.getElementById('thesis-badge').textContent = `${done} / 6`;
-    document.getElementById('thesis-bar').style.width = `${Math.round((done/6)*100)}%`;
-    showSaving();
-    try {
-      const { error } = await sbQ(sb.from('thesis_milestones').upsert({
-        user_id: currentUser.id, step_number: stepNum, completed: m.completed,
-        completed_at: m.completed ? new Date().toISOString() : null,
-      }, { onConflict: 'user_id,step_number' }), 'thesis_milestone save');
-      if (error) throw error;
-      // Update local id if needed
-      if (!m.id) {
-        const { data } = await sbQ(sb.from('thesis_milestones').select('id').eq('user_id', currentUser.id).eq('step_number', stepNum).single(), 'thesis id fetch');
-        if (data) m.id = data.id;
-      }
-      showSaved(); setSaveIndicator('Saved', true);
-    } catch(e) { showToast('Could not save milestone', 'error'); m.completed = !m.completed; renderThesisSteps(); }
-  }
-
-  // ── HABIT COMPLETION SAVE ──
-  async function saveHabitCompletion(habitId) {
-    if (!currentUser) return;
-    showSaving();
-    try {
-      const { error } = await sbQ(sb.from('habit_completions').upsert({
-        user_id: currentUser.id, habit_id: habitId,
-        log_date: currentDate, completed: !!completions[habitId],
-      }, { onConflict: 'user_id,habit_id,log_date' }), 'habit save');
-      if (error) throw error;
-      showSaved(); setSaveIndicator('Saved', true);
-    } catch(e) { showToast('Could not save habit', 'error'); setSaveIndicator(''); }
-  }
-
-  // ── FEELINGS ──
-  const starBtns = document.querySelectorAll('.star-btn');
-  starBtns.forEach(btn => {
-    btn.addEventListener('click', () => { setFeelings(parseInt(btn.dataset.val)); scheduleMetricSave(); });
-  });
-  function setFeelings(val) {
-    feelings = val;
-    starBtns.forEach(btn => {
-      const on = parseInt(btn.dataset.val) <= val;
-      btn.classList.toggle('on', on);
-    });
-    document.getElementById('feelings-desc').textContent = val ? `${val} — ${MOOD_LABELS[val]}` : '—';
-  }
-
-  // ── METRICS AUTO-SAVE ──
-  let _metricTimer = null;
-  function scheduleMetricSave() {
-    showSaving(); clearTimeout(_metricTimer);
-    _metricTimer = setTimeout(() => saveMetrics(), 1500);
-  }
-  async function saveMetrics() {
-    if (!currentUser) return;
-    try {
-      const { error } = await sbQ(sb.from('daily_logs').upsert({
-        user_id: currentUser.id, log_date: currentDate,
-        sleep_hours:      parseFloat(document.getElementById('m-sleep').value)    || null,
-        read_pages:       parseInt(document.getElementById('m-read').value)        || null,
-        weight_kg:        parseFloat(document.getElementById('m-weight').value)   || null,
-        meditate_minutes: parseInt(document.getElementById('m-meditate').value)    || null,
-        feelings: feelings || null,
-      }, { onConflict: 'user_id,log_date' }), 'metrics save');
-      if (error) throw error;
-      showSaved(); setSaveIndicator('Saved', true);
-    } catch(e) { showToast('Could not save metrics', 'error'); }
-  }
-  ['m-sleep','m-read','m-weight','m-meditate'].forEach(id => {
-    const el = document.getElementById(id);
-    el.addEventListener('blur', scheduleMetricSave);
-    el.addEventListener('keydown', e => { if (e.key === 'Enter') el.blur(); });
-  });
-
-  // ── LINE COUNTER ──
-  const momentsTA = document.getElementById('j-moments');
-  const momentsHint = document.getElementById('moments-hint');
-  momentsTA.addEventListener('input', () => {
-    const n = momentsTA.value.split('\n').length;
-    momentsHint.textContent = `${n} / 3 lines`;
-    momentsHint.style.color = n > 3 ? 'var(--red)' : 'var(--text-sub)';
-  });
-
-  // ── DATE NAV ──
-  async function changeDate(delta) {
-    if (!currentUser) return;
-    const d = strToDate(currentDate);
-    d.setDate(d.getDate() + delta);
-    if (d > new Date()) return;
-    currentDate = dateToStr(d);
-    updateDateUI();
-    setLoading(true, 'Loading…');
-    try { await loadDay(currentDate, currentUser.id); } finally { setLoading(false); }
-  }
-  document.getElementById('btn-prev').addEventListener('click', () => changeDate(-1));
-  document.getElementById('btn-next').addEventListener('click', () => changeDate(+1));
-  function updateDateUI() {
-    document.getElementById('header-date').textContent = formatDateEN(currentDate);
-    document.getElementById('btn-next').disabled = isToday(currentDate);
-  }
-
-  // ── CALENDAR PICKER ──
-  let calYear, calMonth;
-  function openCalendar() {
-    const d = strToDate(currentDate);
-    calYear = d.getFullYear(); calMonth = d.getMonth();
-    buildYearSelect(); renderCalendar();
-    document.getElementById('cal-popup').classList.add('open');
-  }
-  function closeCalendar() { document.getElementById('cal-popup').classList.remove('open'); }
-  function buildYearSelect() {
-    const sel = document.getElementById('cal-year-select');
-    const ty = new Date().getFullYear();
-    sel.innerHTML = '';
-    for (let y = ty; y >= ty - 5; y--) {
-      const o = document.createElement('option');
-      o.value = y; o.textContent = y;
-      if (y === calYear) o.selected = true;
-      sel.appendChild(o);
-    }
-  }
-  function renderCalendar() {
-    document.getElementById('cal-month-label').textContent = EN_MONTHS[calMonth];
-    document.getElementById('cal-year-select').value = calYear;
-    const today = todayStr(), selected = currentDate;
-    const firstDay = new Date(calYear, calMonth, 1).getDay();
-    const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
-    const daysInPrev  = new Date(calYear, calMonth, 0).getDate();
-    const cont = document.getElementById('cal-days');
-    cont.innerHTML = '';
-    for (let i = firstDay - 1; i >= 0; i--) {
-      const c = document.createElement('div'); c.className = 'cal-day cal-other'; c.textContent = daysInPrev - i; cont.appendChild(c);
-    }
-    for (let d = 1; d <= daysInMonth; d++) {
-      const ds = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-      const c = document.createElement('div'); c.textContent = d;
-      const cls = ['cal-day'];
-      if (ds === selected) cls.push('cal-selected');
-      else if (ds === today) cls.push('cal-today');
-      if (ds > today) cls.push('cal-disabled');
-      c.className = cls.join(' ');
-      if (ds <= today) c.addEventListener('click', async () => {
-        if (ds === currentDate) { closeCalendar(); return; }
-        closeCalendar(); currentDate = ds; updateDateUI();
-        setLoading(true, 'Loading…');
-        try { await loadDay(currentDate, currentUser.id); } finally { setLoading(false); }
-      });
-      cont.appendChild(c);
-    }
-    const total = firstDay + daysInMonth;
-    const rem = 7 - (total % 7 === 0 ? 7 : total % 7);
-    for (let d = 1; d <= rem; d++) { const c = document.createElement('div'); c.className = 'cal-day cal-other'; c.textContent = d; cont.appendChild(c); }
-  }
-  document.getElementById('header-date').addEventListener('click', e => { e.stopPropagation(); const p = document.getElementById('cal-popup'); p.classList.contains('open') ? closeCalendar() : openCalendar(); });
-  document.getElementById('cal-prev-month').addEventListener('click', e => { e.stopPropagation(); calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; } renderCalendar(); });
-  document.getElementById('cal-next-month').addEventListener('click', e => { e.stopPropagation(); const t = new Date(); if (calYear === t.getFullYear() && calMonth === t.getMonth()) return; calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; } renderCalendar(); });
-  document.getElementById('cal-year-select').addEventListener('change', e => { e.stopPropagation(); calYear = parseInt(e.target.value); renderCalendar(); });
-  document.getElementById('cal-popup').addEventListener('click', e => e.stopPropagation());
-  document.addEventListener('click', closeCalendar);
-
-  // ── LOAD DAY ──
-  async function loadDay(dateStr, userId) {
-    completions = {}; feelings = 0; freelanceUsedAI = false;
-    setFeelings(0);
-    ['m-sleep','m-read','m-weight','m-meditate','j-moments','trading-special-log'].forEach(id => { document.getElementById(id).value = ''; });
-    document.getElementById('english-type-select').value = '';
-    document.getElementById('english-extra').classList.remove('visible');
-    document.getElementById('ai-toggle-pill').classList.remove('on');
-
-    // Load daily log
-    const { data: log } = await sbQ(
-      sb.from('daily_logs').select('*').eq('user_id', userId).eq('log_date', dateStr).maybeSingle(), 'loadDay log');
-    if (log) {
-      document.getElementById('m-sleep').value    = log.sleep_hours       ?? '';
-      document.getElementById('m-read').value     = log.read_pages        ?? '';
-      document.getElementById('m-weight').value   = log.weight_kg         ?? '';
-      document.getElementById('m-meditate').value = log.meditate_minutes  ?? '';
-      document.getElementById('j-moments').value  = log.memorable_moments ?? '';
-      document.getElementById('trading-special-log').value = log.trading_special_log ?? '';
-      if (log.english_type) document.getElementById('english-type-select').value = log.english_type;
-      freelanceUsedAI = !!log.freelance_used_ai;
-      document.getElementById('ai-toggle-pill').classList.toggle('on', freelanceUsedAI);
-      setFeelings(log.feelings || 0);
-    }
-
-    // Load habit completions
-    const { data: hc } = await sbQ(
-      sb.from('habit_completions').select('habit_id,completed').eq('user_id', userId).eq('log_date', dateStr), 'loadDay habits');
-    (hc || []).forEach(r => { completions[r.habit_id] = r.completed; });
-
-    // Re-render habit checkboxes (in-place)
-    refreshHabitUI();
-
-    // Load workout week
-    await loadWorkoutWeek(userId);
-
-    setSaveIndicator('');
-  }
-
-  function refreshHabitUI() {
-    // Wake up
-    const wakeId = habitIdMap.wake_up;
-    const wakeEl = document.getElementById('habit-wake');
-    if (wakeEl && wakeId) {
-      const c = !!completions[wakeId];
-      wakeEl.className = 'habit-item' + (c ? ' checked' : '');
-      wakeEl.querySelector('.habit-check').textContent = c ? '✓' : '';
-    }
-    // English
-    const engId = habitIdMap.english;
-    const engEl = document.getElementById('habit-english');
-    if (engEl && engId) {
-      const c = !!completions[engId];
-      engEl.className = 'habit-item' + (c ? ' checked' : '');
-      engEl.querySelector('.habit-check').textContent = c ? '✓' : '';
-      document.getElementById('english-extra').classList.toggle('visible', c);
-    }
-    // Trading
-    const trId = habitIdMap.trading;
-    const trEl = document.getElementById('habit-trading');
-    if (trEl && trId) {
-      const c = !!completions[trId];
-      trEl.className = 'habit-item' + (c ? ' checked' : '');
-      trEl.querySelector('.habit-check').textContent = c ? '✓' : '';
-    }
-  }
-
-  // ── FULL SAVE (journal + all) ──
-  document.getElementById('btn-save').addEventListener('click', async () => {
-    const { data: { session } } = await sb.auth.getSession();
-    if (!session?.user) return;
-    const btn = document.getElementById('btn-save');
-    btn.disabled = true; btn.textContent = 'Saving…';
-    showSaving(); setSaveIndicator('Saving…');
-    try {
-      const { error: logErr } = await sbQ(sb.from('daily_logs').upsert({
-        user_id: session.user.id, log_date: currentDate,
-        sleep_hours:      parseFloat(document.getElementById('m-sleep').value)    || null,
-        read_pages:       parseInt(document.getElementById('m-read').value)        || null,
-        weight_kg:        parseFloat(document.getElementById('m-weight').value)   || null,
-        meditate_minutes: parseInt(document.getElementById('m-meditate').value)    || null,
-        feelings: feelings || null,
-        memorable_moments: document.getElementById('j-moments').value.trim() || null,
-        trading_special_log: document.getElementById('trading-special-log').value.trim() || null,
-        english_type: document.getElementById('english-type-select').value || null,
-        freelance_used_ai: freelanceUsedAI,
-      }, { onConflict: 'user_id,log_date' }), 'full save daily_logs');
-      if (logErr) throw logErr;
-
-      // Save habit completions
-      const hcRows = Object.entries(habitIdMap)
-        .filter(([,id]) => id)
-        .map(([,id]) => ({ user_id: session.user.id, habit_id: id, log_date: currentDate, completed: !!completions[id] }));
-      if (hcRows.length) {
-        const { error: hcErr } = await sbQ(
-          sb.from('habit_completions').upsert(hcRows, { onConflict: 'user_id,habit_id,log_date' }), 'full save habits');
-        if (hcErr) throw hcErr;
-      }
-      showSaved(); setSaveIndicator('Saved', true);
-    } catch(e) { showToast('Save failed: ' + e.message, 'error'); setSaveIndicator(''); }
-    finally { btn.disabled = false; btn.textContent = 'Save Today'; }
-  });
-
-  // ── CLEAR DATA ──
-  document.getElementById('btn-clear').addEventListener('click', () => {
-    document.getElementById('confirm-date-text').innerHTML =
-      `All data for <strong>${formatDateEN(currentDate)}</strong> will be permanently deleted.`;
-    document.getElementById('confirm-overlay').classList.add('open');
-  });
-  document.getElementById('confirm-cancel').addEventListener('click', () => { document.getElementById('confirm-overlay').classList.remove('open'); });
-  document.getElementById('confirm-ok').addEventListener('click', async () => {
-    document.getElementById('confirm-overlay').classList.remove('open');
-    if (!currentUser) return;
-    showToast('Clearing…', 'saving');
-    try {
-      await sbQ(sb.from('daily_logs').delete().eq('user_id', currentUser.id).eq('log_date', currentDate), 'clear daily_logs');
-      const ids = Object.values(habitIdMap).filter(Boolean);
-      if (ids.length) {
-        const rows = ids.map(id => ({ user_id: currentUser.id, habit_id: id, log_date: currentDate, completed: false }));
-        await sbQ(sb.from('habit_completions').upsert(rows, { onConflict: 'user_id,habit_id,log_date' }), 'clear habits');
-      }
-      completions = {}; setFeelings(0); freelanceUsedAI = false;
-      ['m-sleep','m-read','m-weight','m-meditate','j-moments','trading-special-log'].forEach(id => { document.getElementById(id).value = ''; });
-      document.getElementById('english-type-select').value = '';
-      document.getElementById('english-extra').classList.remove('visible');
-      document.getElementById('ai-toggle-pill').classList.remove('on');
-      refreshHabitUI(); setSaveIndicator('');
-      showToast('Data cleared', 'saved');
-    } catch(e) { showToast('Clear failed: ' + e.message, 'error'); }
-  });
-
-  // ── WEEKLY REVIEW MODAL ──
-  function getWeekLabel(dateStr) {
-    const ws = getWeekStart(dateStr);
-    const we = strToDate(ws); we.setDate(we.getDate() + 6);
-    const fmt = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    return `Week of ${fmt(strToDate(ws))} – ${fmt(we)}, ${strToDate(ws).getFullYear()}`;
-  }
-
-  async function openWeeklyReview() {
-    const ws = getWeekStart(currentDate);
-    document.getElementById('weekly-meta').textContent = getWeekLabel(currentDate);
-    document.getElementById('modal-weekly').classList.add('open');
-    // Load habit scores for the week
-    await loadWeeklyHabitScore(ws);
-    // Load saved review
-    const { data } = await sbQ(sb.from('weekly_reviews').select('*').eq('user_id', currentUser.id).eq('week_start', ws).maybeSingle(), 'weekly_review load');
-    document.getElementById('wr-trading').value   = data?.trading_reflection || '';
-    document.getElementById('wr-freelance').value = data?.freelance_checkin  || '';
-    document.getElementById('wr-thesis').value    = data?.thesis_progress    || '';
-    document.getElementById('wr-blockers').value  = data?.blockers_solutions || '';
-  }
-
-  async function loadWeeklyHabitScore(weekStart) {
-    const we = strToDate(weekStart); we.setDate(we.getDate() + 6);
-    const weStr = dateToStr(we);
-    const ids = Object.values(habitIdMap).filter(Boolean);
-    if (!ids.length) { document.getElementById('weekly-habit-score').textContent = 'No habits tracked yet.'; return; }
-    const { data } = await sbQ(
-      sb.from('habit_completions').select('habit_id,completed,log_date')
-        .eq('user_id', currentUser.id).eq('completed', true)
-        .gte('log_date', weekStart).lte('log_date', weStr), 'weekly habit completions');
-    const total = ids.length * 7;
-    const done  = (data || []).length;
-    const pct   = Math.round((done / total) * 100);
-    document.getElementById('weekly-habit-score').innerHTML =
-      `<strong style="color:var(--primary);font-size:18px;">${pct}%</strong> &nbsp;(${done} / ${total} habit-days completed)`;
-  }
-
-  document.getElementById('btn-weekly-review').addEventListener('click', openWeeklyReview);
-  document.getElementById('mobile-weekly-btn').addEventListener('click', openWeeklyReview);
-  document.getElementById('modal-weekly-close').addEventListener('click', () => { document.getElementById('modal-weekly').classList.remove('open'); });
-  document.getElementById('modal-weekly').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.classList.remove('open'); });
-
-  document.getElementById('btn-save-weekly').addEventListener('click', async () => {
-    if (!currentUser) return;
-    const btn = document.getElementById('btn-save-weekly');
-    btn.disabled = true; btn.textContent = 'Saving…';
-    const ws = getWeekStart(currentDate);
-    try {
-      const { error } = await sbQ(sb.from('weekly_reviews').upsert({
-        user_id: currentUser.id, week_start: ws,
-        trading_reflection: document.getElementById('wr-trading').value.trim()   || null,
-        freelance_checkin:  document.getElementById('wr-freelance').value.trim() || null,
-        thesis_progress:    document.getElementById('wr-thesis').value.trim()    || null,
-        blockers_solutions: document.getElementById('wr-blockers').value.trim()  || null,
-      }, { onConflict: 'user_id,week_start' }), 'weekly_review save');
-      if (error) throw error;
-      showToast('Weekly review saved ✓', 'saved');
-      document.getElementById('modal-weekly').classList.remove('open');
-    } catch(e) { showToast('Save failed: ' + e.message, 'error'); }
-    finally { btn.disabled = false; btn.textContent = 'Save Weekly Review'; }
-  });
-
-  // ── MONTHLY REVIEW MODAL ──
-  async function openMonthlyReview() {
-    const my = getMonthYear(currentDate);
-    const d = strToDate(currentDate + '-01'.slice(currentDate.length - 3));
-    document.getElementById('monthly-meta').textContent = `${EN_MONTHS[parseInt(my.slice(5))-1]} ${my.slice(0,4)}`;
-    document.getElementById('modal-monthly').classList.add('open');
-    const { data } = await sbQ(sb.from('monthly_reviews').select('*').eq('user_id', currentUser.id).eq('month_year', my).maybeSingle(), 'monthly_review load');
-    document.getElementById('mr-highlights').value = data?.highlights       || '';
-    document.getElementById('mr-goals').value      = data?.goal_adjustments || '';
-    document.getElementById('mr-focus').value      = data?.next_month_focus || '';
-  }
-
-  document.getElementById('btn-monthly-review').addEventListener('click', openMonthlyReview);
-  document.getElementById('modal-monthly-close').addEventListener('click', () => { document.getElementById('modal-monthly').classList.remove('open'); });
-  document.getElementById('modal-monthly').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.classList.remove('open'); });
-
-  document.getElementById('btn-save-monthly').addEventListener('click', async () => {
-    if (!currentUser) return;
-    const btn = document.getElementById('btn-save-monthly');
-    btn.disabled = true; btn.textContent = 'Saving…';
-    const my = getMonthYear(currentDate);
-    try {
-      const { error } = await sbQ(sb.from('monthly_reviews').upsert({
-        user_id: currentUser.id, month_year: my,
-        highlights:       document.getElementById('mr-highlights').value.trim() || null,
-        goal_adjustments: document.getElementById('mr-goals').value.trim()      || null,
-        next_month_focus: document.getElementById('mr-focus').value.trim()      || null,
-      }, { onConflict: 'user_id,month_year' }), 'monthly_review save');
-      if (error) throw error;
-      showToast('Monthly review saved ✓', 'saved');
-      document.getElementById('modal-monthly').classList.remove('open');
-    } catch(e) { showToast('Save failed: ' + e.message, 'error'); }
-    finally { btn.disabled = false; btn.textContent = 'Save Monthly Review'; }
-  });
 </script>
 
 <script>

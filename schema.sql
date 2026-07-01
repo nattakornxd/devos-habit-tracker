@@ -59,7 +59,10 @@ CREATE TABLE public.daily_logs (
   -- Growth: English type
   english_type         TEXT CHECK (english_type IN ('Listening','Grammar','Vocabulary','Reading')),
 
-  -- Wealth: Trading special log (1:10 RRR setups)
+  -- Foundation: Workout type (checked via habit_completions, type stored per day here)
+  workout_type         TEXT CHECK (workout_type IN ('Weight Training','Cardio','Other')),
+
+  -- Trading: Mental / psychological notes (renamed from the old "1:10 RRR setup log")
   trading_special_log  TEXT,
 
   -- Wealth: Freelance AI usage
@@ -207,4 +210,11 @@ CREATE POLICY "own monthly_reviews"  ON public.monthly_reviews   FOR ALL    USIN
 -- ALTER TABLE public.daily_logs ADD COLUMN IF NOT EXISTS english_type TEXT CHECK (english_type IN ('Listening','Grammar','Vocabulary','Reading'));
 -- ALTER TABLE public.daily_logs ADD COLUMN IF NOT EXISTS trading_special_log TEXT;
 -- ALTER TABLE public.daily_logs ADD COLUMN IF NOT EXISTS freelance_used_ai BOOLEAN DEFAULT FALSE;
+-- ALTER TABLE public.daily_logs ADD COLUMN IF NOT EXISTS workout_type TEXT CHECK (workout_type IN ('Weight Training','Cardio','Other'));
 -- (Create tables 5-8 above as new)
+--
+-- NOTE: Workout is now the 5th fixed row in `habits` (name = 'Workout', tracked daily via
+-- habit_completions like the other habits). The app auto-inserts this habit for existing
+-- users on next login (see HABIT_DEFS backfill in index.html) — no manual insert needed.
+-- The old scheme of storing a 7-day matrix inside daily_logs.thesis_notes (prefixed
+-- "__workout__") is no longer used; that column reverts to legacy/unused.
